@@ -136,6 +136,8 @@
     --gradient-accent-hover:  linear-gradient(135deg, #3F3F46 0%, #27272A 100%);
     --gradient-accent-subtle: linear-gradient(135deg, rgba(113,113,122,0.1) 0%, rgba(82,82,91,0.05) 100%);
     --shadow-accent: 0 4px 20px rgba(113, 113, 122, 0.2);
+    --gradient-card-dark: linear-gradient(160deg, #1C1C1E 0%, #0E0E10 100%);
+    --gradient-card-dark-hover: linear-gradient(160deg, #242426 0%, #141416 100%);
 }
 
 /* Budgeter — electric blue (already default, kept for explicitness) */
@@ -1124,9 +1126,6 @@ tbody td {
 .app-card[data-app-color="red"]   { border-top: 2px solid rgba(239, 68, 68, 0.5); }
 .app-card[data-app-color="green"] { border-top: 2px solid rgba(34, 197, 94, 0.5); }
 
-[data-theme="dark"] .app-card[data-app-color="blue"]::before  { background: linear-gradient(160deg, rgba(37,99,255,0.12) 0%, transparent 55%); }
-[data-theme="dark"] .app-card[data-app-color="red"]::before   { background: linear-gradient(160deg, rgba(239,68,68,0.12) 0%, transparent 55%); }
-[data-theme="dark"] .app-card[data-app-color="green"]::before { background: linear-gradient(160deg, rgba(34,197,94,0.12) 0%, transparent 55%); }
 
 [data-theme="dark"] .app-card[data-app-color="blue"]:hover  { border-color: rgba(37, 99, 255, 0.6); box-shadow: 0 8px 32px rgba(37,99,255,0.15), 0 1px 0 rgba(255,255,255,0.06) inset; }
 [data-theme="dark"] .app-card[data-app-color="red"]:hover   { border-color: rgba(239, 68, 68, 0.6); box-shadow: 0 8px 32px rgba(239,68,68,0.15), 0 1px 0 rgba(255,255,255,0.06) inset; }
