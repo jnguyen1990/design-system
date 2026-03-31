@@ -119,6 +119,70 @@
     --sidebar-width: 220px;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PER-APP ACCENT OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Hub — neutral grayscale */
+[data-app="hub"] {
+    --accent-50:  #F4F4F5;
+    --accent-100: #E4E4E7;
+    --accent-300: #D4D4D8;
+    --accent-400: #A1A1AA;
+    --accent-500: #71717A;
+    --accent-600: #52525B;
+    --accent-700: #3F3F46;
+    --gradient-accent:        linear-gradient(135deg, #52525B 0%, #3F3F46 100%);
+    --gradient-accent-hover:  linear-gradient(135deg, #3F3F46 0%, #27272A 100%);
+    --gradient-accent-subtle: linear-gradient(135deg, rgba(113,113,122,0.1) 0%, rgba(82,82,91,0.05) 100%);
+    --shadow-accent: 0 4px 20px rgba(113, 113, 122, 0.2);
+}
+
+/* Budgeter — electric blue (already default, kept for explicitness) */
+[data-app="budgeter"] {
+    --accent-50:  #EEF3FF;
+    --accent-100: #D4E1FF;
+    --accent-300: #7BA3FF;
+    --accent-400: #4D7EFF;
+    --accent-500: #2563FF;
+    --accent-600: #1A4FD6;
+    --accent-700: #1140B0;
+    --gradient-accent:        linear-gradient(135deg, #2563FF 0%, #7C3AFF 100%);
+    --gradient-accent-hover:  linear-gradient(135deg, #1A4FD6 0%, #6B2FE0 100%);
+    --gradient-accent-subtle: linear-gradient(135deg, rgba(37,99,255,0.1) 0%, rgba(124,58,255,0.05) 100%);
+    --shadow-accent: 0 4px 20px rgba(37, 99, 255, 0.3);
+}
+
+/* Health — red */
+[data-app="health"] {
+    --accent-50:  #FEF2F2;
+    --accent-100: #FEE2E2;
+    --accent-300: #FCA5A5;
+    --accent-400: #F87171;
+    --accent-500: #EF4444;
+    --accent-600: #DC2626;
+    --accent-700: #B91C1C;
+    --gradient-accent:        linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+    --gradient-accent-hover:  linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+    --gradient-accent-subtle: linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(185,28,28,0.05) 100%);
+    --shadow-accent: 0 4px 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Meals — green */
+[data-app="meals"] {
+    --accent-50:  #F0FDF4;
+    --accent-100: #DCFCE7;
+    --accent-300: #86EFAC;
+    --accent-400: #4ADE80;
+    --accent-500: #22C55E;
+    --accent-600: #16A34A;
+    --accent-700: #15803D;
+    --gradient-accent:        linear-gradient(135deg, #22C55E 0%, #15803D 100%);
+    --gradient-accent-hover:  linear-gradient(135deg, #16A34A 0%, #166534 100%);
+    --gradient-accent-subtle: linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(21,128,61,0.05) 100%);
+    --shadow-accent: 0 4px 20px rgba(34, 197, 94, 0.3);
+}
+
 /* Dark Theme — deep blue-black */
 [data-theme="dark"] {
     --bg-primary:    #09090F;
@@ -1054,6 +1118,23 @@ tbody td {
     gap: var(--space-2);
     margin-top: var(--space-1);
 }
+
+/* App card per-color variants */
+.app-card[data-app-color="blue"]  { border-top: 2px solid rgba(37, 99, 255, 0.5); }
+.app-card[data-app-color="red"]   { border-top: 2px solid rgba(239, 68, 68, 0.5); }
+.app-card[data-app-color="green"] { border-top: 2px solid rgba(34, 197, 94, 0.5); }
+
+[data-theme="dark"] .app-card[data-app-color="blue"]::before  { background: linear-gradient(160deg, rgba(37,99,255,0.12) 0%, transparent 55%); }
+[data-theme="dark"] .app-card[data-app-color="red"]::before   { background: linear-gradient(160deg, rgba(239,68,68,0.12) 0%, transparent 55%); }
+[data-theme="dark"] .app-card[data-app-color="green"]::before { background: linear-gradient(160deg, rgba(34,197,94,0.12) 0%, transparent 55%); }
+
+[data-theme="dark"] .app-card[data-app-color="blue"]:hover  { border-color: rgba(37, 99, 255, 0.6); box-shadow: 0 8px 32px rgba(37,99,255,0.15), 0 1px 0 rgba(255,255,255,0.06) inset; }
+[data-theme="dark"] .app-card[data-app-color="red"]:hover   { border-color: rgba(239, 68, 68, 0.6); box-shadow: 0 8px 32px rgba(239,68,68,0.15), 0 1px 0 rgba(255,255,255,0.06) inset; }
+[data-theme="dark"] .app-card[data-app-color="green"]:hover { border-color: rgba(34, 197, 94, 0.6); box-shadow: 0 8px 32px rgba(34,197,94,0.15), 0 1px 0 rgba(255,255,255,0.06) inset; }
+
+.app-card[data-app-color="blue"]  .btn-primary { background: linear-gradient(135deg, #2563FF 0%, #7C3AFF 100%); border-color: transparent; box-shadow: 0 4px 14px rgba(37,99,255,0.35); }
+.app-card[data-app-color="red"]   .btn-primary { background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%); border-color: transparent; box-shadow: 0 4px 14px rgba(239,68,68,0.35); }
+.app-card[data-app-color="green"] .btn-primary { background: linear-gradient(135deg, #22C55E 0%, #15803D 100%); border-color: transparent; box-shadow: 0 4px 14px rgba(34,197,94,0.35); }
 
 /* ═══════════════════════════════════════════════════════════════
    STATUS DOT
