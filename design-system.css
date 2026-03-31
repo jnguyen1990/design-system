@@ -1127,13 +1127,22 @@ tbody td {
 .app-card[data-app-color="green"] { border-top: 2px solid rgba(34, 197, 94, 0.5); }
 
 
-[data-theme="dark"] .app-card[data-app-color="blue"]:hover  { border-color: rgba(37, 99, 255, 0.6); box-shadow: 0 8px 32px rgba(37,99,255,0.15), 0 1px 0 rgba(255,255,255,0.06) inset; }
-[data-theme="dark"] .app-card[data-app-color="red"]:hover   { border-color: rgba(239, 68, 68, 0.6); box-shadow: 0 8px 32px rgba(239,68,68,0.15), 0 1px 0 rgba(255,255,255,0.06) inset; }
-[data-theme="dark"] .app-card[data-app-color="green"]:hover { border-color: rgba(34, 197, 94, 0.6); box-shadow: 0 8px 32px rgba(34,197,94,0.15), 0 1px 0 rgba(255,255,255,0.06) inset; }
+/* Card backgrounds: app color → neutral dark gray */
+[data-theme="dark"] .app-card[data-app-color="blue"]  { background: linear-gradient(160deg, rgba(37,99,255,0.22) 0%, #141418 55%, #0D0D10 100%); border-color: rgba(37,99,255,0.25); }
+[data-theme="dark"] .app-card[data-app-color="red"]   { background: linear-gradient(160deg, rgba(239,68,68,0.22) 0%, #141418 55%, #0D0D10 100%); border-color: rgba(239,68,68,0.25); }
+[data-theme="dark"] .app-card[data-app-color="green"] { background: linear-gradient(160deg, rgba(34,197,94,0.22) 0%, #141418 55%, #0D0D10 100%); border-color: rgba(34,197,94,0.25); }
+
+[data-theme="dark"] .app-card[data-app-color="blue"]:hover  { border-color: rgba(37,99,255,0.5);  box-shadow: 0 8px 32px rgba(37,99,255,0.15),  0 1px 0 rgba(255,255,255,0.06) inset; }
+[data-theme="dark"] .app-card[data-app-color="red"]:hover   { border-color: rgba(239,68,68,0.5);  box-shadow: 0 8px 32px rgba(239,68,68,0.15),  0 1px 0 rgba(255,255,255,0.06) inset; }
+[data-theme="dark"] .app-card[data-app-color="green"]:hover { border-color: rgba(34,197,94,0.5);  box-shadow: 0 8px 32px rgba(34,197,94,0.15),  0 1px 0 rgba(255,255,255,0.06) inset; }
 
 .app-card[data-app-color="blue"]  .btn-primary { background: linear-gradient(135deg, #2563FF 0%, #7C3AFF 100%); border-color: transparent; box-shadow: 0 4px 14px rgba(37,99,255,0.35); }
 .app-card[data-app-color="red"]   .btn-primary { background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%); border-color: transparent; box-shadow: 0 4px 14px rgba(239,68,68,0.35); }
 .app-card[data-app-color="green"] .btn-primary { background: linear-gradient(135deg, #22C55E 0%, #15803D 100%); border-color: transparent; box-shadow: 0 4px 14px rgba(34,197,94,0.35); }
+
+/* Suppress ::before overlay on colored cards — background carries the gradient */
+[data-theme="dark"] .app-card[data-app-color] { position: relative; }
+[data-theme="dark"] .app-card[data-app-color]::before { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════
    STATUS DOT
