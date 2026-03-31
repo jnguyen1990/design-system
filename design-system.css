@@ -164,7 +164,7 @@ body {
 
 [data-theme="dark"] body {
     background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37, 99, 255, 0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(150, 150, 170, 0.06) 0%, transparent 70%),
         #09090F;
 }
 
@@ -249,12 +249,6 @@ img, svg { display: block; max-width: 100%; }
     line-height: var(--leading-tight);
 }
 
-[data-theme="dark"] .page-title {
-    background: linear-gradient(135deg, #EDEDF0 30%, #A0B4FF 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
 
 .page-subtitle {
     color: var(--text-tertiary);
