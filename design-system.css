@@ -88,11 +88,11 @@
     --space-16: 4rem;
 
     /* Border Radius */
-    --radius-sm:   0.25rem;
-    --radius-md:   0.375rem;
-    --radius-lg:   0.5rem;
-    --radius-xl:   0.625rem;
-    --radius-2xl:  0.875rem;
+    --radius-sm:   0.1875rem;
+    --radius-md:   0.25rem;
+    --radius-lg:   0.375rem;
+    --radius-xl:   0.5rem;
+    --radius-2xl:  0.625rem;
     --radius-full: 9999px;
 
     /* Typography */
@@ -726,6 +726,76 @@ textarea.form-control {
 .form-hint  { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: calc(var(--space-1) * -1); }
 .form-error { font-size: var(--text-xs); color: var(--error-500); margin-top: calc(var(--space-1) * -1); }
 
+/* Base input styling — ensures ALL inputs match the theme even without .form-control */
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], input[type="date"], input[type="time"],
+input[type="url"], input[type="search"], input[type="tel"],
+textarea, select:not(.session-type-badge) {
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    background: var(--surface);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+    line-height: var(--leading-normal);
+    letter-spacing: -0.01em;
+    box-sizing: border-box;
+}
+
+input::placeholder, textarea::placeholder { color: var(--text-tertiary); }
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--accent-500);
+    box-shadow: 0 0 0 3px rgba(37, 99, 255, 0.15);
+}
+
+[data-theme="dark"] input[type="text"], [data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"], [data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="date"], [data-theme="dark"] input[type="time"],
+[data-theme="dark"] input[type="url"], [data-theme="dark"] input[type="search"],
+[data-theme="dark"] input[type="tel"],
+[data-theme="dark"] textarea, [data-theme="dark"] select:not(.session-type-badge) {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] input:focus, [data-theme="dark"] textarea:focus, [data-theme="dark"] select:focus {
+    border-color: var(--accent-500);
+    box-shadow: 0 0 0 3px rgba(37, 99, 255, 0.2);
+    background: rgba(255,255,255,0.06);
+}
+
+/* Color scheme for date/time pickers */
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"] {
+    color-scheme: dark;
+}
+
+textarea { resize: vertical; min-height: 80px; }
+
+/* CTA Button — larger, bolder, full glow */
+.btn-cta {
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+    font-weight: 700;
+    background: var(--gradient-accent);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 20px rgba(37, 99, 255, 0.3);
+    letter-spacing: -0.02em;
+}
+
+.btn-cta:hover:not(:disabled) {
+    background: var(--gradient-accent-hover);
+    box-shadow: 0 6px 30px rgba(37, 99, 255, 0.5);
+    transform: translateY(-2px);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    TABLES
    ═══════════════════════════════════════════════════════════════ */
@@ -1037,12 +1107,16 @@ tbody td {
    THEME TOGGLE
    ═══════════════════════════════════════════════════════════════ */
 .theme-toggle {
+    position: fixed;
+    top: var(--space-3);
+    right: var(--space-4);
+    z-index: 200;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 2rem;
     height: 2rem;
-    background: transparent;
+    background: var(--surface);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
     cursor: pointer;
