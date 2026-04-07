@@ -510,7 +510,9 @@ img, svg { display: block; max-width: 100%; }
     font-size: var(--text-sm);
     font-weight: 600;
     border-radius: var(--radius-lg);
-    border: 1px solid transparent;
+    border: 1px solid var(--border-medium);
+    background: var(--surface);
+    color: var(--text-primary);
     cursor: pointer;
     transition: all var(--transition-fast);
     text-decoration: none;
@@ -518,6 +520,22 @@ img, svg { display: block; max-width: 100%; }
     font-family: var(--font-sans);
     line-height: var(--leading-normal);
     letter-spacing: -0.01em;
+}
+
+.btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: var(--border-medium);
+}
+
+[data-theme="dark"] .btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .btn:disabled {
@@ -777,6 +795,33 @@ input:focus, textarea:focus, select:focus {
 }
 
 textarea { resize: vertical; min-height: 80px; }
+
+/* Checkboxes & Radios */
+input[type="checkbox"], input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-500);
+    cursor: pointer;
+}
+
+[data-theme="dark"] input[type="checkbox"],
+[data-theme="dark"] input[type="radio"] {
+    color-scheme: dark;
+}
+
+/* Color dot — for color-coded items without border stripes */
+.color-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+}
+
+.color-dot-lg {
+    width: 10px;
+    height: 10px;
+}
 
 /* CTA Button — larger, bolder, full glow */
 .btn-cta {
