@@ -974,7 +974,12 @@ tbody td {
     padding: var(--space-4);
 }
 
-.modal.modal-open { display: flex; }
+.modal.modal-open {
+    display: flex;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
 
 .modal-backdrop {
     position: fixed;
@@ -1034,6 +1039,10 @@ tbody td {
 .modal-close:hover {
     background: var(--surface-hover);
     color: var(--text-primary);
+}
+
+.modal-body {
+    margin-bottom: var(--space-6);
 }
 
 .modal-footer {
