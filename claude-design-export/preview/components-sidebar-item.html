@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 16px; background: var(--bg-subtle); }
+  .list { display: flex; flex-direction: column; gap: 2px; max-width: 240px; }
+</style>
+</head>
+<body>
+  <div class="list">
+    <div class="sb-item"><div class="sb-dot sb-dot-blue"></div>Inbox<span class="kbd sb-kbd">⌘1</span></div>
+    <div class="sb-item is-selected"><div class="sb-dot sb-dot-green"></div>Today<span class="kbd sb-kbd">⌘2</span></div>
+    <div class="sb-item"><div class="sb-dot sb-dot-amber"></div>Upcoming<span class="kbd sb-kbd">⌘3</span></div>
+    <div class="sb-item"><div class="sb-dot sb-dot-purple"></div>Someday<span class="kbd sb-kbd">⌘4</span></div>
+    <div class="sb-item"><div class="sb-dot sb-dot-pink"></div>Journal</div>
+  </div>
+</body>
+</html>

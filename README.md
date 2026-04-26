@@ -2,26 +2,35 @@
 
 Shared CSS design system for Joe Nguyen's self-hosted web applications. Provides consistent theming, component styles, and responsive layout across all apps.
 
+## v3.0 — Linear meets Things 3
+
+Sharp, precise, technical. Inter + Geist Mono, Radix Colors (slate neutral, per-app accent), 4/6/8 px corners, flat surfaces, minimal motion. See [`brand-guide.md`](brand-guide.md) for the full spec.
+
 ## Usage
 
 Include via CDN in your HTML:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@8f783f6/design-system.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
 ```
+
+Set `data-app` on `<html>` to pick the per-app accent: `base` (slate), `budgeter` (green), `fitness` (orange), `mealplanner` (purple).
 
 ## Apps Using This System
 
-- **Hub** — hub.joenguyen.ca
+- **Base** — base.joenguyen.ca
 - **Budgeter** — budgeter.joenguyen.ca
 - **Fitness** — fitness.joenguyen.ca
+- **Meal Planner** — upcoming
 
 ## Features
 
-- Light/dark theme toggle via `data-theme` attribute
-- CSS custom properties for colors, spacing, typography
+- Light/dark theme toggle via `data-theme` attribute (both first-class)
+- Radix Colors paired light/dark scales — semantic tokens (`--bg`, `--panel`, `--border`, `--text`)
+- v2.1 var/class compat layer — existing app templates work unchanged
+- Per-app accent via `data-app` attribute
 - Responsive sidebar layout with mobile menu
-- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`
+- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`, `.app-card`, `.insight-card`, `.dropdown`, etc.
 - Mobile utilities: `.toolbar`, `.table-responsive`
 - Mobile-first breakpoints (768px, 1024px)
 

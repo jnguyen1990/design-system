@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 20px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .row:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <span class="badge badge-red"><span class="badge-dot"></span>Overdue</span>
+    <span class="badge badge-orange"><span class="badge-dot"></span>In progress</span>
+    <span class="badge badge-amber"><span class="badge-dot"></span>Pending</span>
+    <span class="badge badge-green"><span class="badge-dot"></span>Complete</span>
+    <span class="badge badge-teal"><span class="badge-dot"></span>Info</span>
+  </div>
+  <div class="row">
+    <span class="badge badge-blue"><span class="badge-dot"></span>Selected</span>
+    <span class="badge badge-indigo"><span class="badge-dot"></span>Primary</span>
+    <span class="badge badge-purple"><span class="badge-dot"></span>Featured</span>
+    <span class="badge badge-pink"><span class="badge-dot"></span>Personal</span>
+  </div>
+  <div class="row">
+    <span class="badge badge-numeric">12</span>
+    <span class="badge badge-green badge-numeric">+$240.00</span>
+    <span class="badge badge-red badge-numeric">−$48.50</span>
+  </div>
+</body>
+</html>

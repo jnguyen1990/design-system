@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fitness</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<link rel="stylesheet" href="../../components.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="../_shared/Icon.jsx"></script>
+<script type="text/babel" src="../_shared/Sidebar.jsx"></script>
+<script type="text/babel" src="../_shared/PageHeader.jsx"></script>
+<script type="text/babel" src="../_shared/CommandPalette.jsx"></script>
+<script type="text/babel" src="FitnessComponents.jsx"></script>
+<script type="text/babel">
+function App() {
+  const [selected, setSelected] = React.useState('today');
+  const [paletteOpen, setPaletteOpen] = React.useState(false);
+  const [activeSession, setActiveSession] = React.useState(null);
+
+  React.useEffect(() => {
+    const h = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setPaletteOpen(true); }
+      if (e.key === 'Escape') { setPaletteOpen(false); setActiveSession(null); }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  const sessions = [
+    { id: 'pull-upper', name: 'Pull · upper', lastPerformed: '2d ago', lifts: [
+      { name: 'deadlift',          scheme: '5×5 @ 315' },
+      { name: 'pull-up',           scheme: '4×8 bw' },
+      { name: 'barbell row',       scheme: '4×8 @ 155' },
+      { name: 'face pull',         scheme: '3×12 @ 30' },
+    ]},
+    { id: 'push-upper', name: 'Push · upper', lastPerformed: '4d ago', lifts: [
+      { name: 'bench press',       scheme: '5×5 @ 225' },
+      { name: 'overhead press',    scheme: '4×6 @ 135' },
+      { name: 'incline db press',  scheme: '3×10 @ 60' },
+      { name: 'tricep pushdown',   scheme: '3×12 @ 50' },
+    ]},
+    { id: 'legs', name: 'Legs', lastPerformed: '6d ago', lifts: [
+      { name: 'back squat',        scheme: '5×5 @ 285' },
+      { name: 'romanian dl',       scheme: '4×8 @ 225' },
+      { name: 'walking lunge',     scheme: '3×10 ea' },
+    ]},
+  ];
+
+  const todayLifts = [
+    { name: 'deadlift',     target: '5×5 @ 315', sets: [{weight:315,reps:5,done:true},{weight:315,reps:5,done:true},{weight:315,reps:5,done:true},{weight:315,reps:4,done:false},{weight:315,reps:0,done:false}]},
+    { name: 'pull-up',      target: '4×8 bw',    sets: [{weight:'bw',reps:8,done:true},{weight:'bw',reps:8,done:true},{weight:'bw',reps:0,done:false},{weight:'bw',reps:0,done:false}]},
+    { name: 'barbell row',  target: '4×8 @ 155', sets: [{weight:155,reps:8,done:true},{weight:155,reps:0,done:false},{weight:155,reps:0,done:false},{weight:155,reps:0,done:false}]},
+    { name: 'face pull',    target: '3×12 @ 30', sets: [{weight:30,reps:0,done:false},{weight:30,reps:0,done:false},{weight:30,reps:0,done:false}]},
+  ];
+
+  return (
+    <div className="app-shell" data-screen-label="Fitness · today">
+      <Sidebar
+        logo="../../assets/fitness-logo.svg"
+        title="fitness"
+        selectedId={selected}
+        onSelect={setSelected}
+        sections={[
+          { items: [
+            { id: 'today',    label: 'today',    color: 'orange', kbd: '⌘1' },
+            { id: 'history',  label: 'history',  color: 'slate',  kbd: '⌘2' },
+            { id: 'progress', label: 'progress', color: 'green',  kbd: '⌘3' },
+          ]},
+          { label: 'sessions', items: [
+            { id: 'pull-upper', label: 'pull · upper', color: 'orange' },
+            { id: 'push-upper', label: 'push · upper', color: 'amber' },
+            { id: 'legs',       label: 'legs',         color: 'red' },
+          ]},
+          { label: 'lifts', items: [
+            { id: 'deadlift', label: 'deadlift',  color: 'red' },
+            { id: 'squat',    label: 'back squat', color: 'red' },
+            { id: 'bench',    label: 'bench press', color: 'amber' },
+          ]},
+        ]}
+        footer={
+          <div style={{ padding: '8px 12px', fontSize: 11, color: 'var(--text-faint)' }}>
+            <span>4 sessions this week</span>
+          </div>
+        }
+      />
+      <main className="app-main">
+        <PageHeader
+          title="Today"
+          subtitle="tuesday · pull · upper"
+          actions={
+            <>
+              <button className="btn btn-secondary btn-sm">Skip</button>
+              <button className="btn btn-primary btn-sm">+ log workout</button>
+            </>
+          }
+        />
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 32 }}>
+          <Stat label="this week"   value="4"     suffix="sessions" />
+          <Stat label="total volume" value="48,250" suffix="lb" />
+          <Stat label="streak"      value="3"     suffix="weeks" />
+          <Stat label="last session" value="2"    suffix="d ago" />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <h3>Pull · upper</h3>
+              <span className="text-num text-muted" style={{ fontSize: 12 }}>00:24:18</span>
+            </div>
+            <div style={{ marginTop: 4 }}>
+              {todayLifts.map((l, i) => <LiftRow key={i} {...l} />)}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Sessions</div>
+            {sessions.map((s) => (
+              <SessionCard key={s.id} {...s} onStart={() => setActiveSession(s.id)} />
+            ))}
+          </div>
+        </div>
+      </main>
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        commands={[
+          { label: 'log workout',          color: 'orange', kbd: '⌘N' },
+          { label: 'start pull · upper',   color: 'orange' },
+          { label: 'start push · upper',   color: 'amber' },
+          { label: 'start legs',           color: 'red' },
+          { label: 'view history',         color: 'slate' },
+          { label: 'add lift',             color: 'slate' },
+        ]}
+      />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

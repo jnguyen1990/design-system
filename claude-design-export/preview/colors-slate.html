@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 20px; }
+  .scale { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0; }
+  .step { aspect-ratio: 1; display: flex; align-items: flex-end; justify-content: center; padding: 4px; font-family: var(--font-mono); font-size: 10px; }
+  .step-num { color: rgba(0,0,0,0.5); }
+  .step-num-light { color: rgba(255,255,255,0.7); }
+  .label { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+</style>
+</head>
+<body>
+  <div class="label">slate · 1–12 · neutral chrome scale</div>
+  <div class="scale">
+    <div class="step" style="background: var(--slate-1)"><span class="step-num">1</span></div>
+    <div class="step" style="background: var(--slate-2)"><span class="step-num">2</span></div>
+    <div class="step" style="background: var(--slate-3)"><span class="step-num">3</span></div>
+    <div class="step" style="background: var(--slate-4)"><span class="step-num">4</span></div>
+    <div class="step" style="background: var(--slate-5)"><span class="step-num">5</span></div>
+    <div class="step" style="background: var(--slate-6)"><span class="step-num">6</span></div>
+    <div class="step" style="background: var(--slate-7)"><span class="step-num">7</span></div>
+    <div class="step" style="background: var(--slate-8)"><span class="step-num">8</span></div>
+    <div class="step" style="background: var(--slate-9)"><span class="step-num-light">9</span></div>
+    <div class="step" style="background: var(--slate-10)"><span class="step-num-light">10</span></div>
+    <div class="step" style="background: var(--slate-11)"><span class="step-num-light">11</span></div>
+    <div class="step" style="background: var(--slate-12)"><span class="step-num-light">12</span></div>
+  </div>
+</body>
+</html>

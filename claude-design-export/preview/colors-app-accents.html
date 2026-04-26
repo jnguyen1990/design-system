@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .item { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 6px; }
+  .item img { width: 32px; height: 32px; }
+  .name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .accent { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="item"><img src="../assets/hub-logo.svg" alt=""><div><div class="name">Hub</div><div class="accent">slate</div></div></div>
+    <div class="item"><img src="../assets/budgeter-logo.svg" alt=""><div><div class="name">Budgeter</div><div class="accent">green</div></div></div>
+    <div class="item"><img src="../assets/fitness-logo.svg" alt=""><div><div class="name">Fitness</div><div class="accent">orange</div></div></div>
+    <div class="item"><img src="../assets/mealplanner-logo.svg" alt=""><div><div class="name">Meal Planner</div><div class="accent">purple</div></div></div>
+  </div>
+</body>
+</html>

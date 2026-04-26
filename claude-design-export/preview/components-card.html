@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="card">
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">Checking</div>
+      <div style="font-family: var(--font-mono); font-size: 22px; font-weight:500; color:var(--text);">$4,218.42</div>
+      <div class="meta" style="margin-top: 6px;">+$120.50 this week</div>
+    </div>
+    <div class="card card-interactive">
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">Last workout</div>
+      <div style="font-size: 16px; font-weight: 600; color:var(--text);">Pull · upper</div>
+      <div class="meta" style="margin-top: 6px;">2d ago · 6 lifts</div>
+    </div>
+  </div>
+</body>
+</html>

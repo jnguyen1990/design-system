@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 8px; }
+  .col { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .dot { width: 28px; height: 28px; border-radius: 50%; }
+  .name { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+  .label { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+</style>
+</head>
+<body>
+  <div class="label">step-9 · categorical accents · for dots, badges, chips</div>
+  <div class="grid">
+    <div class="col"><div class="dot" style="background: var(--red-9)"></div><div class="name">red</div></div>
+    <div class="col"><div class="dot" style="background: var(--orange-9)"></div><div class="name">orange</div></div>
+    <div class="col"><div class="dot" style="background: var(--amber-9)"></div><div class="name">amber</div></div>
+    <div class="col"><div class="dot" style="background: var(--green-9)"></div><div class="name">green</div></div>
+    <div class="col"><div class="dot" style="background: var(--teal-9)"></div><div class="name">teal</div></div>
+    <div class="col"><div class="dot" style="background: var(--blue-9)"></div><div class="name">blue</div></div>
+    <div class="col"><div class="dot" style="background: var(--indigo-9)"></div><div class="name">indigo</div></div>
+    <div class="col"><div class="dot" style="background: var(--purple-9)"></div><div class="name">purple</div></div>
+    <div class="col"><div class="dot" style="background: var(--pink-9)"></div><div class="name">pink</div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 20px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .row:last-child { margin-bottom: 0; }
+  .label { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); width: 60px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+  <div class="row"><div class="label">primary</div><button class="btn btn-primary">Add transaction</button><button class="btn btn-primary btn-sm">Save</button></div>
+  <div class="row"><div class="label">secondary</div><button class="btn btn-secondary">Cancel</button><button class="btn btn-secondary btn-sm">Filter</button></div>
+  <div class="row"><div class="label">ghost</div><button class="btn btn-ghost">Skip</button><button class="btn btn-ghost btn-sm">Dismiss</button></div>
+  <div class="row"><div class="label">destructive</div><button class="btn btn-destructive">Delete account</button></div>
+</body>
+</html>

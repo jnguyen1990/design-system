@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Budgeter</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<link rel="stylesheet" href="../../components.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="../_shared/Icon.jsx"></script>
+<script type="text/babel" src="../_shared/Sidebar.jsx"></script>
+<script type="text/babel" src="../_shared/PageHeader.jsx"></script>
+<script type="text/babel" src="../_shared/CommandPalette.jsx"></script>
+<script type="text/babel" src="BudgeterComponents.jsx"></script>
+<script type="text/babel">
+function App() {
+  const [selected, setSelected] = React.useState('all');
+  const [paletteOpen, setPaletteOpen] = React.useState(false);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [selectedTx, setSelectedTx] = React.useState(null);
+  const [rows, setRows] = React.useState([
+    { id: 1, date: '04-22', desc: 'Whole Foods',         note: 'weekly produce + pantry restock', cat: 'groceries',     catColor: 'green',  account: 'checking', amount: '−$84.20' },
+    { id: 2, date: '04-21', desc: 'Acme Corp · payroll', note: 'biweekly direct deposit',          cat: 'income',        catColor: 'blue',   account: 'checking', amount: '+$3,400.00' },
+    { id: 3, date: '04-20', desc: 'Spotify',             note: 'family plan · auto-renew',         cat: 'subscriptions', catColor: 'purple', account: 'card',     amount: '−$10.99' },
+    { id: 4, date: '04-19', desc: 'Shell · gas',         note: 'fill-up · I-280 north',            cat: 'transport',     catColor: 'amber',  account: 'card',     amount: '−$48.50' },
+    { id: 5, date: '04-18', desc: 'Trader Joe\u2019s',   note: 'Sunday meal-prep haul',            cat: 'groceries',     catColor: 'green',  account: 'card',     amount: '−$62.13' },
+    { id: 6, date: '04-17', desc: 'Coffee · Verve',      note: 'morning, oat cortado',             cat: 'dining',        catColor: 'orange', account: 'card',     amount: '−$5.75' },
+    { id: 7, date: '04-15', desc: 'Rent',                note: '1500 Mission · april',             cat: 'housing',       catColor: 'red',    account: 'checking', amount: '−$1,850.00' },
+  ]);
+
+  React.useEffect(() => {
+    const h = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setPaletteOpen(true); }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') { e.preventDefault(); setModalOpen(true); }
+      if (e.key === 'Escape') { setPaletteOpen(false); setModalOpen(false); }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  return (
+    <div className="app-shell" data-screen-label="Budgeter · all transactions">
+      <Sidebar
+        logo="../../assets/budgeter-logo.svg"
+        title="budgeter"
+        selectedId={selected}
+        onSelect={setSelected}
+        sections={[
+          { items: [
+            { id: 'all',     label: 'all',         color: 'green', kbd: '⌘1', count: rows.length },
+            { id: 'today',   label: 'today',       color: 'blue',  kbd: '⌘2' },
+            { id: 'pending', label: 'pending',     color: 'amber', kbd: '⌘3', count: 2 },
+          ]},
+          { label: 'accounts', items: [
+            { id: 'checking', label: 'checking',  color: 'green' },
+            { id: 'card',     label: 'amex card', color: 'slate' },
+            { id: 'savings',  label: 'savings',   color: 'teal' },
+          ]},
+          { label: 'categories', items: [
+            { id: 'groceries',     label: 'groceries',     color: 'green' },
+            { id: 'housing',       label: 'housing',       color: 'red' },
+            { id: 'subscriptions', label: 'subscriptions', color: 'purple' },
+            { id: 'transport',     label: 'transport',     color: 'amber' },
+            { id: 'dining',        label: 'dining',        color: 'orange' },
+          ]},
+        ]}
+        footer={
+          <div style={{ padding: '8px 12px', fontSize: 11, color: 'var(--text-faint)' }}>
+            <span>last sync: 2m ago</span>
+          </div>
+        }
+      />
+      <main className="app-main">
+        <PageHeader
+          title="Recent activity"
+          subtitle="april 2026 · 7 transactions"
+          actions={
+            <>
+              <button className="btn btn-ghost btn-sm">Import CSV</button>
+              <button className="btn btn-secondary btn-sm">Filter</button>
+              <button className="btn btn-primary btn-sm" onClick={() => setModalOpen(true)}>+ add transaction</button>
+            </>
+          }
+        />
+
+        <div style={{ marginBottom: 32 }}>
+          <AccountsBar accounts={[
+            { id: 1, label: 'Checking',   balance: '$4,218.42',  delta: '+$120.50 this week', deltaPositive: true },
+            { id: 2, label: 'Amex card',  balance: '−$1,247.03', delta: 'due in 12 days' },
+            { id: 3, label: 'Savings',    balance: '$18,402.00', delta: '+$200.00 this week', deltaPositive: true },
+          ]} />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24, alignItems: 'start' }}>
+          <div className="card" style={{ padding: '4px 20px' }}>
+            <TxTable rows={rows} onSelect={setSelectedTx} selectedId={selectedTx} />
+          </div>
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>April budget</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>5 of 30 days remaining</div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 32 }}>
+              <BudgetRow label="groceries"      color="green"  spent={146.33} budget={500} />
+              <BudgetRow label="housing"        color="red"    spent={1850}   budget={1850} />
+              <BudgetRow label="subscriptions"  color="purple" spent={62.97}  budget={80} />
+              <BudgetRow label="transport"      color="amber"  spent={48.50}  budget={150} />
+              <BudgetRow label="dining"         color="orange" spent={172.40} budget={150} />
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {modalOpen && (
+        <div className="modal-backdrop" onClick={() => setModalOpen(false)}>
+          <div className="modal modal-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ marginBottom: 16 }}>New transaction</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+              <div>
+                <label>Description</label>
+                <input className="input" placeholder="e.g. groceries" autoFocus />
+              </div>
+              <div>
+                <label>Amount</label>
+                <input className="input" placeholder="$0.00" />
+              </div>
+              <div>
+                <label>Date</label>
+                <input className="input" defaultValue="2026-04-25" />
+              </div>
+              <div>
+                <label>Account</label>
+                <select className="select"><option>Checking</option><option>Amex card</option><option>Savings</option></select>
+              </div>
+            </div>
+            <label>Category</label>
+            <select className="select" style={{ marginBottom: 16 }}>
+              <option>groceries</option><option>housing</option><option>subscriptions</option><option>transport</option><option>dining</option>
+            </select>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={() => setModalOpen(false)}>Add</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        commands={[
+          { label: 'add transaction',     color: 'green', kbd: '⌘N' },
+          { label: 'import CSV',          color: 'slate' },
+          { label: 'go to checking',      color: 'green' },
+          { label: 'go to savings',       color: 'teal' },
+          { label: 'edit april budget',   color: 'amber' },
+          { label: 'export this month',   color: 'slate' },
+        ]}
+      />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

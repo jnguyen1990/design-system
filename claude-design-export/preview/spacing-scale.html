@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 20px; }
+  .row { display: grid; grid-template-columns: 70px 1fr 60px; gap: 12px; align-items: center; padding: 4px 0; }
+  .name { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .bar  { height: 12px; background: var(--indigo-9); border-radius: 2px; }
+  .px   { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); text-align: right; }
+</style>
+</head>
+<body>
+  <div class="row"><div class="name">space-0_5</div><div><div class="bar" style="width:2px"></div></div><div class="px">2</div></div>
+  <div class="row"><div class="name">space-1</div><div><div class="bar" style="width:4px"></div></div><div class="px">4</div></div>
+  <div class="row"><div class="name">space-2</div><div><div class="bar" style="width:8px"></div></div><div class="px">8</div></div>
+  <div class="row"><div class="name">space-3</div><div><div class="bar" style="width:12px"></div></div><div class="px">12</div></div>
+  <div class="row"><div class="name">space-4</div><div><div class="bar" style="width:16px"></div></div><div class="px">16</div></div>
+  <div class="row"><div class="name">space-6</div><div><div class="bar" style="width:24px"></div></div><div class="px">24</div></div>
+  <div class="row"><div class="name">space-8</div><div><div class="bar" style="width:32px"></div></div><div class="px">32</div></div>
+  <div class="row"><div class="name">space-12</div><div><div class="bar" style="width:48px"></div></div><div class="px">48</div></div>
+  <div class="row"><div class="name">space-16</div><div><div class="bar" style="width:64px"></div></div><div class="px">64</div></div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field { display: flex; flex-direction: column; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="field">
+      <label>Description</label>
+      <input class="input" placeholder="e.g. groceries">
+      <div class="helper-text">A short, searchable label.</div>
+    </div>
+    <div class="field">
+      <label>Amount</label>
+      <input class="input" value="$0.00" aria-invalid="true">
+      <div class="error-text">Amount required</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 24px; }
+  .row { display: flex; gap: 24px; align-items: flex-end; }
+  .box { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .sq  { width: 64px; height: 64px; background: var(--panel); border: 1px solid var(--border); }
+  .name { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .px   { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="box"><div class="sq" style="border-radius: 4px"></div><div class="name">radius-sm</div><div class="px">4px · buttons, inputs, badges</div></div>
+    <div class="box"><div class="sq" style="border-radius: 6px"></div><div class="name">radius-md</div><div class="px">6px · cards, modals</div></div>
+    <div class="box"><div class="sq" style="border-radius: 8px"></div><div class="name">radius-lg</div><div class="px">8px · page containers</div></div>
+  </div>
+</body>
+</html>

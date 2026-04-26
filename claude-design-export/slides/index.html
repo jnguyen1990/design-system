@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Joe's Apps — Sample deck</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  /* Deck-specific overrides — slate-1 stage, generous breathing room */
+  html, body { margin: 0; padding: 0; background: #000; }
+  deck-stage { background: var(--bg); }
+  section {
+    width: 1920px; height: 1080px;
+    padding: 96px 128px;
+    box-sizing: border-box;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  section.bg-subtle { background: var(--bg-subtle); }
+  section.bg-dark { background: var(--slate-12); color: var(--slate-1); }
+  section.bg-dark .muted { color: var(--slate-8); }
+  section.bg-dark .border-c { border-color: var(--slate-10); }
+
+  .eyebrow { font-family: var(--font-mono); font-size: 18px; color: var(--text-muted); text-transform: lowercase; letter-spacing: 0.04em; margin-bottom: 32px; display: flex; align-items: center; gap: 16px; }
+  .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .display { font-size: 144px; font-weight: 600; letter-spacing: -0.03em; line-height: 0.95; color: var(--text); }
+  .display.smaller { font-size: 96px; }
+  .h1 { font-size: 80px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; }
+  .h2 { font-size: 56px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; }
+  .body-lg { font-size: 32px; font-weight: 400; line-height: 1.4; color: var(--text-muted); }
+  .body { font-size: 24px; font-weight: 400; line-height: 1.5; color: var(--text-muted); }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .meta { font-family: var(--font-mono); font-size: 18px; color: var(--text-faint); }
+  .footer-bar { position: absolute; left: 128px; right: 128px; bottom: 56px; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 18px; color: var(--text-faint); border-top: 1px solid var(--border); padding-top: 24px; }
+
+  .deck-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 40px;
+  }
+  section.bg-subtle .deck-card { background: var(--bg-subtle); }
+  .deck-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .deck-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+
+  .big-num { font-family: var(--font-mono); font-size: 120px; font-weight: 500; letter-spacing: -0.02em; line-height: 1; color: var(--text); }
+  .big-num-suffix { font-size: 32px; color: var(--text-muted); margin-left: 12px; font-weight: 400; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 12px;
+    height: 44px; padding: 0 18px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 20px; font-weight: 500;
+  }
+  .pill-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .quote-mark { font-family: var(--font-mono); font-size: 240px; line-height: 1; color: var(--text-faint); margin-bottom: -40px; user-select: none; }
+</style>
+</head>
+<body>
+<deck-stage>
+
+  <!-- 01 · Cover -->
+  <section data-screen-label="01 Cover" style="justify-content: center;">
+    <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 64px;">
+      <img src="../assets/hub-logo.svg" width="72" height="72" alt="" style="border-radius: 14px;">
+      <div class="mono" style="font-size: 22px; color: var(--text-muted);">joe's apps</div>
+    </div>
+    <div class="display">Personal apps,<br>built sharp.</div>
+    <div class="body-lg" style="margin-top: 48px; max-width: 1100px;">A constellation of self-hosted tools — hub, budgeter, fitness, meal planner — sharing one Linear-meets-Things-3 design language.</div>
+    <div class="footer-bar">
+      <span>v0.4.2 · april 2026</span>
+      <span>01 / 06</span>
+    </div>
+  </section>
+
+  <!-- 02 · Agenda -->
+  <section data-screen-label="02 Agenda" class="bg-subtle">
+    <div class="eyebrow"><span class="dot" style="background: var(--blue-9);"></span>agenda</div>
+    <div class="h1" style="margin-bottom: 80px;">What we'll cover</div>
+    <div style="display: flex; flex-direction: column; gap: 24px; max-width: 1100px;">
+      <div style="display: grid; grid-template-columns: 80px 1fr; align-items: center; padding: 24px 0; border-bottom: 1px solid var(--border);">
+        <div class="mono" style="font-size: 28px; color: var(--text-faint);">01</div>
+        <div class="h2" style="font-size: 40px;">The system</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 80px 1fr; align-items: center; padding: 24px 0; border-bottom: 1px solid var(--border);">
+        <div class="mono" style="font-size: 28px; color: var(--text-faint);">02</div>
+        <div class="h2" style="font-size: 40px;">The four apps</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 80px 1fr; align-items: center; padding: 24px 0; border-bottom: 1px solid var(--border);">
+        <div class="mono" style="font-size: 28px; color: var(--text-faint);">03</div>
+        <div class="h2" style="font-size: 40px;">Principles</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 80px 1fr; align-items: center; padding: 24px 0;">
+        <div class="mono" style="font-size: 28px; color: var(--text-faint);">04</div>
+        <div class="h2" style="font-size: 40px;">What's next</div>
+      </div>
+    </div>
+    <div class="footer-bar">
+      <span>02 — agenda</span>
+      <span>02 / 06</span>
+    </div>
+  </section>
+
+  <!-- 03 · Big stat -->
+  <section data-screen-label="03 Big stat" style="justify-content: center;">
+    <div class="eyebrow"><span class="dot" style="background: var(--green-9);"></span>by the numbers</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 48px; align-items: end;">
+      <div>
+        <div class="big-num">4<span class="big-num-suffix">apps</span></div>
+        <div class="body" style="margin-top: 16px;">hub, budgeter, fitness, meal planner</div>
+      </div>
+      <div>
+        <div class="big-num">9<span class="big-num-suffix">accents</span></div>
+        <div class="body" style="margin-top: 16px;">radix categorical · one per app</div>
+      </div>
+      <div>
+        <div class="big-num">0<span class="big-num-suffix">emoji</span></div>
+        <div class="body" style="margin-top: 16px;">colors do the categorical work</div>
+      </div>
+    </div>
+    <div class="footer-bar">
+      <span>03 — by the numbers</span>
+      <span>03 / 06</span>
+    </div>
+  </section>
+
+  <!-- 04 · The four apps -->
+  <section data-screen-label="04 Apps">
+    <div class="eyebrow"><span class="dot" style="background: var(--purple-9);"></span>the apps</div>
+    <div class="h1" style="margin-bottom: 64px;">Four tools, one language</div>
+    <div class="deck-grid-2" style="gap: 32px;">
+      <div class="deck-card" style="display: flex; gap: 24px; align-items: flex-start;">
+        <img src="../assets/hub-logo.svg" width="64" height="64" alt="" style="border-radius: 12px; flex-shrink: 0;">
+        <div>
+          <div class="h2" style="font-size: 36px; margin-bottom: 8px;">Hub</div>
+          <div class="meta" style="margin-bottom: 16px;">slate · launcher</div>
+          <div class="body" style="font-size: 22px;">Cross-app inbox. Command palette. The neutral home base.</div>
+        </div>
+      </div>
+      <div class="deck-card" style="display: flex; gap: 24px; align-items: flex-start;">
+        <img src="../assets/budgeter-logo.svg" width="64" height="64" alt="" style="border-radius: 12px; flex-shrink: 0;">
+        <div>
+          <div class="h2" style="font-size: 36px; margin-bottom: 8px;">Budgeter</div>
+          <div class="meta" style="margin-bottom: 16px;">green · finance</div>
+          <div class="body" style="font-size: 22px;">Transactions, accounts, budgets. Tabular-nums everything.</div>
+        </div>
+      </div>
+      <div class="deck-card" style="display: flex; gap: 24px; align-items: flex-start;">
+        <img src="../assets/fitness-logo.svg" width="64" height="64" alt="" style="border-radius: 12px; flex-shrink: 0;">
+        <div>
+          <div class="h2" style="font-size: 36px; margin-bottom: 8px;">Fitness</div>
+          <div class="meta" style="margin-bottom: 16px;">orange · training</div>
+          <div class="body" style="font-size: 22px;">Workout log. Sessions, lifts, sets, volume.</div>
+        </div>
+      </div>
+      <div class="deck-card" style="display: flex; gap: 24px; align-items: flex-start;">
+        <img src="../assets/mealplanner-logo.svg" width="64" height="64" alt="" style="border-radius: 12px; flex-shrink: 0;">
+        <div>
+          <div class="h2" style="font-size: 36px; margin-bottom: 8px;">Meal Planner</div>
+          <div class="meta" style="margin-bottom: 16px;">purple · kitchen</div>
+          <div class="body" style="font-size: 22px;">Recipes, weekly plans, generated grocery lists.</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar">
+      <span>04 — the apps</span>
+      <span>04 / 06</span>
+    </div>
+  </section>
+
+  <!-- 05 · Big quote -->
+  <section data-screen-label="05 Quote" class="bg-dark" style="justify-content: center;">
+    <div class="quote-mark">&ldquo;</div>
+    <div class="display smaller" style="color: var(--slate-1); max-width: 1500px;">Every pixel earns its place.</div>
+    <div class="body-lg muted" style="color: var(--slate-8); margin-top: 56px;">— brand pillar #1</div>
+    <div class="footer-bar border-c" style="color: var(--slate-9);">
+      <span>05 — principles</span>
+      <span>05 / 06</span>
+    </div>
+  </section>
+
+  <!-- 06 · Comparison / before-after -->
+  <section data-screen-label="06 Comparison" class="bg-subtle">
+    <div class="eyebrow"><span class="dot" style="background: var(--orange-9);"></span>do this · not that</div>
+    <div class="h1" style="margin-bottom: 56px;">Voice & tone, side by side</div>
+    <div class="deck-grid-2" style="gap: 32px;">
+      <div class="deck-card" style="border-color: var(--red-7); background: var(--red-2);">
+        <div class="meta" style="color: var(--red-11); margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--red-9);"></span>don't
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div class="body" style="font-size: 26px; color: var(--text);">"Welcome back, Joe! 👋"</div>
+          <div class="body" style="font-size: 26px; color: var(--text);">"Please enter an amount"</div>
+          <div class="body" style="font-size: 26px; color: var(--text);">"Successfully saved!"</div>
+          <div class="body" style="font-size: 26px; color: var(--text);">"Click here to add"</div>
+        </div>
+      </div>
+      <div class="deck-card" style="border-color: var(--green-7); background: var(--green-2);">
+        <div class="meta" style="color: var(--green-11); margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--green-9);"></span>do
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div class="body mono" style="font-size: 26px; color: var(--text);">today</div>
+          <div class="body mono" style="font-size: 26px; color: var(--text);">amount required</div>
+          <div class="body mono" style="font-size: 26px; color: var(--text);">(silent)</div>
+          <div class="body mono" style="font-size: 26px; color: var(--text);">+ new entry</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bar">
+      <span>06 — voice</span>
+      <span>06 / 06</span>
+    </div>
+  </section>
+
+</deck-stage>
+
+<script src="deck-stage.js"></script>
+</body>
+</html>

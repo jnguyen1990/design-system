@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 24px; }
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .row   { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .meta  { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <div>
+      <div style="font-size:13px; font-weight:500; color:var(--text);">Geist Mono</div>
+      <div class="meta">--font-mono · tabular-nums · for data, IDs, kbd</div>
+    </div>
+    <div style="font-family: var(--font-mono); font-size:18px; color:var(--text);">$1,247.03 &middot; 12:04 &middot; tx_8f3a</div>
+    <div style="font-family: var(--font-mono); font-size:14px; color:var(--text-muted);">0123456789 ABCDEF abcdef ⌘K ⇧⌘P</div>
+  </div>
+</body>
+</html>

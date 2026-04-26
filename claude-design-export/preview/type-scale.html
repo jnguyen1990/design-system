@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { padding: 24px; }
+  .row { display: grid; grid-template-columns: 90px 1fr 80px; gap: 12px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .row:last-child { border-bottom: 0; }
+  .label { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .px    { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); text-align: right; }
+</style>
+</head>
+<body>
+  <div class="row"><div class="label">2xl / h1</div><div style="font-size:32px; font-weight:600; letter-spacing:-0.01em;">Display</div><div class="px">32px / 600</div></div>
+  <div class="row"><div class="label">xl / h2</div><div style="font-size:24px; font-weight:600; letter-spacing:-0.01em;">Page title</div><div class="px">24px / 600</div></div>
+  <div class="row"><div class="label">lg / h3</div><div style="font-size:18px; font-weight:600; letter-spacing:-0.01em;">Section heading</div><div class="px">18px / 600</div></div>
+  <div class="row"><div class="label">md</div><div style="font-size:16px; font-weight:500;">Prominent UI</div><div class="px">16px / 500</div></div>
+  <div class="row"><div class="label">base</div><div style="font-size:14px; font-weight:400;">Body, default UI</div><div class="px">14px / 400</div></div>
+  <div class="row"><div class="label">sm</div><div style="font-size:13px; font-weight:500;">Secondary UI, labels</div><div class="px">13px / 500</div></div>
+  <div class="row"><div class="label">xs</div><div style="font-size:12px; font-weight:400; color:var(--text-muted);">Captions, kbd hints</div><div class="px">12px / 400</div></div>
+</body>
+</html>
