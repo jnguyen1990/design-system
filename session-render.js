@@ -64,7 +64,7 @@
             return `<div class="vitals-chip" onclick="${onClick}">${items.join('')}</div>`;
         },
 
-        openVitalsModal({ dateStr, vitals, sleepSession }) {
+        openVitalsModal({ dateStr, vitals, sleepSession, sources }) {
             const dateObj = new Date(dateStr + 'T00:00:00');
             const dateLabel = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
             const titleEl = document.getElementById('dm-title');
@@ -98,6 +98,29 @@
             }
             if (vitals && vitals.notes) {
                 body += `<p style="font-size: var(--text-sm); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border);"><strong>Notes:</strong> ${this.escapeHtml(vitals.notes)}</p>`;
+            }
+            if (Array.isArray(sources) && sources.length > 1) {
+                const fields = ['sleep_hours', 'sleep_quality', 'resting_hr', 'hrv_ms', 'steps', 'weight_kg', 'body_fat_pct'];
+                const labels = {
+                    sleep_hours: 'sleep', sleep_quality: 'quality', resting_hr: 'RHR',
+                    hrv_ms: 'HRV', steps: 'steps', weight_kg: 'weight', body_fat_pct: 'body fat'
+                };
+                body += `<h4 style="margin: var(--space-4) 0 var(--space-2); font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Sources</h4>`;
+                body += '<div style="font-size: var(--text-xs); font-family: var(--font-mono);">';
+                sources.forEach(row => {
+                    const time = row.recorded_at ? new Date(row.recorded_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+                    const parts = fields
+                        .filter(f => row[f] != null && row[f] !== '')
+                        .map(f => `${labels[f]}=${typeof row[f] === 'number' ? +(+row[f]).toFixed(1) : row[f]}`);
+                    if (!parts.length && !row.notes) return;
+                    body += `<div style="margin-bottom: var(--space-1);">`;
+                    body += `<strong>${this.escapeHtml(row.source || 'unknown')}</strong>`;
+                    if (time) body += ` <span class="text-muted">· ${time}</span>`;
+                    if (parts.length) body += ` — ${parts.join(', ')}`;
+                    if (row.notes) body += ` <span class="text-muted">· ${this.escapeHtml(row.notes)}</span>`;
+                    body += `</div>`;
+                });
+                body += '</div>';
             }
             if (sleepSession) {
                 body += `<h4 style="margin: var(--space-4) 0 var(--space-2); font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Sleep session</h4>`;
