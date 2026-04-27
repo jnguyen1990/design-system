@@ -24,6 +24,12 @@
 
         if (e.key === 'Escape') {
             modal.classList.remove('modal-open');
+            // Defensive: some opener code sets body.overflow:hidden as a scroll
+            // lock and forgets to reset on close. If no modals remain open,
+            // restore body scroll so the page isn't stuck.
+            if (!document.querySelectorAll('.modal.modal-open').length && document.body.style.overflow === 'hidden') {
+                document.body.style.overflow = '';
+            }
             e.preventDefault();
             e.stopPropagation();
             return;
