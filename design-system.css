@@ -1805,6 +1805,91 @@ tbody td {
 }
 
 /* ============================================================
+   Sessions, vitals & day-cards (paired with session-render.js)
+   ============================================================ */
+
+/* Session-type chips — categorical palette per brand spec.
+   Filled chip pattern: step-3 background, step-11 text, step-6 border. */
+.session-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    border: 1px solid transparent;
+}
+.session-type-outdoor_cycling, .session-type-indoor_cycling, .session-type-cycling { background: var(--orange-3); color: var(--orange-11); border-color: var(--orange-6); }
+.session-type-outdoor_running, .session-type-indoor_running, .session-type-running { background: var(--red-3); color: var(--red-11); border-color: var(--red-6); }
+.session-type-lifting, .session-type-strength { background: var(--purple-3); color: var(--purple-11); border-color: var(--purple-6); }
+.session-type-mobility, .session-type-yoga { background: var(--teal-3); color: var(--teal-11); border-color: var(--teal-6); }
+.session-type-outdoor_walking, .session-type-indoor_walking, .session-type-hiking { background: var(--green-3); color: var(--green-11); border-color: var(--green-6); }
+.session-type-swimming { background: var(--blue-3); color: var(--blue-11); border-color: var(--blue-6); }
+.session-type-rowing, .session-type-skiing { background: var(--indigo-3); color: var(--indigo-11); border-color: var(--indigo-6); }
+.session-type-sleep, .session-type-elliptical, .session-type-rest, .session-type-other, .session-type-workout { background: var(--slate-3); color: var(--slate-11); border-color: var(--slate-6); }
+
+/* Session cards — neutral background, 1px border, colored type badge inside.
+   Same look on dashboard week grids and calendar day cells. */
+.session-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 8px;
+    transition: border-color 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+.session-card:hover { border-color: var(--border-hover); }
+.session-card[class*="session-type-"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+}
+
+/* Subtle "completed" indicator for planned sessions with a logged workout. */
+.session-done-mark {
+    color: var(--green-11);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.session-card.session-done {
+    border-left: 2px solid var(--green-9);
+}
+
+/* Sleep chip — compact, slate, low-emphasis. */
+.sleep-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    align-self: flex-start;
+    padding: 2px 6px; border-radius: var(--radius-sm);
+    background: var(--slate-3); color: var(--slate-11);
+    font-size: 10px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--slate-6);
+}
+.sleep-chip:hover { background: var(--slate-4); }
+.sleep-chip .color-dot { background: var(--slate-8); }
+
+/* Vitals chip — single per-day summary of body metrics + optional sleep block. */
+.vitals-chip {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    align-self: flex-start;
+    padding: 4px 8px; border-radius: var(--radius-sm);
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    font-size: 11px; color: var(--text-muted); cursor: pointer;
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    margin-top: auto;
+}
+.vitals-chip:hover { border-color: var(--border-hover); background: var(--panel); }
+.vitals-chip .vital { display: inline-flex; align-items: center; gap: 3px; }
+.vitals-chip .vital-empty { color: var(--text-faint); font-style: italic; }
+
+/* Vitals modal — daily summary popup grid. */
+.vitals-modal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-3); }
+.vitals-modal-grid .stat-card { background: var(--bg-subtle); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.vitals-modal-grid .stat-card .stat-label { font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 2px; }
+.vitals-modal-grid .stat-card .stat-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-md); font-weight: 600; }
+
+/* ============================================================
    Reduced motion
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {

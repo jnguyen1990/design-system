@@ -1,6 +1,6 @@
 # Joe's Personal Apps — Design System
 
-A unified design language for a constellation of self-hosted personal apps (**Hub**, **Budgeter**, **Fitness**, and future projects). The aesthetic is **Linear-meets-Things-3**: sharp, precise, technical, with breathing room. Every pixel earns its place.
+A unified design language for a constellation of self-hosted personal apps (**Base**, **Budgeter**, **Fitness**, and future projects). The aesthetic is **Linear-meets-Things-3**: sharp, precise, technical, with breathing room. Every pixel earns its place.
 
 ---
 
@@ -24,7 +24,7 @@ If a codebase or Figma exists, re-attach it via the Import menu so UI kits can b
 | `components.css` | Component layer — buttons, inputs, cards, badges, kbd, sidebar items, tables, modals |
 | `preview/` | Design System tab cards (swatches, type specimens, components, etc) |
 | `assets/` | Logos, favicons, illustration tints |
-| `ui_kits/hub/` | Hub — neutral, command-palette-driven launcher |
+| `ui_kits/base/` | Base — neutral launcher / cross-app home |
 | `ui_kits/budgeter/` | Budgeter — green accent, transaction ledger |
 | `ui_kits/fitness/` | Fitness — orange accent, workout log |
 | `slides/` | Sample slide deck template (cover, agenda, big quote, comparison, etc) |
@@ -36,10 +36,9 @@ If a codebase or Figma exists, re-attach it via the Import menu so UI kits can b
 
 | App | Accent | Purpose |
 |---|---|---|
-| **Hub** | `slate` (system default) | Launcher / cross-app inbox. Neutral. |
+| **Base** | `slate` (system default) | Launcher / cross-app home. Neutral. |
 | **Budgeter** | `green` | Transactions, accounts, budgets. |
 | **Fitness** | `orange` | Workout log, lifts, sessions. |
-| **Meal Planner** | `purple` | Recipes, weekly plans, grocery lists. |
 | Future apps | one Radix accent each, no repeats | TBD |
 
 The shared **chrome** stays neutral across all apps. The brand accent appears only in the logo, favicon, empty-state tint, onboarding, and loading states — **never** in chrome buttons.

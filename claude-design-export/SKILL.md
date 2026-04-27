@@ -1,6 +1,6 @@
 ---
 name: joes-apps-design
-description: Use this skill to generate well-branded interfaces and assets for Joe's Personal Apps (Hub, Budgeter, Fitness, and future self-hosted personal apps), either for production or throwaway prototypes/mocks. Contains essential design guidelines, colors, type, fonts, assets, and UI kit components for prototyping. The aesthetic is Linear-meets-Things-3 — sharp, precise, technical, with breathing room.
+description: Use this skill to generate well-branded interfaces and assets for Joe's Personal Apps (Base, Budgeter, Fitness, and future self-hosted personal apps), either for production or throwaway prototypes/mocks. Contains essential design guidelines, colors, type, fonts, assets, and UI kit components for prototyping. The aesthetic is Linear-meets-Things-3 — sharp, precise, technical, with breathing room.
 user-invocable: true
 ---
 
@@ -27,6 +27,6 @@ Folder layout:
 - `components.css` — buttons, inputs, cards, badges, kbd, sidebar items, tables, modals
 - `preview/` — Design System tab cards
 - `assets/` — app logos
-- `ui_kits/{hub,budgeter,fitness}/` — interactive component recreations + index.html
+- `ui_kits/{base,budgeter,fitness}/index.html` — reconciled static-HTML kits using the live `design-system.css` from CDN, modeled on real Rails ERB pages
 
 If the user invokes this skill without any other guidance, ask them what they want to build or design, ask some questions, and act as an expert designer who outputs HTML artifacts _or_ production code, depending on the need.

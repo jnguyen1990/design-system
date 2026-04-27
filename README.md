@@ -11,12 +11,19 @@ Sharp, precise, technical. Inter + Geist Mono, Radix Colors (slate neutral, per-
 Include via CDN in your HTML:
 
 ```html
+<!-- Styles -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
+
+<!-- Optional: shared session-card / vitals-chip / daily-summary-modal renderer
+     (only needed by apps that show a calendar + vitals view, currently fitness) -->
+<script src="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/session-render.js"></script>
 ```
 
 Set `data-app` on `<html>` to pick the per-app accent: `base` (slate), `budgeter` (green), `fitness` (orange), `mealplanner` (purple).
 
-## Apps Using This System
+For local dev against the un-published version of these files, run a static server inside this repo (e.g. `python3 -m http.server 8765`) and point your app's stylesheet/script tags to `http://localhost:8765/...`. The fitness and budgeter Rails layouts already do this via an env-aware `ds_base` ERB var.
+
+## Apps using this system
 
 - **Base** — base.joenguyen.ca
 - **Budgeter** — budgeter.joenguyen.ca
@@ -26,13 +33,25 @@ Set `data-app` on `<html>` to pick the per-app accent: `base` (slate), `budgeter
 ## Features
 
 - Light/dark theme toggle via `data-theme` attribute (both first-class)
-- Radix Colors paired light/dark scales — semantic tokens (`--bg`, `--panel`, `--border`, `--text`)
-- v2.1 var/class compat layer — existing app templates work unchanged
+- Radix Colors paired light/dark scales — semantic tokens (`--bg`, `--panel`, `--border`, `--text`, `--{color}-{1..12}`)
 - Per-app accent via `data-app` attribute
 - Responsive sidebar layout with mobile menu
-- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`, `.app-card`, `.insight-card`, `.dropdown`, etc.
-- Mobile utilities: `.toolbar`, `.table-responsive`
+- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`, `.app-card`, `.insight-card`, `.dropdown`, `.toolbar`, `.table-responsive`
+- Session/calendar widgets: `.session-card` (with `.session-type-*` color variants), `.session-done` indicator, `.sleep-chip`, `.vitals-chip`, `.vitals-modal-grid`, `.session-done-mark` — all driven by [`session-render.js`](session-render.js)
 - Mobile-first breakpoints (768px, 1024px)
+
+## Page conventions
+
+Apps that share this system also share a set of layout/markup/copy conventions so screens feel like the same product. **Read [section 13 of `brand-guide.md`](brand-guide.md#13-page-conventions) before building or modifying any page.** Key rules:
+
+- Stack of `<div class="card" style="margin-bottom:16px">` sections — never `1rem`/`1.5rem`/`12px`/`20px`
+- Each section: `<h3>` (sentence case) + `<p class="stat-label">` description + content + `.toolbar` action row
+- Buttons: only `btn-primary` / `btn-secondary` / `btn-ghost` / `btn-danger` — never `btn-success`/`btn-error`
+- Numbers: mono + tabular-nums; `var(--red-11)` for outflow, `var(--green-11)` for inflow; unicode minus `−` not hyphen
+- Tables wrapped in `.table-responsive`; shared `<colgroup>` widths when stacked across cards
+- Color tokens: Radix scale only (`var(--green-9)`), never legacy aliases (`var(--success-500)`, `var(--hover-bg)`, `var(--color-bg)`, `var(--color-border)` — those are forbidden and have all been swept from the production apps)
+- Emoji: only the functional symbols whitelisted in the brand guide (✓ ✕ ⋮ × ← → ☰ ☀ stars `−` `·` `–` ▲ + the vitals chip's 😴 ❤️ 🚶). Decorative emoji (📊📄💾🗑️⚠️📥 etc.) do not appear in headings or button labels — use `.badge` + `.color-dot` for categorical signaling.
+- Concept explainers in settings use a grid of accent-bordered cards + small nested-bullet diagram, not `<pre>` ASCII trees or `<code>`-heavy bullet lists
 
 ## Mobile Design Rules
 

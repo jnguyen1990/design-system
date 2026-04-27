@@ -396,7 +396,182 @@ Both modes are first-class. Test every screen in both. Use Radix paired scales �
 
 ---
 
-## 13. Accessibility floor
+## 13. Page conventions
+
+Apps that share the design system follow these patterns so screens feel like the same product.
+
+### Stacked-card layout
+
+A page is a vertical list of `<div class="card">` sections. Each card has `style="margin-bottom:16px"` (or use a flex column with `gap: var(--space-4)`). Never `1rem` / `1.5rem` / `12px` / `20px` — always **16px** between cards. Mixed values look careless.
+
+### Section structure inside a card
+
+```html
+<div class="card" style="margin-bottom:16px">
+    <h3>Sentence case heading</h3>
+    <p class="stat-label">One-line description of what this section does.</p>
+    <!-- form fields, table, list, chart, etc. -->
+    <div class="d-flex gap-2" style="margin-top:12px">
+        <button class="btn btn-primary btn-sm">Primary action</button>
+        <button class="btn btn-secondary btn-sm">Secondary</button>
+    </div>
+</div>
+```
+
+- **`<h3>`** for section titles (no `<h2>` inside cards — `<h2 class="page-title">` is reserved for the page header rendered by the layout).
+- **Sentence case** for headings, labels, and button text. "Backup & restore", not "Backup & Restore". Acronyms keep their case (CSV, ID, MCP, HRV).
+- **`<p class="stat-label">` description** below the heading. Explains what the section is for in one short sentence.
+- **`.d-flex gap-2`** for action button rows; or `.toolbar` if there's a left/right split.
+
+### Page subtitle (mono, dynamic)
+
+Pages often need a subtitle below the page title — a count, date range, or filter state. Render it as a `<p>` sibling to the page header content with mono muted styling, populated by JS after data loads:
+
+```erb
+<p id="pageSubtitle" class="text-muted" style="margin: -8px 0 var(--space-3); font-family: var(--font-mono); font-size: var(--text-sm);">&nbsp;</p>
+```
+
+Example values: `"april 2026 · 982 transactions"`, `"3 transactions need a category"`, `"apr 23–29, 2026"`.
+
+### Toolbar pattern
+
+For action rows inside cards (e.g. `[Title (count)]   [filter] [filter] [+ Add]`):
+
+```html
+<div class="toolbar">
+    <div class="toolbar-start">
+        <h2 class="card-title" style="margin:0">Title <span class="text-muted" style="font-weight:400">(N)</span></h2>
+    </div>
+    <div class="toolbar-end">
+        <button class="btn btn-secondary btn-sm">Filter</button>
+        <button class="btn btn-primary btn-sm">+ Add</button>
+    </div>
+</div>
+```
+
+Same pattern works for prev/today/next month-pickers (`<button>‹</button> <h2>April 2026</h2> <button>›</button>`).
+
+### Button class palette
+
+Only these:
+
+| Class | When |
+|---|---|
+| `btn-primary` | The primary action of a section. One per row max. |
+| `btn-secondary` | Everything else (filters, secondary actions, links-as-buttons). |
+| `btn-ghost` | Icon-only or text-only affordances inside dense rows (⋮, ×). |
+| `btn-danger` | Destructive (delete, wipe, remove). Always paired with a confirm dialog. |
+
+**Forbidden:** `btn-success`, `btn-error`, `btn-warning`, `btn-info`. Color a button by intent (`btn-primary` for "go", `btn-danger` for destructive), not by mood.
+
+**Sizes:** `btn-sm` for in-card and table-row actions. Plain `btn` for stand-alone primary CTAs at the page level. Pick one size per row and stick with it — never mix `btn` and `btn-sm` in the same action group.
+
+### Forbidden color tokens
+
+Use Radix scale tokens. Never use these legacy aliases:
+
+| Don't | Use |
+|---|---|
+| `var(--success-500)` / `--success-600` | `var(--green-9)` / `var(--green-11)` |
+| `var(--error-500)` / `--error-600` | `var(--red-9)` / `var(--red-11)` |
+| `var(--warning-500)` / `--warning-600` | `var(--amber-9)` / `var(--amber-11)` |
+| `var(--primary-400)` / `--primary-500` | `var(--accent-9)` |
+| `var(--hover-bg)` | `var(--bg-subtle)` |
+| `var(--bg-tertiary)` | `var(--bg-subtle)` |
+| `var(--color-bg, #...)` | `var(--bg-subtle)` |
+| `var(--color-border, #...)` | `var(--border)` |
+| `var(--color-error/success/primary, #...)` | `var(--red-11)` / `var(--green-11)` / `var(--accent-9)` |
+
+If a hex fallback is in your code, the token has been replaced — drop both the legacy var and the fallback.
+
+### Number cells & amounts
+
+Anything numeric — currency, counts, durations, distances, IDs, dates inside tables — is **mono + tabular-nums**:
+
+```css
+font-family: var(--font-mono);
+font-variant-numeric: tabular-nums;
+```
+
+Sign + color for positive/negative values:
+- Outflows / negative: `−$84.20` in `var(--red-11)`
+- Inflows / positive: `+$3,400.00` in `var(--green-11)`
+
+Use the unicode minus `−` (U+2212), not the hyphen `-`, so widths match the plus.
+
+### Tables
+
+Wrap every `<table>` in `<div class="table-responsive">` so it scrolls inside its card on mobile instead of pushing the page wider. For column-aligned tables across multiple cards (e.g. the budget page's "Monthly Bills" + "Everyday Expenses"), use a shared class with explicit `<colgroup>` widths so headers and cells line up identically across cards.
+
+Row pattern for a transaction-style list:
+- Date — mono, muted, lowercase short ("apr 22")
+- Payee — bold + small muted memo line below
+- Category — `.badge` with `.color-dot` (color via inline `style="background:var(--<radix>-9)"`)
+- Amount — text-right, mono, colored (red outflow, green inflow)
+- Source — mono, muted, lowercase ("amex")
+- Action — `⋮` ghost button → dropdown
+
+### Visual concept cards (over technical dumps)
+
+When explaining how parts of a system relate (entities, layers, workflows), prefer a grid of **labelled accent-bordered cards** + a small visual nesting diagram. Avoid `<pre>` ASCII trees and `<code>`-tag-heavy bullet lists — they look like a SQL schema dump.
+
+Pattern:
+
+```html
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+  <div style="padding:14px;background:var(--bg-subtle);border:1px solid var(--border);border-left:3px solid var(--green-9);border-radius:var(--radius-sm)">
+    <div style="font-weight:600;font-size:15px;margin-bottom:4px">Entity name</div>
+    <div style="font-size:13px;color:var(--text-muted)">One-sentence plain-English description of what it is.</div>
+  </div>
+  <!-- repeat per concept, varying the left-border color from the categorical palette -->
+</div>
+```
+
+Follow with a small nested-bullet list using colored dots for hierarchy, no monospace.
+
+### Emoji policy
+
+The brand says no emoji. The exceptions — characters that read as **functional UI symbols** rather than decoration — are these and only these:
+
+| Allowed | Why |
+|---|---|
+| `✓` `✕` (`&#10003;` `&#10005;`) | completion / dismiss markers |
+| `⋮` (`&#8942;`) | row action menu |
+| `×` (`&times;`) | modal close |
+| `←` `→` (`&larr;` `&rarr;`) | nav prev/next, or `‹` `›` for compact toolbars |
+| `☰` (`&#9776;`) | mobile menu toggle |
+| `☀` `🌙` | theme toggle |
+| `★` `☆` (`&#9733;` `&#9734;` `&#11088;`) | rating UI |
+| `−` (`&#8722;`) | negative-amount sign (paired with `+`) |
+| `·` `–` | typographic separators in mono meta lines |
+| `▲` | trend up indicator (vitals chip) |
+| `😴` `❤️` `🚶` | vitals chip metrics — locked exception |
+
+Anything else (📊 📄 📋 🤖 📈 📉 🏆 💾 🗑️ ⚠️ ⚙️ ➕ ✏️ ✂️ 📅 ⬇️ 🔄 🎉 ⬛ ✅ 💰 📥 📂 etc.) does not appear in headings, button labels, or section titles. Use the chip + `.color-dot` system for categorical signaling instead.
+
+### Settings / config pages
+
+A settings page is a stack of full-width cards, one per concern (Integrations, MCP, Backup & restore, Danger zone, Help, etc.). Two-column grid layouts (`grid-template-columns: 1fr 1fr; gap: 20px`) work for related-pair sections (e.g. Fitness app + iCloud, Google Calendar + Telegram). MCP / advanced cards span full width via `grid-column: 1 / -1`. Save/Test buttons inside an integration card go side-by-side with `gap:8px` and consistent sizing (both `btn-sm`).
+
+### Danger-zone card
+
+```html
+<div class="card" style="margin-bottom:16px;border-color:var(--red-9)">
+    <h3 style="color:var(--red-11)">Danger zone</h3>
+    <p class="stat-label">What this deletes, and that it cannot be undone.</p>
+    <button class="btn btn-danger btn-sm" style="margin-top:12px" onclick="…">Action verb</button>
+</div>
+```
+
+Always require a confirm dialog (`confirm()` or a typed-confirmation modal for catastrophic actions like wipe-all).
+
+### Session card + vitals chip (fitness pattern)
+
+Cross-app shared widgets — paired with `session-render.js` and the `.session-card` / `.vitals-chip` / `.sleep-chip` / `.vitals-modal-grid` styles in `design-system.css`. See `session-render.js` for the global `SessionRender` API. Both the dashboard week grid and the calendar render through these helpers so they always look consistent. Don't fork them.
+
+---
+
+## 14. Accessibility floor
 
 - Body text contrast ≥ 4.5:1 (Radix step 11/12 over step 1/2 passes)
 - Focus visible on every interactive element (2px ring, never `outline: none` without replacement)

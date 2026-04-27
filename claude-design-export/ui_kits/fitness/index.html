@@ -1,149 +1,323 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="dark" data-app="fitness" data-theme="dark">
 <head>
-<meta charset="utf-8">
-<title>Fitness</title>
-<link rel="stylesheet" href="../../colors_and_type.css">
-<link rel="stylesheet" href="../../components.css">
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>This week · Fitness</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
+  <style>
+    /* Page-local: weekly calendar grid */
+    .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-2); }
+    .day-col {
+      background: var(--bg-subtle); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-3);
+      min-height: 200px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .day-col.today { border-color: var(--accent-500); }
+    .day-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .day-name { font-size: var(--text-xs); color: var(--text-muted); text-transform: lowercase; letter-spacing: 0.02em; }
+    .day-num  { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-md); font-weight: 600; }
+    .today .day-num { color: var(--accent-700); }
+    .session {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 6px 8px;
+      font-size: var(--text-xs); display: flex; flex-direction: column; gap: 2px;
+    }
+    .session .s-title { font-weight: 500; font-size: var(--text-sm); }
+    .session .s-meta { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: 11px; }
+    .session.rest { color: var(--text-faint); font-style: italic; align-items: center; padding: 8px; }
+    .lift-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: var(--space-3); padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; }
+    .lift-row:last-child { border-bottom: none; }
+    .lift-name { font-weight: 500; }
+    .lift-prescr { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+    .lift-prev { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-sm); color: var(--text-faint); }
+    .lift-curr { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-sm); font-weight: 600; }
+    .pr-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
+    .pr-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+    .pr-name { font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 4px; text-transform: lowercase; }
+    .pr-val  { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em; }
+    .pr-when { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+  </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel" src="../_shared/Icon.jsx"></script>
-<script type="text/babel" src="../_shared/Sidebar.jsx"></script>
-<script type="text/babel" src="../_shared/PageHeader.jsx"></script>
-<script type="text/babel" src="../_shared/CommandPalette.jsx"></script>
-<script type="text/babel" src="FitnessComponents.jsx"></script>
-<script type="text/babel">
-function App() {
-  const [selected, setSelected] = React.useState('today');
-  const [paletteOpen, setPaletteOpen] = React.useState(false);
-  const [activeSession, setActiveSession] = React.useState(null);
 
-  React.useEffect(() => {
-    const h = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setPaletteOpen(true); }
-      if (e.key === 'Escape') { setPaletteOpen(false); setActiveSession(null); }
-    };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, []);
+  <button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
 
-  const sessions = [
-    { id: 'pull-upper', name: 'Pull · upper', lastPerformed: '2d ago', lifts: [
-      { name: 'deadlift',          scheme: '5×5 @ 315' },
-      { name: 'pull-up',           scheme: '4×8 bw' },
-      { name: 'barbell row',       scheme: '4×8 @ 155' },
-      { name: 'face pull',         scheme: '3×12 @ 30' },
-    ]},
-    { id: 'push-upper', name: 'Push · upper', lastPerformed: '4d ago', lifts: [
-      { name: 'bench press',       scheme: '5×5 @ 225' },
-      { name: 'overhead press',    scheme: '4×6 @ 135' },
-      { name: 'incline db press',  scheme: '3×10 @ 60' },
-      { name: 'tricep pushdown',   scheme: '3×12 @ 50' },
-    ]},
-    { id: 'legs', name: 'Legs', lastPerformed: '6d ago', lifts: [
-      { name: 'back squat',        scheme: '5×5 @ 285' },
-      { name: 'romanian dl',       scheme: '4×8 @ 225' },
-      { name: 'walking lunge',     scheme: '3×10 ea' },
-    ]},
-  ];
+  <nav class="sidebar">
+    <div class="sidebar-header"><h1>Fitness</h1></div>
+    <ul class="nav-menu">
+      <li><a href="#" class="nav-link">Dashboard</a></li>
+      <li class="nav-submenu">
+        <div class="nav-link active">Training</div>
+        <ul class="submenu">
+          <li><a href="#" class="nav-link active">Calendar</a></li>
+          <li><a href="#" class="nav-link">Workouts</a></li>
+          <li><a href="#" class="nav-link">Programs</a></li>
+          <li><a href="#" class="nav-link">Exercises</a></li>
+        </ul>
+      </li>
+      <li><a href="#" class="nav-link">Goals</a></li>
+      <li><a href="#" class="nav-link">Metrics</a></li>
+      <li><a href="#" class="nav-link">Settings</a></li>
+    </ul>
+  </nav>
 
-  const todayLifts = [
-    { name: 'deadlift',     target: '5×5 @ 315', sets: [{weight:315,reps:5,done:true},{weight:315,reps:5,done:true},{weight:315,reps:5,done:true},{weight:315,reps:4,done:false},{weight:315,reps:0,done:false}]},
-    { name: 'pull-up',      target: '4×8 bw',    sets: [{weight:'bw',reps:8,done:true},{weight:'bw',reps:8,done:true},{weight:'bw',reps:0,done:false},{weight:'bw',reps:0,done:false}]},
-    { name: 'barbell row',  target: '4×8 @ 155', sets: [{weight:155,reps:8,done:true},{weight:155,reps:0,done:false},{weight:155,reps:0,done:false},{weight:155,reps:0,done:false}]},
-    { name: 'face pull',    target: '3×12 @ 30', sets: [{weight:30,reps:0,done:false},{weight:30,reps:0,done:false},{weight:30,reps:0,done:false}]},
-  ];
+  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+    <span id="theme-icon">&#9728;&#65039;</span>
+  </button>
 
-  return (
-    <div className="app-shell" data-screen-label="Fitness · today">
-      <Sidebar
-        logo="../../assets/fitness-logo.svg"
-        title="fitness"
-        selectedId={selected}
-        onSelect={setSelected}
-        sections={[
-          { items: [
-            { id: 'today',    label: 'today',    color: 'orange', kbd: '⌘1' },
-            { id: 'history',  label: 'history',  color: 'slate',  kbd: '⌘2' },
-            { id: 'progress', label: 'progress', color: 'green',  kbd: '⌘3' },
-          ]},
-          { label: 'sessions', items: [
-            { id: 'pull-upper', label: 'pull · upper', color: 'orange' },
-            { id: 'push-upper', label: 'push · upper', color: 'amber' },
-            { id: 'legs',       label: 'legs',         color: 'red' },
-          ]},
-          { label: 'lifts', items: [
-            { id: 'deadlift', label: 'deadlift',  color: 'red' },
-            { id: 'squat',    label: 'back squat', color: 'red' },
-            { id: 'bench',    label: 'bench press', color: 'amber' },
-          ]},
-        ]}
-        footer={
-          <div style={{ padding: '8px 12px', fontSize: 11, color: 'var(--text-faint)' }}>
-            <span>4 sessions this week</span>
-          </div>
-        }
-      />
-      <main className="app-main">
-        <PageHeader
-          title="Today"
-          subtitle="tuesday · pull · upper"
-          actions={
-            <>
-              <button className="btn btn-secondary btn-sm">Skip</button>
-              <button className="btn btn-primary btn-sm">+ log workout</button>
-            </>
-          }
-        />
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">This week</h1>
+        <span class="text-muted" style="font-size: var(--text-sm); font-family: var(--font-mono);">apr 21 — 27 · w17</span>
+      </div>
+    </header>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 32 }}>
-          <Stat label="this week"   value="4"     suffix="sessions" />
-          <Stat label="total volume" value="48,250" suffix="lb" />
-          <Stat label="streak"      value="3"     suffix="weeks" />
-          <Stat label="last session" value="2"    suffix="d ago" />
+    <div class="content">
+
+      <!-- Top training-load stats -->
+      <div class="stats-grid mb-6" style="margin-bottom: var(--space-6);">
+        <div class="stat-card">
+          <div class="stat-label">CTL · fitness</div>
+          <div class="stat-value">52.3</div>
+          <div class="stat-subtext text-success">+3.2 / 7d</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-label">ATL · fatigue</div>
+          <div class="stat-value">48.2</div>
+          <div class="stat-subtext text-muted">+8.1 / 7d</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">TSB · form</div>
+          <div class="stat-value">+4.1</div>
+          <div class="stat-subtext text-muted">fresh, ready</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Volume · 7d</div>
+          <div class="stat-value">8h 14m</div>
+          <div class="stat-subtext text-muted">624 TSS</div>
+        </div>
+      </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
-          <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <h3>Pull · upper</h3>
-              <span className="text-num text-muted" style={{ fontSize: 12 }}>00:24:18</span>
-            </div>
-            <div style={{ marginTop: 4 }}>
-              {todayLifts.map((l, i) => <LiftRow key={i} {...l} />)}
-            </div>
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-start">
+          <button class="btn btn-secondary btn-sm">‹</button>
+          <button class="btn btn-secondary btn-sm">today</button>
+          <button class="btn btn-secondary btn-sm">›</button>
+          <span class="text-muted" style="font-size: var(--text-sm); margin-left: var(--space-2); font-family: var(--font-mono);">apr 21 — 27, 2026</span>
+        </div>
+        <div class="toolbar-end">
+          <div class="d-flex gap-2 align-center" style="font-size: var(--text-xs);">
+            <span class="badge session-type-cycling"><span class="color-dot" style="background: var(--orange-9);"></span> cycling</span>
+            <span class="badge session-type-running"><span class="color-dot" style="background: var(--red-9);"></span> running</span>
+            <span class="badge session-type-strength"><span class="color-dot" style="background: var(--purple-9);"></span> strength</span>
+            <span class="badge session-type-mobility"><span class="color-dot" style="background: var(--teal-9);"></span> mobility</span>
           </div>
+          <button class="btn btn-secondary">Sync intervals.icu</button>
+          <button class="btn btn-primary">+ session</button>
+        </div>
+      </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Sessions</div>
-            {sessions.map((s) => (
-              <SessionCard key={s.id} {...s} onStart={() => setActiveSession(s.id)} />
-            ))}
+      <!-- Week grid -->
+      <div class="week-grid mb-6" style="margin-bottom: var(--space-8);">
+        <div class="day-col">
+          <div class="day-head"><span class="day-name">mon</span><span class="day-num">21</span></div>
+          <div class="session">
+            <span class="s-title">Zone 2 ride</span>
+            <span class="s-meta">1h 12m · 142 TSS</span>
+            <span class="badge session-type-cycling" style="align-self: flex-start; margin-top: 2px;"><span class="color-dot" style="background: var(--orange-9);"></span> cycling</span>
           </div>
         </div>
-      </main>
+        <div class="day-col">
+          <div class="day-head"><span class="day-name">tue</span><span class="day-num">22</span></div>
+          <div class="session">
+            <span class="s-title">Lower · squat</span>
+            <span class="s-meta">52m · 6 lifts</span>
+            <span class="badge session-type-strength" style="align-self: flex-start; margin-top: 2px;"><span class="color-dot" style="background: var(--purple-9);"></span> strength</span>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-head"><span class="day-name">wed</span><span class="day-num">23</span></div>
+          <div class="session rest">rest</div>
+        </div>
+        <div class="day-col today">
+          <div class="day-head"><span class="day-name">thu · today</span><span class="day-num">24</span></div>
+          <div class="session">
+            <span class="s-title">Threshold ride</span>
+            <span class="s-meta">1h 30m · planned</span>
+            <span class="badge session-type-cycling" style="align-self: flex-start; margin-top: 2px;"><span class="color-dot" style="background: var(--orange-9);"></span> cycling</span>
+          </div>
+          <div class="session">
+            <span class="s-title">Mobility · 20m</span>
+            <span class="s-meta">evening</span>
+            <span class="badge session-type-mobility" style="align-self: flex-start; margin-top: 2px;"><span class="color-dot" style="background: var(--teal-9);"></span> mobility</span>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-head"><span class="day-name">fri</span><span class="day-num">25</span></div>
+          <div class="session">
+            <span class="s-title">Upper · push</span>
+            <span class="s-meta">45m · planned</span>
+            <span class="badge session-type-strength" style="align-self: flex-start; margin-top: 2px;"><span class="color-dot" style="background: var(--purple-9);"></span> strength</span>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-head"><span class="day-name">sat</span><span class="day-num">26</span></div>
+          <div class="session">
+            <span class="s-title">Long ride</span>
+            <span class="s-meta">3h 00m · 220 TSS</span>
+            <span class="badge session-type-cycling" style="align-self: flex-start; margin-top: 2px;"><span class="color-dot" style="background: var(--orange-9);"></span> cycling</span>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-head"><span class="day-name">sun</span><span class="day-num">27</span></div>
+          <div class="session">
+            <span class="s-title">Easy run</span>
+            <span class="s-meta">35m · z2</span>
+            <span class="badge session-type-running" style="align-self: flex-start; margin-top: 2px;"><span class="color-dot" style="background: var(--red-9);"></span> running</span>
+          </div>
+        </div>
+      </div>
 
-      <CommandPalette
-        open={paletteOpen}
-        onClose={() => setPaletteOpen(false)}
-        commands={[
-          { label: 'log workout',          color: 'orange', kbd: '⌘N' },
-          { label: 'start pull · upper',   color: 'orange' },
-          { label: 'start push · upper',   color: 'amber' },
-          { label: 'start legs',           color: 'red' },
-          { label: 'view history',         color: 'slate' },
-          { label: 'add lift',             color: 'slate' },
-        ]}
-      />
+      <!-- Two-column: lift detail + PRs -->
+      <div style="display: grid; grid-template-columns: 1fr 380px; gap: var(--space-6); align-items: start;">
+        <div class="card">
+          <div class="d-flex justify-between align-center mb-2">
+            <div>
+              <h2 class="card-title" style="margin-bottom: 2px;">Tue · Lower / squat</h2>
+              <p class="text-muted" style="font-size: var(--text-xs); font-family: var(--font-mono);">5 × 5 base · week 3 / 6 · last performed 7d ago</p>
+            </div>
+            <button class="btn btn-secondary btn-sm">Open log</button>
+          </div>
+
+          <div>
+            <div class="lift-row">
+              <div>
+                <div class="lift-name">Back squat</div>
+                <div class="lift-prescr">3 × 5 @ 80% · rpe 7</div>
+              </div>
+              <div class="lift-prev">prev 225 × 5</div>
+              <div class="lift-curr">235 × 5</div>
+              <span class="badge badge-success" style="font-size: 10px;">+10</span>
+            </div>
+            <div class="lift-row">
+              <div>
+                <div class="lift-name">Romanian deadlift</div>
+                <div class="lift-prescr">3 × 8 · rpe 7</div>
+              </div>
+              <div class="lift-prev">prev 185 × 8</div>
+              <div class="lift-curr">185 × 8</div>
+              <span class="badge" style="font-size: 10px;">match</span>
+            </div>
+            <div class="lift-row">
+              <div>
+                <div class="lift-name">Walking lunge</div>
+                <div class="lift-prescr">3 × 12/leg · db</div>
+              </div>
+              <div class="lift-prev">prev 35 × 12</div>
+              <div class="lift-curr">40 × 12</div>
+              <span class="badge badge-success" style="font-size: 10px;">+5</span>
+            </div>
+            <div class="lift-row">
+              <div>
+                <div class="lift-name">Calf raise</div>
+                <div class="lift-prescr">4 × 15</div>
+              </div>
+              <div class="lift-prev">prev bw × 15</div>
+              <div class="lift-curr">bw × 15</div>
+              <span class="badge" style="font-size: 10px;">match</span>
+            </div>
+            <div class="lift-row">
+              <div>
+                <div class="lift-name">Plank</div>
+                <div class="lift-prescr">3 × 60s</div>
+              </div>
+              <div class="lift-prev">prev 60s</div>
+              <div class="lift-curr">75s</div>
+              <span class="badge badge-success" style="font-size: 10px;">+15s</span>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-3" style="margin-top: var(--space-4);">
+            <button class="btn btn-secondary btn-sm">Mark complete</button>
+            <button class="btn btn-secondary btn-sm">Adjust prescription</button>
+            <button class="btn btn-ghost btn-sm">Skip</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="card mb-4">
+            <h2 class="card-title" style="margin: 0 0 var(--space-3) 0;">Recent PRs</h2>
+            <div class="pr-bar" style="grid-template-columns: 1fr 1fr;">
+              <div class="pr-card">
+                <div class="pr-name">back squat 1RM</div>
+                <div class="pr-val">285 lb</div>
+                <div class="pr-when">apr 12 · +5 lb</div>
+              </div>
+              <div class="pr-card">
+                <div class="pr-name">FTP</div>
+                <div class="pr-val">248 W</div>
+                <div class="pr-when">apr 8 · +3 W</div>
+              </div>
+              <div class="pr-card">
+                <div class="pr-name">5k run</div>
+                <div class="pr-val">22:14</div>
+                <div class="pr-when">mar 30 · −0:18</div>
+              </div>
+              <div class="pr-card">
+                <div class="pr-name">deadlift 3RM</div>
+                <div class="pr-val">315 lb</div>
+                <div class="pr-when">mar 22 · +10 lb</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="insight-card insight-success">
+            <div>
+              <div class="insight-title">CTL ramping cleanly</div>
+              <div class="insight-text">+3.2 over 7 days, within +5 weekly target.</div>
+            </div>
+          </div>
+          <div class="insight-card insight-info">
+            <div>
+              <div class="insight-title">Squat progressing</div>
+              <div class="insight-text">3 of last 4 sessions added load. RPE staying ≤ 7.5.</div>
+            </div>
+          </div>
+          <div class="insight-card insight-warning">
+            <div>
+              <div class="insight-title">Sleep average dipping</div>
+              <div class="insight-text">6h 42m avg this week, vs 7h 18m baseline.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  );
-}
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-</script>
+  </main>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      html.classList.toggle('dark', next === 'dark');
+      const icon = document.getElementById('theme-icon');
+      if (icon) icon.textContent = next === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const t = document.documentElement.getAttribute('data-theme') || 'dark';
+      const icon = document.getElementById('theme-icon');
+      if (icon) icon.textContent = t === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+      const btn = document.getElementById('mobileMenuBtn');
+      const sb  = document.querySelector('.sidebar');
+      const ov  = document.getElementById('mobileOverlay');
+      btn?.addEventListener('click', e => { e.stopPropagation(); sb.classList.toggle('open'); ov.classList.toggle('show'); });
+      ov?.addEventListener('click', () => { sb.classList.remove('open'); ov.classList.remove('show'); });
+    });
+  </script>
 </body>
 </html>
