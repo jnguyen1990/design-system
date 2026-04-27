@@ -1067,6 +1067,12 @@ input[type="radio"]:focus-visible {
 
 .table-responsive {
     overflow-x: auto;
+    /* `overflow-x: auto` would otherwise force overflow-y to compute as auto
+       too (CSS spec), producing a second vertical scrollbar inside any tall
+       table card. Explicit `hidden` here keeps the page as the only vertical
+       scroll context. The wrapper auto-fits content height so nothing is
+       actually clipped. */
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
 }
 
