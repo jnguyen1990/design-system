@@ -11,6 +11,7 @@ on:
     paths:
       - 'design-system.css'
       - 'session-render.js'
+      - 'modal-keys.js'
       - 'bin/purge-cdn'
   workflow_dispatch:
 

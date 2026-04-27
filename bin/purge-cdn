@@ -15,6 +15,7 @@ BASE="https://purge.jsdelivr.net/gh/jnguyen1990/design-system@main"
 FILES=(
   "design-system.css"
   "session-render.js"
+  "modal-keys.js"
 )
 
 echo "Purging jsDelivr cache for jnguyen1990/design-system@main"
