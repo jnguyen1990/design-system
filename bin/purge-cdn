@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Purge jsDelivr's edge cache for the files apps load via CDN.
+#
+# jsDelivr caches `@main` aggressively (~12 h). Without an explicit purge,
+# prod apps keep serving the old design-system.css / session-render.js even
+# after a push has landed on GitHub.
+#
+# Run this AFTER any push to `main`. CI does it automatically (see
+# .github/workflows/purge-cdn.yml). Run manually with `bin/purge-cdn`.
+set -euo pipefail
+
+BASE="https://purge.jsdelivr.net/gh/jnguyen1990/design-system@main"
+
+# Files apps reference via CDN. Add to this list when you ship a new one.
+FILES=(
+  "design-system.css"
+  "session-render.js"
+)
+
+echo "Purging jsDelivr cache for jnguyen1990/design-system@main"
+fail=0
+for f in "${FILES[@]}"; do
+  printf "  %-25s " "$f"
+  resp=$(curl -sS -m 15 "$BASE/$f")
+  status=$(printf '%s' "$resp" | grep -o '"status": *"[^"]*"' | head -1 | cut -d'"' -f4)
+  if [[ "$status" == "finished" ]]; then
+    echo "ok"
+  else
+    echo "FAILED ($status)"
+    echo "    $resp"
+    fail=1
+  fi
+done
+
+if [[ $fail -ne 0 ]]; then
+  exit 1
+fi
+
+echo "Done."

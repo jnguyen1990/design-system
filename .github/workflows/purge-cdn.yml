@@ -1,0 +1,23 @@
+name: Purge jsDelivr cache
+
+# jsDelivr caches `@main` for ~12 h. Without this, apps keep serving stale
+# design-system.css / session-render.js after a push lands on GitHub.
+# This runs on every push to main and tells jsDelivr's CDN to drop its cache
+# so the next request fetches the fresh file.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'design-system.css'
+      - 'session-render.js'
+      - 'bin/purge-cdn'
+  workflow_dispatch:
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Purge jsDelivr cache
+        run: bin/purge-cdn

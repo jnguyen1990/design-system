@@ -23,6 +23,10 @@ Set `data-app` on `<html>` to pick the per-app accent: `base` (slate), `budgeter
 
 For local dev against the un-published version of these files, run a static server inside this repo (e.g. `python3 -m http.server 8765`) and point your app's stylesheet/script tags to `http://localhost:8765/...`. The fitness and budgeter Rails layouts already do this via an env-aware `ds_base` ERB var.
 
+## Publishing changes
+
+Push to `main`. A GitHub Actions workflow (`purge-cdn.yml`) automatically tells jsDelivr to drop its edge cache for `design-system.css` + `session-render.js` so prod apps see the change on the next request — without it jsDelivr can serve a stale version for ~12 h. To purge manually any time, run `bin/purge-cdn`.
+
 ## Apps using this system
 
 - **Base** — base.joenguyen.ca
