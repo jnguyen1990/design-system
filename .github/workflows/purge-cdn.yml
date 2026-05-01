@@ -12,6 +12,7 @@ on:
       - 'design-system.css'
       - 'session-render.js'
       - 'modal-keys.js'
+      - 'apps-launcher.js'
       - 'bin/purge-cdn'
   workflow_dispatch:
 

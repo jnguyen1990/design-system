@@ -16,6 +16,7 @@ FILES=(
   "design-system.css"
   "session-render.js"
   "modal-keys.js"
+  "apps-launcher.js"
 )
 
 echo "Purging jsDelivr cache for jnguyen1990/design-system@main"
