@@ -97,27 +97,50 @@
         : disabled
           ? `${app.name} (coming soon)`
           : `Switch to ${app.name}`;
-      item.innerHTML = app.logo;
       if (!disabled && !isCurrent) item.setAttribute("href", app.url);
       Object.assign(item.style, {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "3px",
+        opacity: isCurrent ? "1" : disabled ? "0.4" : "0.6",
+        transition: "opacity 120ms, transform 120ms",
+        cursor: disabled ? "default" : isCurrent ? "default" : "pointer",
+        textDecoration: "none"
+      });
+
+      const iconWrap = document.createElement("span");
+      Object.assign(iconWrap.style, {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
         width: "32px",
         height: "32px",
         borderRadius: "var(--radius-sm)",
-        opacity: isCurrent ? "1" : disabled ? "0.35" : "0.55",
-        transition: "opacity 120ms, transform 120ms",
-        cursor: disabled ? "default" : isCurrent ? "default" : "pointer",
-        textDecoration: "none"
+        background: isCurrent ? "var(--panel)" : "transparent",
+        boxShadow: isCurrent ? "0 0 0 1px var(--border-hover)" : "none",
+        transition: "background 120ms, box-shadow 120ms"
       });
+      iconWrap.innerHTML = app.logo;
+      item.appendChild(iconWrap);
+
+      const dot = document.createElement("span");
+      Object.assign(dot.style, {
+        width: "4px",
+        height: "4px",
+        borderRadius: "50%",
+        background: isCurrent ? "var(--accent-9, var(--text))" : "transparent",
+        transition: "background 120ms"
+      });
+      item.appendChild(dot);
+
       if (!disabled && !isCurrent) {
         item.addEventListener("mouseenter", () => {
           item.style.opacity = "1";
           item.style.transform = "translateY(-1px)";
         });
         item.addEventListener("mouseleave", () => {
-          item.style.opacity = "0.55";
+          item.style.opacity = "0.6";
           item.style.transform = "";
         });
       }
