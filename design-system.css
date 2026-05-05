@@ -116,7 +116,7 @@
     --panel-active: var(--slate-5);
     --border:       var(--slate-6);
     --border-hover: var(--slate-7);
-    --focus-ring:   var(--slate-8);
+    --focus-ring:   var(--accent-300);  /* per-app: indigo-7 default, green-7 budgeter, orange-7 fitness, slate-7 base */
     --text:         var(--slate-12);
     --text-muted:   var(--slate-11);
     --text-faint:   var(--slate-10);
@@ -131,6 +131,11 @@
     --color-primary:  var(--indigo-9);
     --color-feature:  var(--purple-9);
     --color-personal: var(--pink-9);
+
+    /* ----- Amount / delta semantics (use for +/- numeric values) ----- */
+    --text-amount-positive: var(--green-11);
+    --text-amount-negative: var(--red-11);
+    --text-amount-neutral:  var(--text-faint);
 
     /* ============================================================
        v2.1 compatibility aliases
@@ -425,6 +430,11 @@ label {
 .text-error   { color: var(--red-11); }
 .text-accent  { color: var(--accent-700); }
 
+/* Amount / delta semantics — compose with .td-amount or .text-num for mono+tabular */
+.text-amount-positive { color: var(--text-amount-positive); }
+.text-amount-negative { color: var(--text-amount-negative); }
+.text-amount-neutral  { color: var(--text-amount-neutral); }
+
 /* ============================================================
    Layout — Sidebar, main, page header, content
    ============================================================ */
@@ -597,13 +607,17 @@ label {
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: 20px;
+    padding: var(--space-5);
     transition: border-color var(--motion-fast);
 }
 
 .card:hover {
     border-color: var(--border-hover);
 }
+
+/* Density modifiers — keep .card 20px default; collapse old .acc-card / .day-col / .pr-card duplicates */
+.card-dense   { padding: var(--space-4); }   /* 16px — stat tiles, account cards */
+.card-compact { padding: var(--space-3); }   /* 12px — calendar day cols, dense grids */
 
 .card-header {
     display: flex;
@@ -661,7 +675,7 @@ label {
 }
 
 .btn:focus-visible {
-    outline: 2px solid var(--indigo-7);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
 }
 
@@ -887,8 +901,8 @@ label {
 .form-control:hover { border-color: var(--border-hover); }
 
 .form-control:focus {
-    border-color: var(--indigo-7);
-    outline: 2px solid color-mix(in srgb, var(--indigo-7) 30%, transparent);
+    border-color: var(--focus-ring);
+    outline: 2px solid color-mix(in srgb, var(--focus-ring) 30%, transparent);
     outline-offset: 0;
 }
 
@@ -961,8 +975,8 @@ select:not(.session-type-badge):hover {
 }
 
 input:focus, textarea:focus, select:focus {
-    border-color: var(--indigo-7);
-    outline: 2px solid color-mix(in srgb, var(--indigo-7) 30%, transparent);
+    border-color: var(--focus-ring);
+    outline: 2px solid color-mix(in srgb, var(--focus-ring) 30%, transparent);
     outline-offset: 0;
 }
 
@@ -1034,7 +1048,7 @@ input[type="radio"]:checked::after {
 
 input[type="checkbox"]:focus-visible,
 input[type="radio"]:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--indigo-7) 30%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--focus-ring) 30%, transparent);
     outline-offset: 2px;
 }
 
@@ -1054,6 +1068,19 @@ input[type="radio"]:focus-visible {
     flex-shrink: 0;
     display: inline-block;
 }
+
+/* Categorical color modifiers — replaces inline style="background: var(--X-9)" */
+.color-dot--red    { background: var(--red-9); }
+.color-dot--orange { background: var(--orange-9); }
+.color-dot--amber  { background: var(--amber-9); }
+.color-dot--green  { background: var(--green-9); }
+.color-dot--teal   { background: var(--teal-9); }
+.color-dot--blue   { background: var(--blue-9); }
+.color-dot--indigo { background: var(--indigo-9); }
+.color-dot--purple { background: var(--purple-9); }
+.color-dot--pink   { background: var(--pink-9); }
+.color-dot--slate  { background: var(--slate-9); }
+.color-dot--accent { background: var(--accent-500); }
 
 /* ============================================================
    Tables
@@ -1117,6 +1144,25 @@ tbody td {
 .td-muted {
     color: var(--text-muted);
     font-size: var(--text-xs);
+}
+
+/* Semantic table cell modifiers */
+.td-date {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.td-amount {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+.td-actions {
+    width: 48px;
+    text-align: right;
+    color: var(--text-muted);
 }
 
 /* ============================================================

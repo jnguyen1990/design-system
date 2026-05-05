@@ -86,7 +86,7 @@ Step intent (memorize):
 --panel-active: var(--slate-5);
 --border:       var(--slate-6);    /* default border */
 --border-hover: var(--slate-7);
---focus-ring:   var(--slate-8);
+--focus-ring:   var(--accent-300);  /* per-app: indigo-7 default, green-7 budgeter, orange-7 fitness, slate-7 base */
 --text:         var(--slate-12);
 --text-muted:   var(--slate-11);
 --text-faint:   var(--slate-10);
@@ -114,6 +114,18 @@ Use:
 - **Step 9** as the "dot" color (sidebar item, list bullet, status indicator)
 - **Step 3 background + Step 11 text + Step 6 border** for filled chips
 - Never as page background or large surfaces
+
+### Amount / delta semantics
+
+Numeric +/- values (transactions, PR deltas, weight changes) get a dedicated set:
+
+```css
+--text-amount-positive: var(--green-11);   /* income, gains, +N PR */
+--text-amount-negative: var(--red-11);     /* spending, losses, regressions */
+--text-amount-neutral:  var(--text-faint); /* unchanged, $0, "match" */
+```
+
+Always paired with `font-family: var(--font-mono); font-variant-numeric: tabular-nums;` so columns of amounts align cleanly.
 
 ### Per-app brand accent
 
@@ -182,15 +194,31 @@ Never larger than 8px. No pills.
 ### Cards
 ```css
 .card {
-  background: var(--bg-subtle);          /* slate-2 */
-  border: 1px solid var(--border);       /* slate-6 */
+  background: var(--bg-subtle);            /* slate-2 */
+  border: 1px solid var(--border);         /* slate-6 */
   border-radius: var(--radius-md);
-  padding: 20px;                          /* sm:16, lg:24 */
+  padding: var(--space-5);                  /* 20px default */
   /* no shadow — shadows reserved for floating elements */
 }
-.card:hover {                             /* if interactive */
-  border-color: var(--border-hover);      /* slate-7 */
+.card:hover {                               /* if interactive */
+  border-color: var(--border-hover);        /* slate-7 */
 }
+
+/* Density modifiers — collapse old per-app .acc-card / .pr-card / .day-col duplicates */
+.card-dense   { padding: var(--space-4); }  /* 16px — stat tiles, account cards */
+.card-compact { padding: var(--space-3); }  /* 12px — calendar day cols, dense grids */
+```
+
+For tile-style numeric cards (PRs, account balances, KPI metrics), use the dedicated `.stat-card` family — same surface as `.card` but with semantic children:
+
+```html
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">back squat 1RM</div>
+    <div class="stat-value">285 lb</div>
+    <div class="stat-subtext">apr 12 · +5 lb</div>
+  </div>
+</div>
 ```
 
 ### Elevation
@@ -353,11 +381,19 @@ Minimal. No springs, no layout animations.
   border-radius: var(--radius-sm);
   font: 500 11px 'Inter', sans-serif;
 }
-.badge-dot { /* leading dot */
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--{color}-9);
+.color-dot { /* leading dot — use a modifier for the color, never inline style */
+  width: 8px; height: 8px; border-radius: 50%;
 }
+.color-dot--green { background: var(--green-9); }   /* +9 other categorical modifiers */
+.color-dot--accent { background: var(--accent-500); } /* per-app accent */
 .badge-numeric { font-family: 'Geist Mono', monospace; }
+```
+
+```html
+<!-- ✓ do -->
+<span class="badge badge-success"><span class="color-dot color-dot--green"></span> groceries</span>
+<!-- ✗ don't -->
+<span class="badge badge-success"><span class="color-dot" style="background: var(--green-9);"></span> groceries</span>
 ```
 
 ### Keyboard shortcut hint
@@ -379,6 +415,24 @@ Minimal. No springs, no layout animations.
 - Hover: `--bg-subtle`
 - Numeric columns: Geist Mono, tabular-nums, right-aligned
 - No zebra striping
+
+#### Semantic cell modifiers
+Use these to keep transaction tables, log tables, and ledger views consistent across apps:
+
+```css
+.td-date    { /* mono + muted + xs + nowrap */ }
+.td-amount  { /* mono + tabular + right-aligned + nowrap */ }
+.td-actions { /* 48px wide, right-aligned */ }
+.td-muted   { /* mono-friendly secondary text */ }
+```
+
+Compose with the amount-color utilities for +/- columns:
+```html
+<td class="td-date">apr 22</td>
+<td class="td-amount text-amount-negative">−$84.20</td>
+<td class="td-amount text-amount-positive">+$3,400.00</td>
+<td class="td-actions"><button class="btn btn-sm btn-ghost">⋮</button></td>
+```
 
 ### Modal
 - Width: 480px (sm), 640px (default), 800px (lg)
@@ -626,7 +680,7 @@ Drop this into your app's stylesheet to inherit the system. Pull Radix from `@ra
   --panel-active: var(--slate-5);
   --border:       var(--slate-6);
   --border-hover: var(--slate-7);
-  --focus-ring:   var(--slate-8);
+  --focus-ring:   var(--accent-300);  /* per-app: indigo-7 default, green-7 budgeter, orange-7 fitness, slate-7 base */
   --text:         var(--slate-12);
   --text-muted:   var(--slate-11);
   --text-faint:   var(--slate-10);
