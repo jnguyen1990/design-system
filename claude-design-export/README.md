@@ -20,8 +20,6 @@ If a codebase or Figma exists, re-attach it via the Import menu so UI kits can b
 | File / folder | What it is |
 |---|---|
 | `README.md` | This document — brand context, content, visual & icon foundations |
-| `colors_and_type.css` | Token layer — Radix imports, type/spacing/radius/motion vars, semantic surface tokens, base element styles |
-| `components.css` | Component layer — buttons, inputs, cards, badges, kbd, sidebar items, tables, modals |
 | `preview/` | Design System tab cards (swatches, type specimens, components, etc) |
 | `assets/` | Logos, favicons, illustration tints |
 | `ui_kits/base/` | Base — neutral launcher / cross-app home |
@@ -29,6 +27,8 @@ If a codebase or Figma exists, re-attach it via the Import menu so UI kits can b
 | `ui_kits/fitness/` | Fitness — orange accent, workout log |
 | `slides/` | Sample slide deck template (cover, agenda, big quote, comparison, etc) |
 | `SKILL.md` | Agent Skill manifest (works in Claude Code) |
+| `../design-system.css` | **Canonical stylesheet** — token layer + component layer, single source of truth. Link from each HTML page via the CDN URL below. |
+| `../brand-guide.md` | Human-readable spec for the token layer |
 
 ---
 
@@ -143,7 +143,7 @@ Always **monospace**, always tabular-nums. Currency, counts, durations, timestam
 
 ### Borders
 - **1px solid** always. Never 2px hairlines, never dashed, never dotted on chrome.
-- Default: `--border` (slate-6). Interactive: `--border-hover` (slate-7) on hover. Focus: `--focus-ring` (slate-8) plus a 2px indigo-7 outline at 30% alpha.
+- Default: `--border` (slate-6). Interactive: `--border-hover` (slate-7) on hover. Focus: `--focus-ring` (per-app accent step-7) — used as both the input border and a 2px outline at 30% alpha. Renders indigo by default, green in Budgeter, orange in Fitness, slate in Base.
 
 ### Shadows
 - **Resting elements have no shadow.** Cards are flat. Hover does not introduce shadow.
@@ -215,8 +215,12 @@ Each app has a **single-glyph logo** rendered as inline SVG using its accent col
 
 ## How to use this system
 
-1. **Link tokens first:** every page imports `colors_and_type.css`, then `components.css`.
-2. **Reach for tokens, not raw Radix:** use `var(--text)` / `var(--panel)` / `var(--border)` — not `var(--slate-12)` directly. The semantic layer is what makes light/dark parity automatic.
+1. **Link the canonical stylesheet on every page** — one tag covers tokens + components:
+   ```html
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
+   ```
+   Set `<html data-app="budgeter" data-theme="dark">` to choose accent + theme.
+2. **Reach for tokens, not raw Radix:** use `var(--text)` / `var(--panel)` / `var(--border)` / `var(--focus-ring)` — not `var(--slate-12)` directly. The semantic layer is what makes light/dark parity and per-app accent automatic.
 3. **One accent per app.** Don't mix per-app accents into shared chrome.
 4. **Categorical color comes from chips/dots, not surfaces.** A red row background is wrong; a red dot in a row is right.
 5. **Density floor:** 36px controls, 36–40px rows, 16/20/24px card padding, 32×32 minimum tap target on mobile (36 preferred).
