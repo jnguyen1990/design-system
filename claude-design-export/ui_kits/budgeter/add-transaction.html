@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-app="budgeter" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add transaction · Budgeter</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
+  <style>
+    /* Page-local: form layout + radio chip group only.
+       Inputs, labels, helper/error text, buttons, cards all come from the system. */
+    .form-page { max-width: 640px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .radio-chip-group { display: flex; gap: var(--space-2); }
+    .radio-chip {
+      flex: 1;
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: 10px var(--space-3);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: border-color var(--motion-fast), background var(--motion-fast);
+    }
+    .radio-chip:hover { border-color: var(--border-hover); }
+    .radio-chip input { margin: 0; }
+    .radio-chip:has(input:checked) { background: var(--panel); border-color: var(--focus-ring); }
+    .form-actions {
+      display: flex; gap: var(--space-2);
+      margin-top: var(--space-6);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .form-actions .btn-primary { margin-left: auto; }
+  </style>
+</head>
+<body>
+
+  <button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+
+  <nav class="sidebar">
+    <div class="sidebar-header"><h1>Budgeter</h1></div>
+    <ul class="nav-menu">
+      <li><a href="#" class="nav-link">Dashboard</a></li>
+      <li><a href="#" class="nav-link">Budget</a></li>
+      <li class="nav-submenu">
+        <div class="nav-link active">Transactions</div>
+        <ul class="submenu">
+          <li><a href="index.html" class="nav-link">All transactions</a></li>
+          <li><a href="#" class="nav-link active">Add transaction</a></li>
+          <li><a href="#" class="nav-link">Uncategorized</a></li>
+        </ul>
+      </li>
+      <li><a href="#" class="nav-link">Settings</a></li>
+    </ul>
+  </nav>
+
+  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+    <span id="theme-icon">&#9728;&#65039;</span>
+  </button>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">Add transaction</h1>
+        <span class="text-muted" style="font-size: var(--text-sm); font-family: var(--font-mono);">manual entry · checking</span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="card form-page">
+
+        <!-- Date + Amount row (paired) -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="tx-date">Date</label>
+            <input type="date" id="tx-date" class="form-control" value="2026-04-22">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tx-amount">Amount</label>
+            <input type="number" id="tx-amount" class="form-control font-mono" step="0.01" min="0" placeholder="0.00" value="84.20">
+            <div class="form-hint">Use the type selector below to mark as expense or income.</div>
+          </div>
+        </div>
+
+        <!-- Type — radio chip group -->
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <div class="radio-chip-group">
+            <label class="radio-chip">
+              <input type="radio" name="tx-type" value="outflow" checked>
+              <span class="color-dot color-dot--red"></span>
+              <span>Expense</span>
+            </label>
+            <label class="radio-chip">
+              <input type="radio" name="tx-type" value="inflow">
+              <span class="color-dot color-dot--green"></span>
+              <span>Income</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Payee — text input -->
+        <div class="form-group">
+          <label class="form-label" for="tx-payee">Payee</label>
+          <input type="text" id="tx-payee" class="form-control" placeholder="Merchant or person" value="Whole Foods">
+        </div>
+
+        <!-- Category — select with categorical color cue in label -->
+        <div class="form-group">
+          <label class="form-label" for="tx-category">Category</label>
+          <select id="tx-category" class="form-control">
+            <option value="">— Uncategorized —</option>
+            <option value="groceries" selected>groceries</option>
+            <option value="dining">dining</option>
+            <option value="transport">transport</option>
+            <option value="housing">housing</option>
+            <option value="subscriptions">subscriptions</option>
+          </select>
+        </div>
+
+        <!-- Memo — textarea (optional) -->
+        <div class="form-group">
+          <label class="form-label" for="tx-memo">Memo <span class="text-faint" style="font-weight: 400;">— optional</span></label>
+          <textarea id="tx-memo" class="form-control" rows="3" placeholder="Notes about this transaction">weekly produce + pantry restock</textarea>
+        </div>
+
+        <!-- Account — select -->
+        <div class="form-group">
+          <label class="form-label" for="tx-account">Account</label>
+          <select id="tx-account" class="form-control">
+            <option>amex</option>
+            <option selected>checking</option>
+            <option>savings</option>
+          </select>
+          <div class="form-hint">Posts immediately to your local ledger. Bank sync runs nightly.</div>
+        </div>
+
+        <!-- Error-state demo (intentionally invalid) -->
+        <div class="form-group">
+          <label class="form-label" for="tx-tag">Tag <span class="text-faint" style="font-weight: 400;">— example error state</span></label>
+          <input type="text" id="tx-tag" class="form-control" aria-invalid="true" value="!!invalid chars">
+          <div class="form-error">Tags can only contain letters, numbers, and dashes.</div>
+        </div>
+
+        <!-- Action row -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost">Cancel</button>
+          <button type="button" class="btn btn-secondary" disabled>Save &amp; add another</button>
+          <button type="button" class="btn btn-primary">Save transaction</button>
+        </div>
+
+      </div>
+
+      <!-- Inline preview of how this row will appear in the ledger -->
+      <div class="card card-dense" style="max-width: 640px; margin-top: var(--space-4);">
+        <div class="card-header" style="margin-bottom: var(--space-3);">
+          <h2 class="card-title">Preview</h2>
+          <span class="text-muted" style="font-size: var(--text-xs); font-family: var(--font-mono);">how this row renders</span>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <tbody>
+              <tr>
+                <td class="td-date">apr 22</td>
+                <td>
+                  <div style="font-weight: 500;">Whole Foods</div>
+                  <div class="text-muted" style="font-size: 12px;">weekly produce + pantry restock</div>
+                </td>
+                <td><span class="badge badge-success"><span class="color-dot color-dot--green"></span> groceries</span></td>
+                <td class="td-amount text-amount-negative">−$84.20</td>
+                <td class="font-mono td-muted">checking</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      html.classList.toggle('dark', next === 'dark');
+      const icon = document.getElementById('theme-icon');
+      if (icon) icon.textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const t = document.documentElement.getAttribute('data-theme') || 'dark';
+      const icon = document.getElementById('theme-icon');
+      if (icon) icon.textContent = t === 'dark' ? '☀️' : '🌙';
+      const btn = document.getElementById('mobileMenuBtn');
+      const sb  = document.querySelector('.sidebar');
+      const ov  = document.getElementById('mobileOverlay');
+      btn?.addEventListener('click', e => { e.stopPropagation(); sb.classList.toggle('open'); ov.classList.toggle('show'); });
+      ov?.addEventListener('click', () => { sb.classList.remove('open'); ov.classList.remove('show'); });
+    });
+  </script>
+</body>
+</html>

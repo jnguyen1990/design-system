@@ -6,9 +6,8 @@
   <title>Transactions · Budgeter</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
   <style>
-    /* Page-local: budget bars + amount color helpers */
-    .amount-out { color: var(--red-11); }
-    .amount-in  { color: var(--green-11); }
+    /* Page-local: budget bars only — amount colors, date cells, action cells, color dots, and account cards
+       all come from the design system (text-amount-*, td-date, td-amount, td-actions, color-dot--*, .card.card-dense). */
     .budget-row { display: grid; grid-template-columns: 1fr auto; gap: 4px var(--space-3); align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border); }
     .budget-row:last-child { border-bottom: none; }
     .budget-row .b-label  { font-size: var(--text-sm); font-weight: 500; }
@@ -18,10 +17,6 @@
     .budget-row.over .b-fill { background: var(--red-9); }
     .budget-row.warn .b-fill { background: var(--amber-9); }
     .budget-row.ok   .b-fill { background: var(--green-9); }
-    .acc-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-4); }
-    .acc-label { font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 4px; }
-    .acc-balance { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.01em; }
-    .acc-delta { font-size: var(--text-xs); color: var(--text-faint); margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -38,6 +33,7 @@
         <div class="nav-link active">Transactions</div>
         <ul class="submenu">
           <li><a href="#" class="nav-link active">All transactions</a></li>
+          <li><a href="add-transaction.html" class="nav-link">Add transaction</a></li>
           <li><a href="#" class="nav-link">Uncategorized</a></li>
         </ul>
       </li>
@@ -104,81 +100,81 @@
             </thead>
             <tbody>
               <tr>
-                <td class="font-mono td-muted">apr 22</td>
+                <td class="td-date">apr 22</td>
                 <td>
                   <div style="font-weight: 500;">Whole Foods</div>
                   <div class="text-muted" style="font-size: 12px;">weekly produce + pantry restock</div>
                 </td>
-                <td><span class="badge badge-success"><span class="color-dot" style="background: var(--green-9);"></span> groceries</span></td>
-                <td class="text-right font-mono amount-out">−$84.20</td>
+                <td><span class="badge badge-success"><span class="color-dot color-dot--green"></span> groceries</span></td>
+                <td class="td-amount text-amount-negative">−$84.20</td>
                 <td class="font-mono td-muted">amex</td>
-                <td><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
+                <td class="td-actions"><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
               </tr>
               <tr>
-                <td class="font-mono td-muted">apr 21</td>
+                <td class="td-date">apr 21</td>
                 <td>
                   <div style="font-weight: 500;">Acme Corp · payroll</div>
                   <div class="text-muted" style="font-size: 12px;">biweekly direct deposit</div>
                 </td>
-                <td><span class="badge badge-info"><span class="color-dot" style="background: var(--blue-9);"></span> income</span></td>
-                <td class="text-right font-mono amount-in">+$3,400.00</td>
+                <td><span class="badge badge-info"><span class="color-dot color-dot--blue"></span> income</span></td>
+                <td class="td-amount text-amount-positive">+$3,400.00</td>
                 <td class="font-mono td-muted">checking</td>
-                <td><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
+                <td class="td-actions"><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
               </tr>
               <tr>
-                <td class="font-mono td-muted">apr 20</td>
+                <td class="td-date">apr 20</td>
                 <td>
                   <div style="font-weight: 500;">Spotify</div>
                   <div class="text-muted" style="font-size: 12px;">family plan · auto-renew</div>
                 </td>
-                <td><span class="badge"><span class="color-dot" style="background: var(--purple-9);"></span> subscriptions</span></td>
-                <td class="text-right font-mono amount-out">−$10.99</td>
+                <td><span class="badge"><span class="color-dot color-dot--purple"></span> subscriptions</span></td>
+                <td class="td-amount text-amount-negative">−$10.99</td>
                 <td class="font-mono td-muted">amex</td>
-                <td><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
+                <td class="td-actions"><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
               </tr>
               <tr>
-                <td class="font-mono td-muted">apr 19</td>
+                <td class="td-date">apr 19</td>
                 <td>
                   <div style="font-weight: 500;">Shell · gas</div>
                   <div class="text-muted" style="font-size: 12px;">fill-up · I-280 north</div>
                 </td>
-                <td><span class="badge badge-warning"><span class="color-dot" style="background: var(--amber-9);"></span> transport</span></td>
-                <td class="text-right font-mono amount-out">−$48.50</td>
+                <td><span class="badge badge-warning"><span class="color-dot color-dot--amber"></span> transport</span></td>
+                <td class="td-amount text-amount-negative">−$48.50</td>
                 <td class="font-mono td-muted">amex</td>
-                <td><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
+                <td class="td-actions"><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
               </tr>
               <tr>
-                <td class="font-mono td-muted">apr 18</td>
+                <td class="td-date">apr 18</td>
                 <td>
                   <div style="font-weight: 500;">Trader Joe's</div>
                   <div class="text-muted" style="font-size: 12px;">sunday meal-prep haul</div>
                 </td>
-                <td><span class="badge badge-success"><span class="color-dot" style="background: var(--green-9);"></span> groceries</span></td>
-                <td class="text-right font-mono amount-out">−$62.13</td>
+                <td><span class="badge badge-success"><span class="color-dot color-dot--green"></span> groceries</span></td>
+                <td class="td-amount text-amount-negative">−$62.13</td>
                 <td class="font-mono td-muted">amex</td>
-                <td><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
+                <td class="td-actions"><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
               </tr>
               <tr>
-                <td class="font-mono td-muted">apr 17</td>
+                <td class="td-date">apr 17</td>
                 <td>
                   <div style="font-weight: 500;">Coffee · Verve</div>
                   <div class="text-muted" style="font-size: 12px;">morning, oat cortado</div>
                 </td>
-                <td><span class="badge"><span class="color-dot" style="background: var(--orange-9);"></span> dining</span></td>
-                <td class="text-right font-mono amount-out">−$5.75</td>
+                <td><span class="badge"><span class="color-dot color-dot--orange"></span> dining</span></td>
+                <td class="td-amount text-amount-negative">−$5.75</td>
                 <td class="font-mono td-muted">amex</td>
-                <td><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
+                <td class="td-actions"><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
               </tr>
               <tr>
-                <td class="font-mono td-muted">apr 15</td>
+                <td class="td-date">apr 15</td>
                 <td>
                   <div style="font-weight: 500;">Rent</div>
                   <div class="text-muted" style="font-size: 12px;">1500 Mission · april</div>
                 </td>
-                <td><span class="badge badge-error"><span class="color-dot" style="background: var(--red-9);"></span> housing</span></td>
-                <td class="text-right font-mono amount-out">−$1,850.00</td>
+                <td><span class="badge badge-error"><span class="color-dot color-dot--red"></span> housing</span></td>
+                <td class="td-amount text-amount-negative">−$1,850.00</td>
                 <td class="font-mono td-muted">checking</td>
-                <td><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
+                <td class="td-actions"><button class="btn btn-sm btn-ghost" aria-label="more">⋮</button></td>
               </tr>
             </tbody>
           </table>
