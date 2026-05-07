@@ -57,18 +57,29 @@
   const LOGO_MEALS =
     '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 32 32" fill="none">' +
       '<defs><linearGradient id="al-bg-meal" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0" stop-color="#8E4EC6"/><stop offset="1" stop-color="#6E2CB8"/>' +
+        '<stop offset="0" stop-color="#8E4EC6"/><stop offset="1" stop-color="#653580"/>' +
       '</linearGradient></defs>' +
       '<rect x="1" y="1" width="30" height="30" rx="7" fill="url(#al-bg-meal)"/>' +
       '<rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.18)" stroke-width="0.75"/>' +
-      '<text x="16" y="22" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#FFFFFF">M</text>' +
+      '<g stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.75">' +
+        '<path d="M11.5 9.5 Q12.5 8.2 11.5 7.0 Q10.5 5.8 11.5 4.5"/>' +
+        '<path d="M16 9.0 Q17 7.7 16 6.5 Q15 5.3 16 4.0"/>' +
+        '<path d="M20.5 9.5 Q21.5 8.2 20.5 7.0 Q19.5 5.8 20.5 4.5"/>' +
+      '</g>' +
+      '<path d="M5.5 14.5 L26.5 14.5 A10.5 10.5 0 0 1 5.5 14.5 Z" fill="#FFFFFF"/>' +
+      '<rect x="5" y="13.5" width="22" height="1.4" rx="0.5" fill="#FFFFFF"/>' +
+      '<path d="M8.2 14.9 L23.8 14.9 A7.8 7.8 0 0 1 8.2 14.9 Z" fill="#653580" opacity="0.20"/>' +
+      '<g stroke="#653580" stroke-width="0.9" stroke-linecap="round" opacity="0.9">' +
+        '<line x1="22" y1="5" x2="26" y2="13"/>' +
+        '<line x1="24" y1="5" x2="27.5" y2="13"/>' +
+      '</g>' +
     '</svg>';
 
   const APPS = [
     { id: "base",        name: "Base",     url: "https://base.joenguyen.ca",     logo: LOGO_BASE },
     { id: "budgeter",    name: "Budgeter", url: "https://budgeter.joenguyen.ca", logo: LOGO_BUDGETER },
     { id: "fitness",     name: "Fitness",  url: "https://fitness.joenguyen.ca",  logo: LOGO_FITNESS },
-    { id: "mealplanner", name: "Meals",    url: null,                            logo: LOGO_MEALS }
+    { id: "mealplanner", name: "Meals",    url: "https://mealplanner.joenguyen.ca", logo: LOGO_MEALS }
   ];
 
   function init() {
