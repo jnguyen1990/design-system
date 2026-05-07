@@ -54,6 +54,8 @@ Key rules to internalize:
 - Always reach for semantic tokens: `var(--text)`, `var(--panel)`, `var(--border)`, `var(--focus-ring)`, `var(--text-amount-positive)`, `var(--accent-500)`, `var(--space-4)`, etc.
 - **Never** inline raw Radix steps (`var(--slate-9)`, `var(--green-3)`) in component code, page-local CSS, or HTML `style=""`. The only exception is the `.color-dot--{color}` modifiers themselves, which encode the categorical mapping.
 
+The same `design-system` repo is linked into **Claude Design** (claude.ai/design) as the org-wide design system, so web/Claude Design and Claude Code work from the same source. When the CSS or brand guide changes: push to GitHub, then "remix" in Claude Design org settings (no continuous sync).
+
 Folder layout:
 - `README.md` — full brand + content + visual + iconography spec
 - `preview/` — Design System tab cards (one HTML page per token group / component family)
