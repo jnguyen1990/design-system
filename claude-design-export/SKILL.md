@@ -9,7 +9,7 @@ Read the README.md file within this skill, and explore the other available files
 If creating visual artifacts (slides, mocks, throwaway prototypes, etc), copy assets out and create static HTML files for the user to view. Link the canonical stylesheet from CDN in each HTML page:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
 ```
 
 Reach for semantic tokens (`var(--text)`, `var(--panel)`, `var(--border)`, `var(--focus-ring)`, `var(--text-amount-positive)`) — not raw Radix scales — so light/dark parity and per-app accent are automatic.

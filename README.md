@@ -12,11 +12,11 @@ Include via CDN in your HTML:
 
 ```html
 <!-- Styles -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
 
 <!-- Optional: shared session-card / vitals-chip / daily-summary-modal renderer
      (only needed by apps that show a calendar + vitals view, currently fitness) -->
-<script src="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/session-render.js"></script>
+<script src="https://design-system.joenguyen.ca/session-render.js"></script>
 ```
 
 Set `data-app` on `<html>` to pick the per-app accent: `base` (slate), `budgeter` (green), `fitness` (orange), `mealplanner` (purple).
@@ -25,7 +25,7 @@ For local dev against the un-published version of these files, run a static serv
 
 ## Publishing changes
 
-Push to `main`. A GitHub Actions workflow (`purge-cdn.yml`) automatically tells jsDelivr to drop its edge cache for `design-system.css` + `session-render.js` so prod apps see the change on the next request — without it jsDelivr can serve a stale version for ~12 h. To purge manually any time, run `bin/purge-cdn`.
+Push to `main`. Cloudflare Workers Static Assets auto-deploys the repo root (configured in `wrangler.jsonc`). `_headers` sets `Cache-Control: public, max-age=43200, must-revalidate` for all paths, so browsers revalidate twice daily — no manual cache purge needed. Migrated off jsDelivr on 2026-05-07 (jsDelivr's 7-day `@main` cache was blocking propagation).
 
 ## Apps using this system
 

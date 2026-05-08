@@ -217,7 +217,7 @@ Each app has a **single-glyph logo** rendered as inline SVG using its accent col
 
 1. **Link the canonical stylesheet on every page** — one tag covers tokens + components:
    ```html
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
+   <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
    ```
    Set `<html data-app="budgeter" data-theme="dark">` to choose accent + theme.
 2. **Reach for tokens, not raw Radix:** use `var(--text)` / `var(--panel)` / `var(--border)` / `var(--focus-ring)` — not `var(--slate-12)` directly. The semantic layer is what makes light/dark parity and per-app accent automatic.
