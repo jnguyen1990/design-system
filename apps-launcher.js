@@ -90,7 +90,7 @@
     Object.assign(bar.style, {
       position: "fixed",
       top: "var(--space-3)",
-      right: "var(--space-3)",
+      right: "var(--space-4)",
       zIndex: "200",
       display: "flex",
       alignItems: "center",

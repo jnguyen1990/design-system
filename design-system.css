@@ -501,10 +501,59 @@ label {
 
 .page-subtitle {
     color: var(--text-muted);
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
-    margin-top: var(--space-1);
-    margin-bottom: var(--space-6);
+    margin-top: 4px;
+    line-height: var(--lh-body);
 }
+
+/* Section subtitle inside cards — smaller than <h3>, used for nested
+   sub-sections. Replaces ad-hoc <h4> inside cards. */
+.subsection-title {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--text);
+    letter-spacing: 0;
+    margin: 0 0 var(--space-2);
+}
+
+/* Keyboard shortcut hint — brand-guide §11 spec. */
+.kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-faint);
+    line-height: 1;
+}
+
+/* Sidebar brand title — replaces the <h1>Brand</h1> pattern so each
+   page has exactly one <h1>. */
+.brand-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    padding-left: var(--space-3);
+}
+
+/* Sidebar footer slot — docks the theme toggle (and any future settings
+   link) at the bottom of the sidebar, Things-3 style. The .sidebar uses
+   display:flex; flex-direction:column so this footer sits at the bottom. */
+.sidebar-footer {
+    padding: var(--space-2) var(--space-3);
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+}
+
+/* Mono+muted meta text utilities. The "mono + muted + small" combination
+   was reinvented inline by every app — promoted here. */
+.text-meta    { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
+.text-meta-xs { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
 
 .content {
     padding: var(--space-6) var(--space-8) var(--space-12);
@@ -698,22 +747,31 @@ label {
     font-size: var(--text-base);
 }
 
+/* Primary CTAs use a shared indigo, NOT the per-app accent.
+   Brand guide §3: "The brand color appears in: logo, favicon, empty-state
+   illustration tint, today indicator, focus ring. **Not** in primary buttons
+   or chrome — those use the neutral system or a shared indigo accent."
+   Previously this rule read from --accent-500, which [data-app="X"] overrides
+   to the per-app color (orange/green/purple) — fighting the guide. Now bound
+   to indigo directly. Apps can still override via .btn-primary on their own
+   selector if they need a brand-moment button, but the default is brand-
+   guide-compliant out of the box. */
 .btn-primary {
-    background: var(--accent-500);
+    background: var(--indigo-9);
     color: #fff;
-    border-color: var(--accent-600);
+    border-color: var(--indigo-10);
     box-shadow: var(--shadow-inner), var(--shadow-press);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--accent-600);
-    border-color: var(--accent-600);
+    background: var(--indigo-10);
+    border-color: var(--indigo-10);
     color: #fff;
 }
 
 .btn-primary:active:not(:disabled) {
-    background: var(--accent-700);
-    border-color: var(--accent-700);
+    background: var(--indigo-11);
+    border-color: var(--indigo-11);
 }
 
 .btn-secondary {
@@ -1356,6 +1414,36 @@ tbody td {
     background: var(--panel-hover);
     border-color: var(--border-hover);
     color: var(--text);
+}
+
+/* Sidebar-footer docked variant — overrides the default fixed FAB. Use
+   inside .sidebar-footer alongside the apps' nav. The .theme-toggle-label
+   span renders the word "theme" next to the icon. */
+.theme-toggle.theme-toggle--inline {
+    position: static;
+    width: 100%;
+    height: 32px;
+    padding: 0 var(--space-3);
+    justify-content: flex-start;
+    gap: var(--space-2);
+    background: transparent;
+    border-color: transparent;
+}
+.theme-toggle.theme-toggle--inline:hover {
+    background: var(--panel);
+    border-color: transparent;
+    color: var(--text);
+}
+.theme-toggle.theme-toggle--inline .theme-toggle-label {
+    font-weight: var(--weight-medium);
+}
+
+/* Sidebar kbd hints — right-aligned ⌘N marker inside a .nav-link.
+   Fades on rest, full opacity on hover. */
+.nav-link .nav-kbd { margin-left: auto; opacity: 0.7; }
+.nav-link:hover .nav-kbd { opacity: 1; }
+@media (max-width: 768px) {
+    .nav-link .nav-kbd { display: none; }
 }
 
 /* ============================================================
