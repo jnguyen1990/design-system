@@ -442,6 +442,28 @@ Compose with the amount-color utilities for +/- columns:
 - Shadow: floating shadow (see §6)
 - Backdrop: `rgba(0,0,0,0.4)` light, `rgba(0,0,0,0.6)` dark
 
+### Toast (success / error / status messages)
+Use `.status-message` plus a variant (`.status-success`, `.status-error`, `.status-warning`, `.status-info`) for any transient feedback ("saved", "deleted", "sync failed"). The class is **position: fixed, bottom-centered** — it never pushes layout. Floating shadow, 4px colored left border that encodes severity.
+
+- **Bottom-center** of the viewport, 24px above the bottom edge.
+- **No icon, no emoji, no close button.** The color and copy do the work.
+- **Success auto-dismisses** after ~3s; errors stay until the next action or page nav.
+- **Don't toast on every save.** Silent success is fine for the common path; toast only when the action isn't otherwise visible (e.g. a save with no inline state change). Errors always toast.
+- Copy: name the outcome, not the reaction. `saved`, `deleted`, `sync failed`, `amount required`. Never `Successfully saved!` or `Oops!`.
+- One toast at a time per page — reuse a single `<div class="status-message">` element and update its text/class.
+
+```html
+<!-- canonical markup; lives once per page, toggled by showStatus() -->
+<div id="page-status" class="status-message" style="display:none"></div>
+```
+
+```js
+// success — auto-dismisses
+showStatus('page-status', 'saved', 'success');
+// error — sticks until the next state change
+showStatus('page-status', 'save failed — network unreachable', 'error');
+```
+
 ---
 
 ## 12. Light ↔ dark parity

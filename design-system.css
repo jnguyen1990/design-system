@@ -1612,19 +1612,36 @@ tbody td {
 }
 
 /* ============================================================
-   Status messages — inline notice with colored left border
-   (used by showStatus() JS helpers in apps)
+   Toast / status messages — floating notice at bottom-center
+   (used by showStatus() JS helpers in apps, and by Rails flash)
    ============================================================ */
 .status-message {
+    position: fixed;
+    bottom: var(--space-6);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    max-width: calc(100vw - var(--space-8));
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border);
     border-left: 4px solid var(--border);
     border-radius: var(--radius-sm);
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
-    margin-bottom: var(--space-4);
-    background: var(--bg-subtle);
+    background: var(--panel);
     color: var(--text);
+    box-shadow: var(--shadow-floating);
+    pointer-events: none;
+    animation: status-toast-in var(--motion-base);
+}
+
+@keyframes status-toast-in {
+    from { opacity: 0; transform: translate(-50%, var(--space-2)); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .status-message { animation: none; }
 }
 
 .status-success {
