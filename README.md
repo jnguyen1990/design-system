@@ -14,6 +14,11 @@ Include via CDN in your HTML:
 <!-- Styles -->
 <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
 
+<!-- Shared layout helpers: apiRequest, theme toggle/boot, showStatus,
+     installNavHotkeys (⌘1..9 sidebar nav), mobile menu wiring.
+     Loaded by every app layout right after design-system.css. -->
+<script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+
 <!-- Optional: shared session-card / vitals-chip / daily-summary-modal renderer
      (only needed by apps that show a calendar + vitals view, currently fitness) -->
 <script src="https://design-system.joenguyen.ca/session-render.js"></script>
@@ -21,7 +26,7 @@ Include via CDN in your HTML:
 
 Set `data-app` on `<html>` to pick the per-app accent: `base` (slate), `budgeter` (green), `fitness` (orange), `mealplanner` (purple).
 
-For local dev against the un-published version of these files, run a static server inside this repo (e.g. `python3 -m http.server 8765`) and point your app's stylesheet/script tags to `http://localhost:8765/...`. The fitness and budgeter Rails layouts already do this via an env-aware `ds_base` ERB var.
+For local dev against the un-published version of these files, run a static server inside this repo (e.g. `python3 -m http.server 8765`) and point your app's stylesheet/script tags to `http://localhost:8765/...`. All four Rails layouts support this via the `DS_BASE` env var (`DS_BASE=http://localhost:8765 bin/rails server`); unset, they default to the CDN.
 
 ## Publishing changes
 
