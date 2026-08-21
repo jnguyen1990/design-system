@@ -1,2 +1,2 @@
 /*
-  Cache-Control: public, max-age=43200, must-revalidate
+  Cache-Control: public, no-cache
