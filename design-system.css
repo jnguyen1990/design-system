@@ -2047,6 +2047,120 @@ tbody td {
 .vitals-modal-grid .stat-card .stat-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-md); font-weight: 600; }
 
 /* ============================================================
+   Calendar (.cal-*) — shared week/day/slot components
+   Used by: mealplanner (meal calendar + day drawer), fitness
+   (training calendar). A grid of 7 .cal-day columns, each holding
+   .cal-slot cards; collapses to 2 columns ≤1024px and a vertical
+   day list ≤768px. Accent-aware: .today and .selected borrow the
+   per-app accent, so the same markup reads purple in mealplanner
+   and orange in fitness.
+   ============================================================ */
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--space-2);
+}
+.cal-day {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.cal-day.today { border-color: var(--accent-500); }
+.cal-day.selected {
+    border-color: var(--accent-500);
+    box-shadow: 0 0 0 1px var(--accent-500);
+}
+.cal-day-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2px;
+}
+.cal-day-name {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+}
+.cal-day-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-md);
+    font-weight: 600;
+}
+.cal-day.today .cal-day-num { color: var(--accent-700); }
+
+.cal-slot {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 8px;
+    font-size: var(--text-xs);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+    transition: border-color var(--motion-fast);
+}
+.cal-slot:hover { border-color: var(--border-hover); }
+.cal-slot.done { background: var(--bg-subtle); }
+.cal-slot-type {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+}
+.cal-slot-title {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+}
+.cal-slot-meta {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    color: var(--text-faint);
+}
+.cal-slot.empty {
+    border-style: dashed;
+    color: var(--text-faint);
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    cursor: pointer;
+}
+.cal-slot.empty:hover {
+    background: var(--panel);
+    color: var(--text-muted);
+}
+.cal-slot-sides { display: flex; flex-wrap: wrap; gap: 3px; }
+.cal-side-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1px 5px;
+}
+@media (max-width: 1024px) {
+    .cal-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+    .cal-grid { grid-template-columns: 1fr; }
+    .cal-day { min-height: auto; }
+}
+
+/* ============================================================
    Reduced motion
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
