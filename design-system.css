@@ -2142,6 +2142,15 @@ tbody td {
     background: var(--panel);
     color: var(--text-muted);
 }
+.cal-dow {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: lowercase;
+    padding: 2px 0;
+}
+.cal-day.faded { opacity: 0.35; }
 .cal-slot-sides { display: flex; flex-wrap: wrap; gap: 3px; }
 .cal-side-chip {
     font-family: var(--font-mono);
@@ -2152,12 +2161,17 @@ tbody td {
     border-radius: var(--radius-sm);
     padding: 1px 5px;
 }
+/* Month variant: 7 columns at every width (the host app swaps to its own
+   week/list mode on small screens — reference: fitness), tighter cells. */
+.cal-grid--month .cal-day { min-height: 84px; padding: 4px 5px; gap: 3px; }
+.cal-grid--month .cal-day-num { font-size: var(--text-xs); }
+.cal-grid--month .cal-day-name { font-size: 10px; }
 @media (max-width: 1024px) {
-    .cal-grid { grid-template-columns: repeat(2, 1fr); }
+    .cal-grid:not(.cal-grid--month) { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
-    .cal-grid { grid-template-columns: 1fr; }
-    .cal-day { min-height: auto; }
+    .cal-grid:not(.cal-grid--month) { grid-template-columns: 1fr; }
+    .cal-grid:not(.cal-grid--month) .cal-day { min-height: auto; }
 }
 
 /* ============================================================
