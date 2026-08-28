@@ -78,7 +78,7 @@
   const LOGO_UPKEEP =
     '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 32 32" fill="none">' +
       '<defs><linearGradient id="al-bg-upk" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0" stop-color="#12A594"/><stop offset="1" stop-color="#0C7D71"/>' +
+        '<stop offset="0" stop-color="#0090FF"/><stop offset="1" stop-color="#0D74CE"/>' +
       '</linearGradient></defs>' +
       '<rect x="1" y="1" width="30" height="30" rx="7" fill="url(#al-bg-upk)"/>' +
       '<rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.18)" stroke-width="0.75"/>' +
