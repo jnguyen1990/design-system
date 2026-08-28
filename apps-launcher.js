@@ -75,11 +75,26 @@
       '</g>' +
     '</svg>';
 
+  const LOGO_UPKEEP =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 32 32" fill="none">' +
+      '<defs><linearGradient id="al-bg-upk" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#12A594"/><stop offset="1" stop-color="#0C7D71"/>' +
+      '</linearGradient></defs>' +
+      '<rect x="1" y="1" width="30" height="30" rx="7" fill="url(#al-bg-upk)"/>' +
+      '<rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.18)" stroke-width="0.75"/>' +
+      '<g transform="rotate(45 16 16)">' +
+        '<circle cx="9" cy="16" r="5.2" fill="#FFFFFF"/>' +
+        '<rect x="1.5" y="13.6" width="6.2" height="4.8" rx="0.6" fill="url(#al-bg-upk)"/>' +
+        '<rect x="11.5" y="13.9" width="16" height="4.2" rx="2.1" fill="#FFFFFF"/>' +
+      '</g>' +
+    '</svg>';
+
   const APPS = [
     { id: "base",        name: "Base",     url: "https://base.joenguyen.ca",     logo: LOGO_BASE },
     { id: "budgeter",    name: "Budgeter", url: "https://budgeter.joenguyen.ca", logo: LOGO_BUDGETER },
     { id: "fitness",     name: "Fitness",  url: "https://fitness.joenguyen.ca",  logo: LOGO_FITNESS },
-    { id: "mealplanner", name: "Meals",    url: "https://mealplanner.joenguyen.ca", logo: LOGO_MEALS }
+    { id: "mealplanner", name: "Meals",    url: "https://mealplanner.joenguyen.ca", logo: LOGO_MEALS },
+    { id: "upkeep",      name: "Upkeep",   url: "https://upkeep.joenguyen.ca",   logo: LOGO_UPKEEP }
   ];
 
   function init() {

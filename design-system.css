@@ -322,6 +322,21 @@
     --gradient-accent-subtle: var(--purple-3);
 }
 
+/* Upkeep — teal */
+[data-app="upkeep"] {
+    --accent-50:  var(--teal-3);
+    --accent-100: var(--teal-4);
+    --accent-300: var(--teal-7);
+    --accent-400: var(--teal-8);
+    --accent-500: var(--teal-9);
+    --accent-600: var(--teal-10);
+    --accent-700: var(--teal-11);
+    --color-primary: var(--teal-9);
+    --gradient-accent:        var(--teal-9);
+    --gradient-accent-hover:  var(--teal-10);
+    --gradient-accent-subtle: var(--teal-3);
+}
+
 /* ============================================================
    Theme — Radix paired scales already remap when [data-theme="dark"]
    is set. We only adjust the floating shadow alpha.
