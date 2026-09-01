@@ -540,7 +540,32 @@ Only these:
 
 **Forbidden:** `btn-success`, `btn-error`, `btn-warning`, `btn-info`. Color a button by intent (`btn-primary` for "go", `btn-danger` for destructive), not by mood.
 
-**Sizes:** `btn-sm` for in-card and table-row actions. Plain `btn` for stand-alone primary CTAs at the page level. Pick one size per row and stick with it — never mix `btn` and `btn-sm` in the same action group.
+**Sizes:** `btn-sm` for in-card and table-row actions. Plain `btn` for stand-alone primary CTAs at the page level and for modal footers. Pick one size per row and stick with it — never mix `btn` and `btn-sm` in the same action group.
+
+### Modal & dialog action rows
+
+Every modal's actions live in a **`.modal-footer`** — never hand-rolled flex rows inside `.modal-body`. The design system right-aligns the footer. Order, left → right:
+
+1. **Destructive extras** (a delete inside an edit dialog) — `btn-danger`, pushed to the far left with `style="margin-right:auto"` so it can't be fat-fingered next to save.
+2. **Tertiary extras** (snooze, preview, download) — `btn-secondary`.
+3. **Cancel / close** — `btn-secondary`.
+4. **The affirmative action, always rightmost** — `btn-primary`; in a confirm dialog whose whole purpose is the destructive act, `btn-danger` takes this slot instead.
+
+```html
+<div class="modal-footer">
+    <button class="btn btn-danger" style="margin-right:auto" onclick="del()">delete</button>
+    <button class="btn btn-secondary" onclick="closeModal()">cancel</button>
+    <button class="btn btn-primary" onclick="save()">save</button>
+</div>
+```
+
+Sizes: plain `btn` in modal footers (they're dialog-level actions); `btn-sm` for rows inside the modal body. Every modal has a header `×` (`class="modal-close btn-ghost"`). This rule applies equally to JS-generated footers (`innerHTML` into a footer div).
+
+**Deliberate asymmetry with cards:** in-card action rows lead with the primary on the LEFT (`.d-flex gap-2`, `btn-sm` — see below); modal footers anchor the primary bottom-RIGHT like native dialogs. Cards read top-down and lead with the action; dialogs commit at the corner. Don't cross the two.
+
+### Destructive micro-actions
+
+A `×` that removes a row, chip, or field **inside an uncommitted form** is `btn-ghost` — no confirm needed, nothing is persisted until save. `btn-danger` is reserved for committing destruction of persisted data, and is always paired with a confirm (dialog or `confirm()`/`turbo_confirm`).
 
 ### Forbidden color tokens
 
@@ -616,12 +641,14 @@ The brand says no emoji. The exceptions — characters that read as **functional
 | `×` (`&times;`) | modal close |
 | `←` `→` (`&larr;` `&rarr;`) | nav prev/next, or `‹` `›` for compact toolbars |
 | `☰` (`&#9776;`) | mobile menu toggle |
-| `☀` `🌙` | theme toggle |
+| `☀` `☽` `🌙` | theme toggle (either moon form) |
 | `★` `☆` (`&#9733;` `&#9734;` `&#11088;`) | rating UI |
 | `−` (`&#8722;`) | negative-amount sign (paired with `+`) |
 | `·` `–` | typographic separators in mono meta lines |
 | `▲` | trend up indicator (vitals chip) |
+| `▸` | disclosure/expand marker (`<details>`, collapsible rows) |
 | `😴` `❤️` `🚶` | vitals chip metrics — locked exception |
+| `👟` `🚲` | gear glyphs in session meta lines (fitness) — locked exception |
 
 Anything else (📊 📄 📋 🤖 📈 📉 🏆 💾 🗑️ ⚠️ ⚙️ ➕ ✏️ ✂️ 📅 ⬇️ 🔄 🎉 ⬛ ✅ 💰 📥 📂 etc.) does not appear in headings, button labels, or section titles. Use the chip + `.color-dot` system for categorical signaling instead.
 

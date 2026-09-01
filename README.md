@@ -56,6 +56,8 @@ Apps that share this system also share a set of layout/markup/copy conventions s
 - Stack of `<div class="card" style="margin-bottom:16px">` sections — never `1rem`/`1.5rem`/`12px`/`20px`
 - Each section: `<h3>` (sentence case) + `<p class="stat-label">` description + content + `.toolbar` action row
 - Buttons: only `btn-primary` / `btn-secondary` / `btn-ghost` / `btn-danger` — never `btn-success`/`btn-error`
+- Modal actions: always in `.modal-footer` (right-aligned, plain `btn`), affirmative action rightmost, cancel to its left, destructive far-left via `margin-right:auto`; in-card rows are the mirror (primary first, left, `btn-sm`)
+- Row/chip/field remove `×` inside an uncommitted form: `btn-ghost`, no confirm; `btn-danger` = persisted destruction, always confirmed
 - Numbers: mono + tabular-nums; `var(--red-11)` for outflow, `var(--green-11)` for inflow; unicode minus `−` not hyphen
 - Tables wrapped in `.table-responsive`; shared `<colgroup>` widths when stacked across cards
 - Color tokens: Radix scale only (`var(--green-9)`), never legacy aliases (`var(--success-500)`, `var(--hover-bg)`, `var(--color-bg)`, `var(--color-border)` — those are forbidden and have all been swept from the production apps)
