@@ -565,7 +565,34 @@ Sizes: plain `btn` in modal footers (they're dialog-level actions); `btn-sm` for
 
 ### Destructive micro-actions
 
-A `×` that removes a row, chip, or field **inside an uncommitted form** is `btn-ghost` — no confirm needed, nothing is persisted until save. `btn-danger` is reserved for committing destruction of persisted data, and is always paired with a confirm (dialog or `confirm()`/`turbo_confirm`).
+A `×` that removes a row, chip, or field **inside an uncommitted form** is `btn-ghost` — no confirm needed, nothing is persisted until save. `btn-danger` is reserved for committing destruction of persisted data, and is always paired with a confirm.
+
+### Confirms — `dsConfirm()`, not `window.confirm()`
+
+`shared-core.js` ships `dsConfirm(message, opts) → Promise<boolean>` — a styled DS modal (affirmative rightmost; `danger: true` default renders it `btn-danger`, which deliberately opts it out of modal-keys' Enter-to-primary). Rails `data-turbo-confirm` is auto-routed through it, so `button_to ... turbo_confirm:` needs no change. New JS code never calls native `confirm()`:
+
+```js
+if (!(await dsConfirm('Delete this goal?'))) return;
+// or in an onclick: onclick="dsConfirm('Remove?').then(ok => { if (ok) remove(id) })"
+```
+
+Typed-confirmation flows (type RESTORE/DELETE to proceed) keep their bespoke modals.
+
+### Card stacks — `.card-stack`
+
+Wrap a page's stacked cards in `<div class="card-stack">` (flex column, 16px gap) instead of per-card `style="margin-bottom:16px"`. New pages use the wrapper; existing margin-bottom stacks are fine until touched.
+
+### Danger zone — `.card.danger-zone`
+
+Each app's settings page collects its destructive actions (wipe, restore-overwrite, mass delete) in ONE card marked `class="card danger-zone"` (red border, red `h3`), last on the page.
+
+### Row actions — `.row-actions`
+
+The action cluster at the end of a table/list row is `<span class="row-actions">` holding `btn-ghost btn-sm` (and at most one `btn-danger btn-sm`) buttons — never hand-rolled flex with custom padding. Overflow beyond ~3 actions collapses into a `⋮` ghost button + `.dropdown`.
+
+### Filter chips — `.filter-chip`
+
+Toggle-state filters (status tabs, category filters) are `.filter-chip` elements (`<a>` or `<button>`) with `.active` on the current one — not `btn-secondary` rows. Buttons stay for one-shot actions.
 
 ### Forbidden color tokens
 

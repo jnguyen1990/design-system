@@ -1330,6 +1330,15 @@ tbody td {
     border-top: 1px solid var(--border);
 }
 
+/* Destructive extra in a modal footer sits far-left (brand-guide §13).
+   Matches a bare .btn-danger or one wrapped in a form (button_to). Only
+   :first-child, so a confirm dialog's affirmative btn-danger (last child)
+   stays right-aligned. */
+.modal-footer > .btn-danger:first-child,
+.modal-footer > form:first-child:has(> .btn-danger) {
+    margin-right: auto;
+}
+
 /* ============================================================
    Stats / metrics
    ============================================================ */
@@ -1401,6 +1410,56 @@ tbody td {
     gap: var(--space-2);
     flex-wrap: wrap;
     align-items: center;
+}
+
+/* ── Layout rhythm ─────────────────────────────────────────────────────
+   Wrap stacked cards in .card-stack instead of per-card margin-bottom —
+   one 16px gap, no ad-hoc margins (brand-guide §13). */
+.card-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+.card-stack > .card { margin-bottom: 0; }
+
+/* Settings danger zone: the one card per app that holds destructive
+   actions (wipe, restore-overwrite, delete account/data). */
+.card.danger-zone { border-color: var(--red-6); }
+.card.danger-zone > h3 { color: var(--red-11); }
+
+/* ── Row actions ───────────────────────────────────────────────────────
+   Action cluster at the end of a table/list row: ghost icon buttons,
+   right-aligned, never wraps. Pair with .btn-ghost/.btn-danger btn-sm. */
+.row-actions {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+/* ── Filter chips ──────────────────────────────────────────────────────
+   Toggle-state filters (works as <a> or <button>). Promoted from
+   mealplanner 2026-09-01. Active = accent border. */
+.filter-chip {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    color: var(--text-muted);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    cursor: pointer;
+}
+.filter-chip:hover { border-color: var(--border-hover); color: var(--text); }
+.filter-chip.active {
+    color: var(--text);
+    border-color: var(--accent-9);
+    background: var(--bg);
 }
 
 /* ============================================================

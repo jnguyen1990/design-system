@@ -45,7 +45,8 @@ Push to `main`. Cloudflare Workers Static Assets auto-deploys the repo root (con
 - Radix Colors paired light/dark scales — semantic tokens (`--bg`, `--panel`, `--border`, `--text`, `--{color}-{1..12}`)
 - Per-app accent via `data-app` attribute
 - Responsive sidebar layout with mobile menu
-- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`, `.app-card`, `.insight-card`, `.dropdown`, `.toolbar`, `.table-responsive`
+- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`, `.app-card`, `.insight-card`, `.dropdown`, `.toolbar`, `.table-responsive`, `.card-stack`, `.danger-zone`, `.row-actions`, `.filter-chip`
+- `dsConfirm(message, opts)` in shared-core.js — styled Promise-based confirm; auto-wired into Turbo's `data-turbo-confirm`. New code never calls native `confirm()`
 - Session/calendar widgets: `.session-card` (with `.session-type-*` color variants), `.session-done` indicator, `.sleep-chip`, `.vitals-chip`, `.vitals-modal-grid`, `.session-done-mark` — all driven by [`session-render.js`](session-render.js)
 - Mobile-first breakpoints (768px, 1024px)
 

@@ -14,6 +14,11 @@
                                         (mealplanner + budgeter override: other glyphs)
      - showStatus(divId, message, type) status-message div; success auto-hides in 3s
                                         (budgeter overrides: defaults type to 'info')
+     - dsConfirm(message, opts)         styled Promise<boolean> replacement for
+                                        window.confirm(). opts: title, confirmLabel,
+                                        cancelLabel, danger (default true — affirmative
+                                        renders btn-danger; false → btn-primary).
+                                        Auto-wired into Turbo's data-turbo-confirm.
      - installNavHotkeys(opts)          ⌘1..⌘9 sidebar nav; call once per page.
                                         opts.allowCtrl — also respond to Ctrl (default
                                         false: Mac-only Meta, so Ctrl+1..9 tab switching
@@ -87,6 +92,64 @@
         div.style.display = 'block';
         if (type === 'success') setTimeout(() => { div.style.display = 'none'; }, 3000);
     };
+
+    // Styled confirm dialog (brand-guide §13). Builds one reusable DS modal.
+    // The affirmative sits rightmost; danger:true renders it btn-danger, which
+    // also means modal-keys' Enter-to-primary deliberately does NOT fire it.
+    global.dsConfirm = function dsConfirm(message, opts = {}) {
+        const danger = opts.danger !== false;
+        let modal = document.getElementById('ds-confirm-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'ds-confirm-modal';
+            modal.innerHTML =
+                '<div class="modal-box" style="max-width:480px">' +
+                '<div class="modal-header"><h3 id="ds-confirm-title"></h3>' +
+                '<button class="modal-close btn-ghost" data-ds-confirm="cancel" aria-label="Close">&times;</button></div>' +
+                '<div class="modal-body"><p id="ds-confirm-message" style="margin:0"></p></div>' +
+                '<div class="modal-footer">' +
+                '<button class="btn btn-secondary" data-ds-confirm="cancel"></button>' +
+                '<button class="btn" data-ds-confirm="ok"></button></div></div>';
+            document.body.appendChild(modal);
+        }
+        modal.querySelector('#ds-confirm-title').textContent = opts.title || 'confirm';
+        modal.querySelector('#ds-confirm-message').textContent = message;
+        modal.querySelector('.modal-footer [data-ds-confirm="cancel"]').textContent = opts.cancelLabel || 'cancel';
+        const okBtn = modal.querySelector('[data-ds-confirm="ok"]');
+        okBtn.textContent = opts.confirmLabel || 'confirm';
+        okBtn.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+        modal.classList.add('modal-open');
+        okBtn.focus();
+        return new Promise(resolve => {
+            function done(ok) {
+                modal.classList.remove('modal-open');
+                modal.removeEventListener('click', onClick);
+                document.removeEventListener('keydown', onKey, true);
+                resolve(ok);
+            }
+            function onClick(e) {
+                const act = e.target.closest('[data-ds-confirm]');
+                if (act) return done(act.getAttribute('data-ds-confirm') === 'ok');
+                if (e.target === modal) done(false);  // backdrop click
+            }
+            function onKey(e) {
+                if (e.key === 'Escape') { e.preventDefault(); done(false); }
+            }
+            modal.addEventListener('click', onClick);
+            document.addEventListener('keydown', onKey, true);
+        });
+    };
+
+    // Route Rails/Turbo data-turbo-confirm through the styled dialog. Turbo
+    // (an importmap module) is loaded by DOMContentLoaded when present.
+    document.addEventListener('DOMContentLoaded', () => {
+        const T = global.Turbo;
+        if (!T) return;
+        const method = (msg) => global.dsConfirm(msg);
+        if (T.config && T.config.forms) T.config.forms.confirm = method;
+        else if (T.setConfirmMethod) T.setConfirmMethod(method);
+    });
 
     // ⌘1..⌘9 — jump to the matching sidebar link. Skip when the user is typing.
     global.installNavHotkeys = function installNavHotkeys(opts = {}) {
