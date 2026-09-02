@@ -536,14 +536,6 @@ label {
     margin-left: auto;
 }
 
-/* The apps-launcher (apps-launcher.js) floats fixed in the viewport's
-   top-right — 5 icons ≈ 190px wide. On desktop, header content that can
-   reach that corner reserves clearance so nothing renders beneath it. */
-@media (min-width: 769px) {
-    .page-crumb { padding-right: 210px; }
-    .page-header .header-actions { margin-right: 200px; }
-}
-
 .page-title {
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
@@ -601,6 +593,77 @@ label {
     padding: var(--space-2) var(--space-3);
     border-top: 1px solid var(--border);
     margin-top: auto;
+}
+
+/* Apps dock — app icons + theme toggle, rendered into .sidebar-footer by
+   apps-launcher.js. One home for cross-app chrome on every page. */
+.app-dock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: var(--space-2) var(--space-1);
+}
+
+.app-dock .dock-app {
+    display: inline-flex;
+    border-radius: 8px;
+    opacity: 0.5;
+    transition: opacity var(--motion-fast);
+}
+
+.app-dock a.dock-app:hover { opacity: 1; }
+
+.app-dock .dock-app.current {
+    opacity: 1;
+    background: var(--panel);
+    box-shadow: 0 0 0 1px var(--border-hover);
+}
+
+.app-dock .dock-app svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+.dock-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    margin: 0 2px;
+}
+
+.dock-theme {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0;
+}
+
+.dock-theme:hover {
+    background: var(--panel-hover);
+    color: var(--text);
+}
+
+/* App logo beside the name in .sidebar-header. */
+.brand-logo {
+    display: inline-flex;
+    margin-right: var(--space-2);
+    vertical-align: middle;
+}
+
+.brand-logo svg, .brand-logo img {
+    width: 22px;
+    height: 22px;
+    display: block;
+    border-radius: 5px;
 }
 
 /* Mono+muted meta text utilities. The "mono + muted + small" combination

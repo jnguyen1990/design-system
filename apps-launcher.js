@@ -1,6 +1,8 @@
-// Apps launcher — top-right row of app icons that switches between Joe's
-// self-hosted apps. Auto-injects on DOMContentLoaded; layouts only need to
-// load this script. Reads `data-app` on <html> to highlight the current app.
+// Apps dock — row of app icons + theme toggle rendered into the sidebar
+// footer (bottom-left), switching between Joe's self-hosted apps.
+// Auto-injects on DOMContentLoaded; layouts only need a .sidebar (the
+// .sidebar-footer is created if absent). Reads `data-app` on <html> to
+// highlight the current app. Styles live in design-system.css (.app-dock).
 (function () {
   if (window.__appsLauncherLoaded) return;
   window.__appsLauncherLoaded = true;
@@ -99,81 +101,55 @@
 
   function init() {
     const currentApp = document.documentElement.getAttribute("data-app") || "";
+    const sidebar = document.querySelector(".sidebar");
+    if (!sidebar) return;
 
-    const bar = document.createElement("div");
-    bar.className = "apps-launcher-bar";
-    Object.assign(bar.style, {
-      position: "fixed",
-      top: "var(--space-3)",
-      right: "var(--space-4)",
-      zIndex: "200",
-      display: "flex",
-      alignItems: "center",
-      gap: "6px"
-    });
+    let footer = sidebar.querySelector(".sidebar-footer");
+    if (!footer) {
+      footer = document.createElement("div");
+      footer.className = "sidebar-footer";
+      sidebar.appendChild(footer);
+    }
+    footer.innerHTML = "";
+
+    const dock = document.createElement("div");
+    dock.className = "app-dock";
 
     APPS.forEach(app => {
       const isCurrent = app.id === currentApp;
       const disabled = !app.url;
-      const tag = disabled || isCurrent ? "div" : "a";
-      const item = document.createElement(tag);
-      item.className = "apps-launcher-item";
+      const item = document.createElement(disabled || isCurrent ? "span" : "a");
+      item.className = "dock-app" + (isCurrent ? " current" : "");
       item.title = isCurrent
         ? `${app.name} (current)`
         : disabled
           ? `${app.name} (coming soon)`
           : `Switch to ${app.name}`;
       if (!disabled && !isCurrent) item.setAttribute("href", app.url);
-      Object.assign(item.style, {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "3px",
-        opacity: isCurrent ? "1" : disabled ? "0.4" : "0.6",
-        transition: "opacity 120ms, transform 120ms",
-        cursor: disabled ? "default" : isCurrent ? "default" : "pointer",
-        textDecoration: "none"
-      });
-
-      const iconWrap = document.createElement("span");
-      Object.assign(iconWrap.style, {
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "32px",
-        height: "32px",
-        borderRadius: "var(--radius-sm)",
-        background: isCurrent ? "var(--panel)" : "transparent",
-        boxShadow: isCurrent ? "0 0 0 1px var(--border-hover)" : "none",
-        transition: "background 120ms, box-shadow 120ms"
-      });
-      iconWrap.innerHTML = app.logo;
-      item.appendChild(iconWrap);
-
-      const dot = document.createElement("span");
-      Object.assign(dot.style, {
-        width: "4px",
-        height: "4px",
-        borderRadius: "50%",
-        background: isCurrent ? "var(--accent-9, var(--text))" : "transparent",
-        transition: "background 120ms"
-      });
-      item.appendChild(dot);
-
-      if (!disabled && !isCurrent) {
-        item.addEventListener("mouseenter", () => {
-          item.style.opacity = "1";
-          item.style.transform = "translateY(-1px)";
-        });
-        item.addEventListener("mouseleave", () => {
-          item.style.opacity = "0.6";
-          item.style.transform = "";
-        });
-      }
-      bar.appendChild(item);
+      item.innerHTML = app.logo;
+      dock.appendChild(item);
     });
 
-    document.body.appendChild(bar);
+    const sep = document.createElement("span");
+    sep.className = "dock-sep";
+    dock.appendChild(sep);
+
+    // Same glyph convention as the old per-app toggles: sun while dark
+    // (click for light), moon while light. toggleTheme() from shared-core.js.
+    const themeBtn = document.createElement("button");
+    themeBtn.type = "button";
+    themeBtn.className = "dock-theme";
+    themeBtn.title = "Toggle theme";
+    const glyph = () =>
+      document.documentElement.getAttribute("data-theme") === "dark" ? "\u2600" : "\u263D";
+    themeBtn.textContent = glyph();
+    themeBtn.addEventListener("click", () => {
+      if (window.toggleTheme) window.toggleTheme();
+      themeBtn.textContent = glyph();
+    });
+    dock.appendChild(themeBtn);
+
+    footer.appendChild(dock);
   }
 
   if (document.readyState === "loading") {
