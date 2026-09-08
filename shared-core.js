@@ -113,11 +113,11 @@
                 '<button class="btn" data-ds-confirm="ok"></button></div></div>';
             document.body.appendChild(modal);
         }
-        modal.querySelector('#ds-confirm-title').textContent = opts.title || 'confirm';
+        modal.querySelector('#ds-confirm-title').textContent = opts.title || 'Confirm';
         modal.querySelector('#ds-confirm-message').textContent = message;
-        modal.querySelector('.modal-footer [data-ds-confirm="cancel"]').textContent = opts.cancelLabel || 'cancel';
+        modal.querySelector('.modal-footer [data-ds-confirm="cancel"]').textContent = opts.cancelLabel || 'Cancel';
         const okBtn = modal.querySelector('[data-ds-confirm="ok"]');
-        okBtn.textContent = opts.confirmLabel || 'confirm';
+        okBtn.textContent = opts.confirmLabel || 'Confirm';
         okBtn.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
         modal.classList.add('modal-open');
         okBtn.focus();
