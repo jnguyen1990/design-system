@@ -6,13 +6,14 @@ A unified design language for personal self-hosted apps (Hub, Budgeter, Fitness,
 
 ## 1. Brand pillars
 
-**Sharp. Precise. Technical.**
+**Sharp. Precise. Warm-instrumented.** *(v4)*
 
-Apps feel like considered tools. Linear's edge with Things 3's spaciousness. No marketing fluff, no warmth-for-warmth's-sake, no ornament. Every pixel earns its place.
+Apps feel like considered tools with product polish. Linear's edge, Things 3's spaciousness, and (since v4) a touch of elevation and tint so screens read like an app rather than a config panel. Every pixel earns its place.
 
 ### Voice & tone
 - Direct. No hype, no exclamation points.
-- Lowercase UI labels where it doesn't hurt clarity (`new entry`, `today`, `archive`).
+- **Sentence case everywhere** (v4 — replaces the old lowercase-labels rule): `New entry`, `Today`, `Archive`, `Apr 22 · Amex`.
+- **Exception:** table headers (`thead th`) and stat labels (`.stat-label`) are **UPPERCASE micro-labels** (11px, +0.05em tracking, faint) — kept deliberately as an instrument-panel signature alongside mono numbers.
 - Sentence case — never Title Case — for buttons and menus.
 - Monospace for anything data-shaped: IDs, timestamps, currency, counts, keyboard shortcuts.
 - Empty states: one short line of copy, no illustration.
@@ -78,10 +79,14 @@ Step intent (memorize):
 ### Neutral scale: `slate`
 
 ```css
-/* Light + dark are paired automatically by Radix */
---bg:           var(--slate-1);    /* page background */
---bg-subtle:    var(--slate-2);    /* subtle surface, card fill */
---panel:        var(--slate-3);    /* raised UI rest */
+/* Light + dark are paired automatically by Radix.
+   v4 surface model: the PAGE takes the subtle tint; CARDS are the lighter
+   elevated surface (inverted from v3). */
+--bg:           var(--slate-2);    /* page + sidebar ground (dark: slate-1) */
+--bg-subtle:    var(--slate-2);
+--card:         #ffffff;           /* elevated card surface (dark: slate-2) */
+--card-border:  var(--slate-4);    /* near-invisible card edge (hover: slate-6) */
+--panel:        var(--slate-3);    /* raised UI rest, row hover */
 --panel-hover:  var(--slate-4);
 --panel-active: var(--slate-5);
 --border:       var(--slate-6);    /* default border */
@@ -138,7 +143,7 @@ The app UI stays neutral. Each app picks **one** Radix accent for branding momen
 | Fitness | `orange` |
 | Future apps | one Radix accent each, no repeats |
 
-The brand color appears in: logo, favicon, empty-state illustration tint, onboarding pages, loading states. **Not** in primary buttons or chrome — those use the neutral system or a shared `indigo` accent.
+The brand color appears in: logo, favicon, empty-state illustration tint, onboarding pages, loading states — **and, since v4, in five chrome moments**: the primary button (`.btn-primary` → `--accent-500`), the active nav item (`--accent-soft` tinted bg + `--accent-text`), the focus ring, text selection (`::selection`), and checked checkboxes/radios. Everything else in chrome stays neutral slate. The alpha tokens (`--accent-soft` = accent `a3`, `--accent-soft-hover` = `a4`) composite correctly on any surface and remap per app.
 
 ---
 
@@ -183,25 +188,25 @@ The brand color appears in: logo, favicon, empty-state illustration tint, onboar
 
 ## 6. Surfaces
 
-### Corners
+### Corners (v4)
 ```css
---radius-sm: 4px;   /* buttons, inputs, badges, chips */
---radius-md: 6px;   /* cards, panels, modals */
---radius-lg: 8px;   /* page-level containers */
+--radius-sm: 7px;   /* buttons, inputs, badges, chips, nav items */
+--radius-md: 9px;   /* cards, panels, modals, dropdowns */
+--radius-lg: 12px;  /* page-level containers */
 ```
-Never larger than 8px. No pills.
+Never larger than 12px. No pills. (16px checkboxes stay at 4px so they don't read as circles.)
 
-### Cards
+### Cards (v4 — elevated)
 ```css
 .card {
-  background: var(--bg-subtle);            /* slate-2 */
-  border: 1px solid var(--border);         /* slate-6 */
+  background: var(--card);                  /* white / dark slate-2 */
+  border: 1px solid var(--card-border);     /* slate-4, near-invisible */
   border-radius: var(--radius-md);
   padding: var(--space-5);                  /* 20px default */
-  /* no shadow — shadows reserved for floating elements */
+  box-shadow: var(--shadow-card);           /* soft two-layer resting shadow */
 }
 .card:hover {                               /* if interactive */
-  border-color: var(--border-hover);        /* slate-7 */
+  border-color: var(--card-border-hover);   /* slate-6 */
 }
 
 /* Density modifiers — collapse old per-app .acc-card / .pr-card / .day-col duplicates */
@@ -221,15 +226,14 @@ For tile-style numeric cards (PRs, account balances, KPI metrics), use the dedic
 </div>
 ```
 
-### Elevation
-- **Resting:** flat, no shadow
-- **Interactive hover:** border darkens, no lift
-- **Floating** (popover, dropdown, modal):
+### Elevation (v4)
+- **Resting cards:** soft two-layer shadow — `--shadow-card`:
   ```css
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);     /* light */
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);      /* dark */
-  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(16,20,26,0.05), 0 6px 20px rgba(16,20,26,0.06);  /* light */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.38),   0 8px 24px rgba(0,0,0,0.32);      /* dark */
   ```
+- **Interactive hover:** border darkens, no lift, no shadow growth
+- **Floating** (popover, dropdown, modal): `--shadow-floating` as before, on the `--card` surface
 
 ---
 
@@ -237,12 +241,12 @@ For tile-style numeric cards (PRs, account balances, KPI metrics), use the dedic
 
 Linear-style: solid fill + subtle inner highlight + tiny shadow. Tactile, not skeuomorphic.
 
-### Primary
+### Primary (v4 — per-app accent)
 ```css
 .btn-primary {
-  background: var(--indigo-9);
+  background: var(--accent-500);   /* green in Budgeter, orange in Fitness, slate in Base */
   color: white;
-  border: 1px solid var(--indigo-10);
+  border: 1px solid var(--accent-600);
   border-radius: var(--radius-sm);
   height: 36px;
   padding: 0 12px;
@@ -252,8 +256,8 @@ Linear-style: solid fill + subtle inner highlight + tiny shadow. Tactile, not sk
     0 1px 2px rgba(0,0,0,0.08);
   transition: background 120ms ease-out, border-color 120ms ease-out;
 }
-.btn-primary:hover  { background: var(--indigo-10); }
-.btn-primary:active { background: var(--indigo-11); }
+.btn-primary:hover  { background: var(--accent-600); }
+.btn-primary:active { background: var(--accent-700); }
 ```
 
 ### Secondary
@@ -362,36 +366,37 @@ Minimal. No springs, no layout animations.
 - 8px colored dot (`--{category}-9`), 10px gap to label
 - Item height: 32px, padding: 6px 12px
 - Hover: `--panel` background, no border change
-- Selected: `--panel-hover` background, dot becomes filled chip
+- Selected (v4): `--accent-soft` tinted background, `--accent-text` label, semibold
 - Kbd hint: Geist Mono 11px, `--text-faint`
 
-### Status badge
+### Status badge (v4 — tinted chip)
 ```
 ┌────────────┐
-│ ● Active   │
+│  Active    │
 └────────────┘
 ```
 ```css
 .badge {
   display: inline-flex; align-items: center; gap: 6px;
-  height: 20px; padding: 0 8px;
-  background: var(--{color}-3);
+  height: 22px; padding: 0 9px;
+  background: var(--{color}-a3);   /* alpha tint — composites on any surface */
   color: var(--{color}-11);
-  border: 1px solid var(--{color}-6);
+  border: 1px solid transparent;   /* borderless; keeps box metrics */
   border-radius: var(--radius-sm);
-  font: 500 11px 'Inter', sans-serif;
+  font: 500 12px 'Inter', sans-serif;
 }
-.color-dot { /* leading dot — use a modifier for the color, never inline style */
-  width: 8px; height: 8px; border-radius: 50%;
-}
-.color-dot--green { background: var(--green-9); }   /* +9 other categorical modifiers */
-.color-dot--accent { background: var(--accent-500); } /* per-app accent */
+/* Categorical modifiers carry the tint: .badge--green, .badge--red, … .badge--slate.
+   Semantic variants unchanged in name: .badge-success/-warning/-error/-info/-accent.
+   The tint IS the category color, so .color-dot inside a modified badge is hidden
+   automatically — dots remain for standalone use (legends, category lists). */
 .badge-numeric { font-family: 'Geist Mono', monospace; }
 ```
 
 ```html
-<!-- ✓ do -->
-<span class="badge badge-success"><span class="color-dot color-dot--green"></span> groceries</span>
+<!-- ✓ do (v4) -->
+<span class="badge badge--green">Groceries</span>
+<!-- ✓ still fine — dot markup is auto-hidden inside variant badges -->
+<span class="badge badge-success"><span class="color-dot color-dot--green"></span> Groceries</span>
 <!-- ✗ don't -->
 <span class="badge badge-success"><span class="color-dot" style="background: var(--green-9);"></span> groceries</span>
 ```

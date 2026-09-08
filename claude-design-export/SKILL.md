@@ -19,7 +19,7 @@ If working on production code, copy assets and read the rules here to become an 
 Key rules to internalize:
 
 **Voice & content**
-- Lowercase UI labels where clarity allows (`new entry`, `today`); sentence case for buttons (`Add transaction`).
+- **Sentence case everywhere** (v4): `New entry`, `Today`, `Apr 22 · Amex`, `+ Add transaction`. Never Title Case. Exception: table headers and `.stat-label` render UPPERCASE micro-labels (built into the CSS — just write sentence-case text).
 - No emoji. Anywhere. Categorical Radix colors do the work emoji might otherwise do.
 - Empty states: one line of copy, no illustration. Errors: name what's wrong, not what to do (`Amount required`, not `Please enter an amount`).
 
@@ -28,23 +28,23 @@ Key rules to internalize:
 - For amount columns / +/- deltas, use `.td-amount` + `.text-amount-positive` / `.text-amount-negative` / `.text-amount-neutral`.
 
 **Color & accent**
-- Chrome stays neutral (slate). Per-app accent appears only in logo, favicon, empty-state tint, onboarding.
+- Chrome stays neutral (slate) except five v4 accent moments (all automatic from the CSS): primary button, active nav item (`--accent-soft` tint), focus ring, text selection, checked controls. Beyond those, per-app accent appears only in logo, favicon, empty-state tint, onboarding.
 - Set `<html data-app="{base|budgeter|fitness}" data-theme="{light|dark}">` on every page — this drives `--accent-{50..700}` and the `--focus-ring`.
-- Categorical color comes through `<span class="color-dot color-dot--{red|orange|amber|green|teal|blue|indigo|purple|pink|slate|accent}"></span>`. **Never** inline `style="background: var(--X-9)"`.
+- Categorical color comes through tinted chips: `<span class="badge badge--{red|orange|amber|green|teal|blue|indigo|purple|pink|slate}">Label</span>` (v4 — alpha-tint bg, step-11 text, no dot needed). Standalone `.color-dot--{color}` remains for legends/lists. **Never** inline `style="background: var(--X-9)"`.
 - Focus rings inherit the per-app accent via `--focus-ring` → `--accent-300`. Don't hardcode focus colors.
 
-**Surfaces**
-- Cards are flat (no shadow). Default `.card` (20px), `.card-dense` (16px) for stat tiles, `.card-compact` (12px) for calendar/grid cells.
+**Surfaces (v4 — elevated)**
+- The page takes the subtle tint (`--bg`); cards are the lighter elevated surface: `--card` bg, `--card-border`, 9px radius, resting `--shadow-card`. All baked into `.card` / `.stat-card` — never hand-roll card styles. Default `.card` (20px), `.card-dense` (16px) for stat tiles, `.card-compact` (12px) for calendar/grid cells.
 - For tile-style numeric metrics, use `.stats-grid > .stat-card` with `.stat-label` / `.stat-value` / `.stat-subtext` children — don't reinvent.
-- Shadows reserved for floating elements (popover, dropdown, modal).
+- Resting cards carry the soft `--shadow-card`; hover never grows a shadow. `--shadow-floating` stays reserved for popover/dropdown/modal.
 
 **Interaction**
-- Hover = next slate step (panel→panel-hover). Never opacity, never lift, never scale.
+- Hover = next slate step (panel→panel-hover); card hover = border to `--card-border-hover`. Never opacity, never lift, never scale, never shadow growth.
 - Animation is minimal: `120ms` / `160ms` / `200ms`, ease-out only (`cubic-bezier(0.2, 0, 0, 1)`).
 - Density floor: 36px controls, 36–40px rows. Spacious, not cramped.
 
 **Tables**
-- Use bare `<table>` inside `.table-responsive`. Semantic td modifiers: `.td-date` (mono+muted+xs+nowrap), `.td-amount` (mono+tabular+right), `.td-actions` (48px wide), `.td-muted` (mono-friendly secondary).
+- Use bare `<table>` inside `.table-responsive`. Semantic td modifiers: `.td-date` (mono+muted+xs+nowrap+capitalize), `.td-amount` (mono+tabular+right), `.td-actions` (48px wide), `.td-muted` (mono-friendly secondary).
 
 **Forms**
 - `.form-control` for all inputs (text, number, date, select, textarea). `.form-group` wrapper, `.form-label` for labels, `.form-hint` for helper text, `.form-error` for error text. Set `aria-invalid="true"` on the input to trigger the red error border.

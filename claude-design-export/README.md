@@ -1,6 +1,6 @@
 # Joe's Personal Apps — Design System
 
-A unified design language for a constellation of self-hosted personal apps (**Base**, **Budgeter**, **Fitness**, and future projects). The aesthetic is **Linear-meets-Things-3**: sharp, precise, technical, with breathing room. Every pixel earns its place.
+A unified design language for a constellation of self-hosted personal apps (**Base**, **Budgeter**, **Fitness**, and future projects). The aesthetic is **Linear-meets-Things-3, v4**: sharp and precise with product polish — elevated cards on a tinted page, mono numbers, accent-tinted chrome moments. Every pixel earns its place.
 
 ---
 
@@ -41,7 +41,7 @@ If a codebase or Figma exists, re-attach it via the Import menu so UI kits can b
 | **Fitness** | `orange` | Workout log, lifts, sessions. |
 | Future apps | one Radix accent each, no repeats | TBD |
 
-The shared **chrome** stays neutral across all apps. The brand accent appears only in the logo, favicon, empty-state tint, onboarding, and loading states — **never** in chrome buttons.
+The shared **chrome** stays neutral across all apps. The brand accent appears in the logo, favicon, empty-state tint, onboarding, loading states — and (v4) in five chrome moments: primary button, active nav item, focus ring, text selection, checked controls. Nowhere else in chrome.
 
 ---
 
@@ -54,10 +54,11 @@ The product **sounds like a tool**, not a product. No marketing voice, no emoji,
 - **Sober.** No "Awesome!", no "Welcome back ✨", no rallying.
 - **Functional.** Copy describes the system's state or the user's next action — nothing more.
 
-### Casing
-- **Lowercase UI labels** when clarity isn't hurt: `new entry`, `today`, `archive`, `inbox`, `someday`.
+### Casing (v4)
+- **Sentence case everywhere**: `New entry`, `Today`, `Archive`, `Apr 22 · Amex`. The v3 lowercase-labels rule is retired.
+- **Exception — uppercase micro-labels**: table headers (`thead th`) and stat labels (`.stat-label`) render UPPERCASE (11px, +0.05em tracking, faint). This is a deliberate instrument-panel signature; don't extend it to other labels.
 - **Sentence case** — never Title Case — for buttons, menus, headings: `Add transaction`, not `Add Transaction`.
-- **Sentence case** for page titles too: `Recent activity`, not `Recent Activity`.
+- `.td-date` applies `text-transform: capitalize`, so lowercase strftime output renders as `Apr 22` for free.
 - Acronyms keep their case: `CSV`, `ID`, `USD`.
 
 ### Person
@@ -74,7 +75,7 @@ The product **sounds like a tool**, not a product. No marketing voice, no emoji,
 | `Successfully saved!` | (silent — toast only on failure) |
 | `Oops, something went wrong.` | `Save failed. Network unreachable.` |
 | `Your Awesome Dashboard` | `Overview` |
-| `Click here to add a new transaction` | `+ new transaction` |
+| `Click here to add a new transaction` | `+ New transaction` |
 | `No items yet — let's add one!` | `No entries.` |
 
 ### Empty states
@@ -108,7 +109,7 @@ Always **monospace**, always tabular-nums. Currency, counts, durations, timestam
 - **Neutral chrome:** `slate` (slightly cool — `~#fafafa` light, `~#0a0a0a` dark; never pure black or white).
 - **12-step intent ladder:** step 1 page bg → step 9 solid accent → step 12 high-contrast text. Memorize it; never invent custom mid-scale colors.
 - **Categorical palette** (red/orange/amber/green/teal/blue/indigo/purple/pink) does the organizing work. Used as **dots, badges, and chips** — never as page background or large surface.
-- **Per-app accent** appears in logo + onboarding + empty-state tint only.
+- **Per-app accent** appears in logo, onboarding, empty-state tint — and (v4) primary button, active nav, focus ring, selection, checked controls. `--accent-soft`/`--accent-soft-hover` (accent a3/a4 alpha) + `--accent-text` (accent 11) are the chrome-tint tokens.
 
 ### Type
 - **Inter** for body and UI. Weights: 400/500/600 (never 700+).
@@ -145,9 +146,9 @@ Always **monospace**, always tabular-nums. Currency, counts, durations, timestam
 - **1px solid** always. Never 2px hairlines, never dashed, never dotted on chrome.
 - Default: `--border` (slate-6). Interactive: `--border-hover` (slate-7) on hover. Focus: `--focus-ring` (per-app accent step-7) — used as both the input border and a 2px outline at 30% alpha. Renders indigo by default, green in Budgeter, orange in Fitness, slate in Base.
 
-### Shadows
-- **Resting elements have no shadow.** Cards are flat. Hover does not introduce shadow.
-- **Floating elements only** (popover, dropdown, modal): `0 8px 24px rgba(0,0,0,0.12)` light / `…0.4` dark.
+### Shadows (v4)
+- **Resting cards carry `--shadow-card`** — `0 1px 2px rgba(16,20,26,0.05), 0 6px 20px rgba(16,20,26,0.06)` light, deeper in dark. Hover never grows it.
+- **Floating elements** (popover, dropdown, modal): `--shadow-floating` `0 8px 24px rgba(0,0,0,0.12)` light / `…0.4` dark, on the `--card` surface.
 - Solid buttons get an inner highlight (`inset 0 1px 0 rgba(255,255,255,0.12)`) plus tiny press shadow (`0 1px 2px rgba(0,0,0,0.08)`) — Linear-style tactile, never skeuomorphic.
 - **No protection gradients.** Floating UI sits on a backdrop scrim instead.
 
@@ -161,16 +162,16 @@ Always **monospace**, always tabular-nums. Currency, counts, durations, timestam
 - **Not used in chrome.** No frosted glass, no backdrop-filter, no translucent panels.
 - Modal backdrop is the only translucent surface: `rgba(0,0,0,0.4)` light / `0.6` dark — solid scrim, no blur.
 
-### Corner radii
-- `4px` — buttons, inputs, badges, chips.
-- `6px` — cards, panels, modals.
-- `8px` — page-level containers (rare).
-- **Never** larger than 8px. **No pills.** No fully rounded avatars at >8px (use exact circles for avatars instead).
+### Corner radii (v4)
+- `7px` — buttons, inputs, badges, chips, nav items (`--radius-sm`).
+- `9px` — cards, panels, modals, dropdowns (`--radius-md`).
+- `12px` — page-level containers (rare, `--radius-lg`).
+- **Never** larger than 12px. **No pills.** Checkboxes stay 4px. Use exact circles for avatars/dots.
 
-### Cards
-- Background `--bg-subtle` (slate-2), 1px `--border` (slate-6), `radius-md` (6px), 20px padding.
-- **No shadow.** Hover only changes border color to `border-hover` (slate-7).
-- Interactive cards add `cursor: pointer`. They do not lift.
+### Cards (v4 — elevated)
+- Background `--card` (white light / slate-2 dark), 1px `--card-border` (slate-4), `radius-md` (9px), 20px padding, resting `--shadow-card` (soft two-layer).
+- The **page** takes the subtle tint (`--bg` = slate-2 light / slate-1 dark); cards float above it — inverted from v3.
+- Hover only changes border color to `--card-border-hover` (slate-6). Interactive cards add `cursor: pointer`. They do not lift, and shadows never grow on hover.
 
 ---
 
