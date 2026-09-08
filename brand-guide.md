@@ -173,7 +173,7 @@ The brand color appears in: logo, favicon, empty-state illustration tint, onboar
 ## 5. Layout
 
 - **Width:** wide / responsive. Sidebar + main fills viewport. No artificial centered max-width on dashboard surfaces.
-- **Sidebar:** 240–260px fixed width. Things 3 style — colored dots before items, no section dividers, generous vertical rhythm, hover = `panel` background only.
+- **Sidebar:** 240px fixed width. Things 3 style — colored dots (9px) before items, 40px rows at 15px text (bolder v4.1 proportions, 2026-09-08 — nav no longer reads undersized against 24px page titles), optional UPPERCASE `.nav-section-label` micro-labels, generous vertical rhythm, hover = `panel` background only.
 - **Main padding:** 32px horizontal, 24px top, more below.
 - **Reading views** (long-form notes, settings, account pages): cap content width at 720px, centered.
 
@@ -229,8 +229,8 @@ For tile-style numeric cards (PRs, account balances, KPI metrics), use the dedic
 ### Elevation (v4)
 - **Resting cards:** soft two-layer shadow — `--shadow-card`:
   ```css
-  box-shadow: 0 1px 2px rgba(16,20,26,0.05), 0 6px 20px rgba(16,20,26,0.06);  /* light */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.38),   0 8px 24px rgba(0,0,0,0.32);      /* dark */
+  box-shadow: 0 1px 2px rgba(16,20,26,0.04), 0 3px 10px rgba(16,20,26,0.04);  /* light — softened 2026-09-08 */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3),    0 4px 12px rgba(0,0,0,0.24);      /* dark (elevation reads mostly via surface + border) */
   ```
 - **Interactive hover:** border darkens, no lift, no shadow growth
 - **Floating** (popover, dropdown, modal): `--shadow-floating` as before, on the `--card` surface
