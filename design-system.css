@@ -53,7 +53,17 @@
 
 /* ===== Imports: Webfonts ===== */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
-@import url("https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/style.css");
+
+/* Geist Mono via @font-face — the geist npm package ships only woff2, no CSS
+   (the old style.css @import 404'd silently and every number fell back to
+   SF Mono). Variable font covers all weights. */
+@font-face {
+    font-family: "Geist Mono";
+    src: url("https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/GeistMono-Variable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
 
 /* ============================================================
    :root — v3 tokens
@@ -1624,7 +1634,7 @@ tbody td {
 .filter-chip:hover { border-color: var(--border-hover); color: var(--text); }
 .filter-chip.active {
     color: var(--text);
-    border-color: var(--accent-9);
+    border-color: var(--accent-500);
     background: var(--bg);
 }
 
