@@ -15,7 +15,7 @@ Apps feel like considered tools with product polish. Linear's edge, Things 3's s
 - **Sentence case everywhere** (v4 — replaces the old lowercase-labels rule): `New entry`, `Today`, `Archive`, `Apr 22 · Amex`.
 - **Exception:** table headers (`thead th`) and stat labels (`.stat-label`) are **UPPERCASE micro-labels** (11px, +0.05em tracking, faint) — kept deliberately as an instrument-panel signature alongside mono numbers.
 - Sentence case — never Title Case — for buttons and menus.
-- Monospace for anything data-shaped: IDs, timestamps, currency, counts, keyboard shortcuts.
+- Monospace for anything data-shaped: IDs, timestamps, currency, counts, keyboard shortcuts. **Exception (v4.1, 2026-09-08): `.stat-value` big numbers are Inter** (tabular-nums kept) — stat tiles read as headline figures, not instrument data; table amounts/dates stay mono.
 - Empty states: one short line of copy, no illustration.
 - Error messages name what's wrong, not what to do (`Amount required` not `Please enter an amount`).
 

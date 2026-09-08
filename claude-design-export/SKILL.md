@@ -24,7 +24,7 @@ Key rules to internalize:
 - Empty states: one line of copy, no illustration. Errors: name what's wrong, not what to do (`Amount required`, not `Please enter an amount`).
 
 **Type**
-- Geist Mono for **all** numbers, IDs, timestamps, kbd hints — with `font-variant-numeric: tabular-nums`.
+- Geist Mono for numbers, IDs, timestamps, kbd hints — with `font-variant-numeric: tabular-nums`. **Exception: `.stat-value` (stat-tile big numbers) is Inter** — v4.1 decision (2026-09-08); the CSS handles it, just use `.stat-card`/`.stat-value` normally. Table data stays mono.
 - For amount columns / +/- deltas, use `.td-amount` + `.text-amount-positive` / `.text-amount-negative` / `.text-amount-neutral`.
 
 **Color & accent**

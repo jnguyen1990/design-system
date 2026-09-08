@@ -1551,7 +1551,9 @@ tbody td {
 }
 
 .stat-value {
-    font-family: var(--font-mono);
+    /* v4.1 (Joe, 2026-09-08): stat values are Inter, not mono — the one
+       deliberate exception to mono-for-numbers. Table data stays mono. */
+    font-family: var(--font-sans);
     font-variant-numeric: tabular-nums;
     font-size: var(--text-2xl);
     font-weight: var(--weight-semibold);
