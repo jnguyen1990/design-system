@@ -634,7 +634,7 @@ Use the unicode minus `−` (U+2212), not the hyphen `-`, so widths match the pl
 
 ### Tables
 
-Wrap every `<table>` in `<div class="table-responsive">` so it scrolls inside its card on mobile instead of pushing the page wider. For column-aligned tables across multiple cards (e.g. the budget page's "Monthly Bills" + "Everyday Expenses"), use a shared class with explicit `<colgroup>` widths so headers and cells line up identically across cards.
+Wrap every `<table>` in `<div class="table-responsive">` so it scrolls inside its card on mobile instead of pushing the page wider. Dense embedded tables (modal detail tables, plan segments, logged sets) take `class="table-compact"` (12px) instead of an inline `font-size` — one class, same density everywhere. For column-aligned tables across multiple cards (e.g. the budget page's "Monthly Bills" + "Everyday Expenses"), use a shared class with explicit `<colgroup>` widths so headers and cells line up identically across cards.
 
 Row pattern for a transaction-style list:
 - Date — mono, muted, lowercase short ("apr 22")

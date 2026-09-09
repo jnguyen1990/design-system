@@ -6,6 +6,13 @@
      - sessionCard({ id, type, title, meta, onClick, opacity, titleLen, done })
      - vitalsChip({ vitals, sleepSession, onClick })
      - openVitalsModal({ dateStr, vitals, sleepSession })
+     - typeChip(slug, extraStyle) — tinted session-type chip (no dot)
+     - renderPlanDetails(session, opts) — THE "Planned segments/exercises"
+       tables for a planned session's session_data. Shared by fitness's
+       detail modal and base's Today workout modal so the same session
+       renders identically in both apps. opts lets the host override
+       { ftp, detailCategory(slug), isIndoor(slug), formatPace(secPerKm),
+       extractHrTarget(seg) }; defaults below work standalone.
      - typeDot(slug), typeLabel(slug), escapeHtml(s), truncate(s, n), TYPE_DOTS
 
    Assumptions about the host page:
@@ -31,6 +38,115 @@
         },
         typeDot(slug) { return this.TYPE_DOTS[slug] || 'var(--slate-9)'; },
         typeLabel(slug) { return (slug || 'general').replace(/_/g, ' '); },
+        // Tinted session-type chip (v4: the tint IS the category color — no dot).
+        typeChip(slug, extraStyle) {
+            const t = slug || 'general';
+            return `<span class="session-type-badge session-type-${t}"${extraStyle ? ` style="${extraStyle}"` : ''}>${this.escapeHtml(this.typeLabel(t))}</span>`;
+        },
+        // Standalone fallbacks for renderPlanDetails; hosts with richer type
+        // metadata (fitness's server-driven WT) pass their own via opts.
+        defaultDetailCategory(slug) {
+            const s = slug || '';
+            if (s.includes('cycling')) return 'cycling';
+            if (s.includes('running')) return 'running';
+            if (s === 'lifting' || s === 'strength') return 'lifting';
+            if (s === 'mobility' || s === 'yoga') return 'mobility';
+            return null;
+        },
+        defaultIsIndoor(slug) { return /^indoor_/.test(slug || ''); },
+        formatPace(secPerKm) {
+            if (!secPerKm) return '-';
+            const m = Math.floor(secPerKm / 60), s = secPerKm % 60;
+            return `${m}:${String(s).padStart(2, '0')}/km`;
+        },
+        extractHrTarget(seg) {
+            if (!seg) return '—';
+            if (seg.hr_floor && seg.hr_ceiling) return `${seg.hr_floor}–${seg.hr_ceiling}`;
+            if (seg.hr_low && seg.hr_high) return `${seg.hr_low}–${seg.hr_high}`;
+            if (seg.hr_ceiling) return `<${seg.hr_ceiling}`;
+            const notes = seg.notes || '';
+            const range = notes.match(/HR\s+floor\s+(\d+),?\s*ceiling\s+(\d+)/i);
+            if (range) return `${range[1]}–${range[2]}`;
+            if (seg.max_hr) return `<${seg.max_hr}`;
+            const ceiling = notes.match(/HR\s+ceiling\s+(\d+)/i);
+            if (ceiling) return `<${ceiling[1]}`;
+            const less = notes.match(/HR\s*<\s*(\d+)/i);
+            if (less) return `<${less[1]}`;
+            if (/pace[- ]primary/i.test(notes)) return 'pace-led';
+            const rpe = notes.match(/RPE\s*(\d+)/i);
+            if (rpe) return `RPE ${rpe[1]}`;
+            if (/by feel/i.test(notes)) return 'feel';
+            return '—';
+        },
+
+        // "Planned segments / exercises" tables from a planned session's
+        // session_data. Same markup for every consumer: h4.subsection-title
+        // + table.table-compact.
+        renderPlanDetails(session, opts = {}) {
+            const wd = session.session_data || {};
+            const slug = session.session_type;
+            const dc = (opts.detailCategory || (s => this.defaultDetailCategory(s)))(slug);
+            const ftp = opts.ftp || 175;
+            const pace = opts.formatPace || (s => this.formatPace(s));
+            const hrTarget = opts.extractHrTarget || (s => this.extractHrTarget(s));
+            const indoor = (opts.isIndoor || (s => this.defaultIsIndoor(s)))(slug);
+            const h4 = t => `<h4 class="subsection-title" style="margin:12px 0 8px">${t}</h4>`;
+            let html = '';
+            if (dc === 'cycling' && wd.segments) {
+                const outdoor = !indoor;  // no power meter outdoors → HR
+                const head = outdoor ? '<th>HR target</th>' : '<th>Power</th><th>Watts</th>';
+                html += h4(`Planned segments${outdoor ? ' · outdoor (HR)' : ''}`) + `<table class="table table-compact"><thead><tr><th>Segment</th><th>Duration</th>${head}</tr></thead><tbody>`;
+                wd.segments.forEach(seg => {
+                    const dur = seg.duration_sec || seg.on_duration_sec || 0;
+                    const durStr = dur >= 60 ? Math.round(dur / 60) + ' min' : dur + 's';
+                    const durCell = seg.type === 'IntervalsT' ? seg.repeat + 'x ' + seg.on_duration_sec + 's/' + seg.off_duration_sec + 's' : durStr;
+                    let cells;
+                    if (outdoor) {
+                        let hr = '—';
+                        if (seg.type === 'IntervalsT') hr = `${seg.on_hr ? '<' + seg.on_hr : '—'} / ${seg.off_hr ? '<' + seg.off_hr : '—'}`;
+                        else if (seg.hr_low && seg.hr_high) hr = `${seg.hr_low}–${seg.hr_high}`;
+                        cells = `<td>${hr}</td>`;
+                    } else {
+                        let p = '', w = '';
+                        if (seg.type === 'Warmup' || seg.type === 'Cooldown') { p = (seg.power_low * 100).toFixed(0) + '%→' + (seg.power_high * 100).toFixed(0) + '%'; w = Math.round(seg.power_low * ftp) + '→' + Math.round(seg.power_high * ftp) + 'W'; }
+                        else if (seg.type === 'SteadyState') { p = (seg.power * 100).toFixed(0) + '%'; w = Math.round(seg.power * ftp) + 'W'; }
+                        else if (seg.type === 'IntervalsT') { p = (seg.on_power * 100).toFixed(0) + '%/' + (seg.off_power * 100).toFixed(0) + '%'; w = Math.round(seg.on_power * ftp) + '/' + Math.round(seg.off_power * ftp) + 'W'; }
+                        cells = `<td>${p}</td><td>${w}</td>`;
+                    }
+                    html += `<tr><td>${seg.name || seg.type}</td><td>${durCell}</td>${cells}</tr>`;
+                });
+                html += '</tbody></table>';
+            }
+            if (dc === 'lifting' && wd.exercises) {
+                html += h4('Planned exercises') + '<table class="table table-compact"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th><th>RPE</th><th>Notes</th></tr></thead><tbody>';
+                wd.exercises.forEach(ex => { html += `<tr><td><strong>${ex.name}</strong></td><td>${ex.sets}</td><td>${ex.reps}</td><td>${ex.weight_lbs} lbs</td><td>${ex.rpe || '-'}</td><td class="stat-label">${ex.notes || ''}</td></tr>`; });
+                html += '</tbody></table>';
+            }
+            if (slug === 'mobility' && wd.exercises) {
+                html += h4('Planned exercises') + '<table class="table table-compact"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps / Hold</th><th>Notes</th></tr></thead><tbody>';
+                wd.exercises.forEach(ex => { html += `<tr><td><strong>${ex.name}</strong></td><td>${ex.sets}</td><td>${ex.reps > 0 ? ex.reps : 'Hold'}</td><td class="stat-label">${ex.notes || ''}</td></tr>`; });
+                html += '</tbody></table>';
+            }
+            if (dc === 'running' && wd.segments) {
+                const head = indoor ? '<th>Speed</th><th>Incline</th><th>HR target</th>' : '<th>Pace</th><th>HR target</th>';
+                html += h4(`Planned segments${indoor ? ' · treadmill' : ''}`) + `<table class="table table-compact"><thead><tr><th>Segment</th><th>Duration</th>${head}</tr></thead><tbody>`;
+                wd.segments.forEach(seg => {
+                    const hr = hrTarget(seg);
+                    const paceStr = seg.speed_kmh ? pace(Math.round(3600 / seg.speed_kmh)) : '—';
+                    const cells = indoor
+                        ? `<td>${seg.speed_kmh ? seg.speed_kmh.toFixed(1) + ' km/h' : '—'}</td><td>${seg.incline_pct || 0}%</td><td>${hr}</td>`
+                        : `<td>${paceStr}</td><td>${hr}</td>`;
+                    html += `<tr><td>${seg.name}</td><td>${seg.duration_min} min</td>${cells}</tr>`;
+                });
+                html += '</tbody></table>';
+            }
+            const notes = (wd.segments || []).filter(seg => seg.notes);
+            if (html && notes.length) {
+                html += '<div style="margin-top:6px">' + notes.map(seg =>
+                    `<p class="stat-label" style="margin:2px 0;font-style:italic;">${this.escapeHtml(seg.name || seg.type)}: ${this.escapeHtml(seg.notes)}</p>`).join('') + '</div>';
+            }
+            return html;
+        },
         escapeHtml(s) {
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         },
@@ -40,14 +156,13 @@
         },
 
         sessionCard({ id, type, title, meta, onClick, opacity, titleLen = 30, done = false }) {
-            const dot = this.typeDot(type);
             const label = this.typeLabel(type);
             const styleExtra = opacity != null ? `opacity:${opacity};` : '';
             const doneMark = done ? `<span class="session-done-mark" title="Completed">✓</span>` : '';
             return `<div class="session-card session-type-${type}${done ? ' session-done' : ''}" style="display:flex;flex-direction:column;gap:2px;margin-bottom:4px;cursor:pointer;${styleExtra}" onclick="${onClick}">`
                 + `<span style="font-weight:500;font-size:var(--text-sm);display:flex;align-items:baseline;gap:4px;">${doneMark}<span style="min-width:0;overflow-wrap:anywhere;">${this.escapeHtml(this.truncate(title, titleLen))}</span></span>`
                 + (meta ? `<span style="font-family:var(--font-mono);color:var(--text-muted);font-size:11px;">${this.escapeHtml(meta)}</span>` : '')
-                + `<span class="badge session-type-${type}" style="align-self:flex-start;margin-top:2px;font-size:10px;"><span class="color-dot" style="background:${dot};"></span> ${this.escapeHtml(label)}</span>`
+                + `<span class="session-type-badge session-type-${type}" style="align-self:flex-start;margin-top:2px;font-size:10px;">${this.escapeHtml(label)}</span>`
                 + `</div>`;
         },
 

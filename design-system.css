@@ -1339,6 +1339,11 @@ input[type="radio"]:focus-visible {
     border: 1px solid var(--border);
 }
 
+/* Dense table variant for modals and embedded detail tables — replaces the
+   inline font-size:12px that apps used to hand-roll. */
+.table-compact { font-size: 12px; }
+.table-compact th, .table-compact td { font-size: 12px; }
+
 .table-responsive {
     overflow-x: auto;
     /* `overflow-x: auto` would otherwise force overflow-y to compute as auto
@@ -2244,6 +2249,11 @@ tbody td {
 .session-type-swimming { background: var(--blue-a3); color: var(--blue-11); }
 .session-type-rowing, .session-type-skiing { background: var(--indigo-a3); color: var(--indigo-11); }
 .session-type-sleep, .session-type-elliptical, .session-type-rest, .session-type-other, .session-type-workout { background: var(--slate-a3); color: var(--slate-11); }
+
+/* The tint IS the category color — any dot inside a session-type chip is
+   redundant (mirrors the [class*="badge--"] .color-dot rule). */
+.session-type-badge .color-dot,
+.badge[class*="session-type-"] .color-dot { display: none; }
 
 /* Session cards — neutral background, 1px border, colored type badge inside.
    Same look on dashboard week grids and calendar day cells. */
