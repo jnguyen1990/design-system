@@ -50,6 +50,10 @@
 @import url("https://cdn.jsdelivr.net/npm/@radix-ui/colors@3.0.0/purple-dark-alpha.css");
 @import url("https://cdn.jsdelivr.net/npm/@radix-ui/colors@3.0.0/pink-alpha.css");
 @import url("https://cdn.jsdelivr.net/npm/@radix-ui/colors@3.0.0/pink-dark-alpha.css");
+@import url("https://cdn.jsdelivr.net/npm/@radix-ui/colors@3.0.0/crimson.css");
+@import url("https://cdn.jsdelivr.net/npm/@radix-ui/colors@3.0.0/crimson-dark.css");
+@import url("https://cdn.jsdelivr.net/npm/@radix-ui/colors@3.0.0/crimson-alpha.css");
+@import url("https://cdn.jsdelivr.net/npm/@radix-ui/colors@3.0.0/crimson-dark-alpha.css");
 
 /* ===== Imports: Webfonts ===== */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
@@ -406,6 +410,24 @@
     --gradient-accent:        var(--blue-9);
     --gradient-accent-hover:  var(--blue-10);
     --gradient-accent-subtle: var(--blue-3);
+}
+
+/* Postings — crimson (job-hunt tracker) */
+[data-app="postings"] {
+    --accent-soft:       var(--crimson-a3);
+    --accent-soft-hover: var(--crimson-a4);
+    --accent-text:       var(--crimson-11);
+    --accent-50:  var(--crimson-3);
+    --accent-100: var(--crimson-4);
+    --accent-300: var(--crimson-7);
+    --accent-400: var(--crimson-8);
+    --accent-500: var(--crimson-9);
+    --accent-600: var(--crimson-10);
+    --accent-700: var(--crimson-11);
+    --color-primary: var(--crimson-9);
+    --gradient-accent:        var(--crimson-9);
+    --gradient-accent-hover:  var(--crimson-10);
+    --gradient-accent-subtle: var(--crimson-3);
 }
 
 /* ============================================================

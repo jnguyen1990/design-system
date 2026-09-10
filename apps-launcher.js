@@ -91,12 +91,27 @@
       '</g>' +
     '</svg>';
 
+  const LOGO_POSTINGS =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 32 32" fill="none">' +
+      '<defs><linearGradient id="al-bg-post" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#E93D82"/><stop offset="1" stop-color="#CB1D63"/>' +
+      '</linearGradient></defs>' +
+      '<rect x="1" y="1" width="30" height="30" rx="7" fill="url(#al-bg-post)"/>' +
+      '<rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.18)" stroke-width="0.75"/>' +
+      '<rect x="7" y="7.5" width="18" height="5" rx="1.4" fill="#FFFFFF"/>' +
+      '<rect x="7" y="14.5" width="18" height="3.4" rx="1.2" fill="rgba(255,255,255,0.62)"/>' +
+      '<rect x="7" y="19.9" width="18" height="3.4" rx="1.2" fill="rgba(255,255,255,0.42)"/>' +
+      '<rect x="7" y="25.3" width="12" height="3.4" rx="1.2" fill="rgba(255,255,255,0.28)"/>' +
+      '<circle cx="9.4" cy="10" r="1.1" fill="#CB1D63"/>' +
+    '</svg>';
+
   const APPS = [
     { id: "base",        name: "Base",     url: "https://base.joenguyen.ca",     logo: LOGO_BASE },
     { id: "budgeter",    name: "Budgeter", url: "https://budgeter.joenguyen.ca", logo: LOGO_BUDGETER },
     { id: "fitness",     name: "Fitness",  url: "https://fitness.joenguyen.ca",  logo: LOGO_FITNESS },
     { id: "mealplanner", name: "Meals",    url: "https://mealplanner.joenguyen.ca", logo: LOGO_MEALS },
-    { id: "upkeep",      name: "Upkeep",   url: "https://upkeep.joenguyen.ca",   logo: LOGO_UPKEEP }
+    { id: "upkeep",      name: "Upkeep",   url: "https://upkeep.joenguyen.ca",   logo: LOGO_UPKEEP },
+    { id: "postings",    name: "Postings", url: "https://postings.joenguyen.ca", logo: LOGO_POSTINGS }
   ];
 
   function init() {
