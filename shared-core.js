@@ -29,6 +29,7 @@
      - applies the saved theme from localStorage immediately (before first paint)
      - syncs #theme-icon on DOMContentLoaded
      - wires the mobile menu toggle / overlay / nav-link close on DOMContentLoaded
+     - click-to-dismiss for any .status-message toast (delegated document listener)
 
    Idempotent — safe to load more than once. */
 (function (global) {
@@ -171,6 +172,13 @@
     document.addEventListener('DOMContentLoaded', () => {
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
         global.updateThemeIcon(currentTheme);  // via global so app overrides win
+    });
+
+    // Toasts: click anywhere on a .status-message to dismiss. Delegated so it
+    // covers server-rendered flash divs and app-level showStatus overrides.
+    document.addEventListener('click', e => {
+        const toast = e.target.closest && e.target.closest('.status-message');
+        if (toast) toast.style.display = 'none';
     });
 
     // Mobile menu toggle / overlay / close-on-navigate.

@@ -828,16 +828,16 @@ label {
     color: var(--text);
 }
 
+/* v4.2: active = tinted background only; label stays --text so the row
+   doesn't fight the tint. */
 .nav-link.active {
     background: var(--accent-soft);
-    color: var(--accent-text);
     font-weight: var(--weight-semibold);
 }
 
-.nav-link .color-dot {
-    width: 9px;
-    height: 9px;
-}
+/* v4.2: nav rows are text-only — categorical dots clash with the accent
+   tint. Apps may still render the spans; they're hidden here. */
+.nav-link .color-dot { display: none; }
 
 .nav-link .nav-icon {
     font-size: var(--text-base);
@@ -863,8 +863,8 @@ label {
 .submenu .nav-link:hover { color: var(--text); }
 
 .submenu .nav-link.active {
-    color: var(--accent-text);
-    background: transparent;
+    background: var(--accent-soft);
+    color: var(--text);
     font-weight: var(--weight-semibold);
 }
 
@@ -1920,9 +1920,20 @@ tbody td {
     background: var(--panel);
     color: var(--text);
     box-shadow: var(--shadow-floating);
-    pointer-events: none;
+    cursor: pointer;
     animation: status-toast-in var(--motion-base);
 }
+
+/* Dismiss affordance — a pseudo-element so it survives the textContent
+   rewrites app-level showStatus overrides do. Click anywhere on the toast
+   to dismiss (delegated listener in shared-core.js). */
+.status-message::after {
+    content: '\00d7';
+    margin-left: var(--space-3);
+    opacity: 0.6;
+}
+
+.status-message:hover::after { opacity: 1; }
 
 @keyframes status-toast-in {
     from { opacity: 0; transform: translate(-50%, var(--space-2)); }

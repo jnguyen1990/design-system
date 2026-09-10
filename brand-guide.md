@@ -143,7 +143,7 @@ The app UI stays neutral. Each app picks **one** Radix accent for branding momen
 | Fitness | `orange` |
 | Future apps | one Radix accent each, no repeats |
 
-The brand color appears in: logo, favicon, empty-state illustration tint, onboarding pages, loading states — **and, since v4, in five chrome moments**: the primary button (`.btn-primary` → `--accent-500`), the active nav item (`--accent-soft` tinted bg + `--accent-text`), the focus ring, text selection (`::selection`), and checked checkboxes/radios. Everything else in chrome stays neutral slate. The alpha tokens (`--accent-soft` = accent `a3`, `--accent-soft-hover` = `a4`) composite correctly on any surface and remap per app.
+The brand color appears in: logo, favicon, empty-state illustration tint, onboarding pages, loading states — **and, since v4, in five chrome moments**: the primary button (`.btn-primary` → `--accent-500`), the active nav item (`--accent-soft` tinted bg; label stays `--text` since v4.2), the focus ring, text selection (`::selection`), and checked checkboxes/radios. Everything else in chrome stays neutral slate. The alpha tokens (`--accent-soft` = accent `a3`, `--accent-soft-hover` = `a4`) composite correctly on any surface and remap per app.
 
 ---
 
@@ -360,13 +360,13 @@ Minimal. No springs, no layout animations.
 ### Sidebar list item (Things 3 style)
 ```
 ┌──────────────────────────────────────────┐
-│  ●  Item label                       ⌘1  │
+│  Item label                          ⌘1  │
 └──────────────────────────────────────────┘
 ```
-- 8px colored dot (`--{category}-9`), 10px gap to label
+- Text-only rows (v4.2): no color dots — they clash with the accent tint. `.color-dot` inside `.nav-link` is hidden by the CSS.
 - Item height: 32px, padding: 6px 12px
 - Hover: `--panel` background, no border change
-- Selected (v4): `--accent-soft` tinted background, `--accent-text` label, semibold
+- Selected (v4.2): `--accent-soft` tinted background + semibold only — the label keeps `--text`, never `--accent-text`
 - Kbd hint: Geist Mono 11px, `--text-faint`
 
 ### Status badge (v4 — tinted chip)
@@ -451,8 +451,8 @@ Compose with the amount-color utilities for +/- columns:
 Use `.status-message` plus a variant (`.status-success`, `.status-error`, `.status-warning`, `.status-info`) for any transient feedback ("saved", "deleted", "sync failed"). The class is **position: fixed, bottom-centered** — it never pushes layout. Floating shadow, 4px colored left border that encodes severity.
 
 - **Bottom-center** of the viewport, 24px above the bottom edge.
-- **No icon, no emoji, no close button.** The color and copy do the work.
-- **Success auto-dismisses** after ~3s; errors stay until the next action or page nav.
+- **No icon, no emoji.** The color and copy do the work. A small `×` affordance is baked in via CSS (`::after`) — don't add a close button in markup.
+- **Click anywhere on the toast to dismiss** (v4.2 — delegated listener in `shared-core.js`). **Success also auto-dismisses** after ~3s; errors stay until dismissed, the next action, or page nav.
 - **Don't toast on every save.** Silent success is fine for the common path; toast only when the action isn't otherwise visible (e.g. a save with no inline state change). Errors always toast.
 - Copy: name the outcome, not the reaction. `saved`, `deleted`, `sync failed`, `amount required`. Never `Successfully saved!` or `Oops!`.
 - One toast at a time per page — reuse a single `<div class="status-message">` element and update its text/class.
