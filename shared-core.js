@@ -18,7 +18,8 @@
                                         window.confirm(). opts: title, confirmLabel,
                                         cancelLabel, danger (default true — affirmative
                                         renders btn-danger; false → btn-primary).
-                                        Auto-wired into Turbo's data-turbo-confirm.
+                                        Handles data-turbo-confirm forms with or
+                                        without Turbo (delegated submit fallback).
      - installNavHotkeys(opts)          ⌘1..⌘9 sidebar nav; call once per page.
                                         opts.allowCtrl — also respond to Ctrl (default
                                         false: Mac-only Meta, so Ctrl+1..9 tab switching
@@ -153,6 +154,23 @@
         if (T.config && T.config.forms) T.config.forms.confirm = method;
         else if (T.setConfirmMethod) T.setConfirmMethod(method);
     });
+
+    // The same attribute WITHOUT Turbo (the apps are all vanilla since
+    // 2026-09-10): intercept the form submit and gate it on dsConfirm. The
+    // attribute may sit on the form (button_to form: {data:}) or on the
+    // submit button itself (button_to data:). Defers to Turbo if present.
+    document.addEventListener('submit', function (e) {
+        if (global.Turbo) return;
+        const holder =
+            (e.submitter && e.submitter.closest('[data-turbo-confirm]')) ||
+            (e.target.matches && e.target.matches('[data-turbo-confirm]') ? e.target : null);
+        if (!holder) return;
+        e.preventDefault();
+        global.dsConfirm(holder.getAttribute('data-turbo-confirm')).then(ok => {
+            // Native submit() skips this listener, so no re-entry loop.
+            if (ok) e.target.submit();
+        });
+    }, true);
 
     // ⌘1..⌘9 — jump to the matching sidebar link. Skip when the user is typing.
     global.installNavHotkeys = function installNavHotkeys(opts = {}) {
