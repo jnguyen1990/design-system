@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transactions · Budgeter</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
-  <style>
+  <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+  <script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+    <style>
     /* Page-local: budget bars only — amount colors, date cells, action cells, color dots, and account cards
        all come from the design system (text-amount-*, td-date, td-amount, td-actions, color-dot--*, .card.card-dense). */
     .budget-row { display: grid; grid-template-columns: 1fr auto; gap: 4px var(--space-3); align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border); }
@@ -27,17 +28,17 @@
   <nav class="sidebar">
     <div class="sidebar-header"><h1>Budgeter</h1></div>
     <ul class="nav-menu">
-      <li><a href="#" class="nav-link">Dashboard</a></li>
-      <li><a href="#" class="nav-link">Budget</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="grid"></span>Dashboard</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="pie-chart"></span>Budget</a></li>
       <li class="nav-submenu">
-        <div class="nav-link active">Transactions</div>
+        <div class="nav-link active"><span class="nav-ico" data-ico="list"></span>Transactions</div>
         <ul class="submenu">
           <li><a href="#" class="nav-link active">All transactions</a></li>
           <li><a href="add-transaction.html" class="nav-link">Add transaction</a></li>
           <li><a href="#" class="nav-link">Uncategorized</a></li>
         </ul>
       </li>
-      <li><a href="#" class="nav-link">Settings</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>Settings</a></li>
     </ul>
   </nav>
 

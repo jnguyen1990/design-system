@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>This week · Fitness</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@main/design-system.css">
-  <style>
+  <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+  <script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+    <style>
     /* Page-local: weekly calendar grid */
     .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-2); }
     .day-col {
@@ -47,9 +48,9 @@
   <nav class="sidebar">
     <div class="sidebar-header"><h1>Fitness</h1></div>
     <ul class="nav-menu">
-      <li><a href="#" class="nav-link">Dashboard</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="grid"></span>Dashboard</a></li>
       <li class="nav-submenu">
-        <div class="nav-link active">Training</div>
+        <div class="nav-link active"><span class="nav-ico" data-ico="barbell"></span>Training</div>
         <ul class="submenu">
           <li><a href="#" class="nav-link active">Calendar</a></li>
           <li><a href="#" class="nav-link">Workouts</a></li>
@@ -57,9 +58,9 @@
           <li><a href="#" class="nav-link">Exercises</a></li>
         </ul>
       </li>
-      <li><a href="#" class="nav-link">Goals</a></li>
-      <li><a href="#" class="nav-link">Metrics</a></li>
-      <li><a href="#" class="nav-link">Settings</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="target"></span>Goals</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="trending-up"></span>Metrics</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>Settings</a></li>
     </ul>
   </nav>
 

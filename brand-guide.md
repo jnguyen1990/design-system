@@ -360,10 +360,11 @@ Minimal. No springs, no layout animations.
 ### Sidebar list item (Things 3 style)
 ```
 ┌──────────────────────────────────────────┐
-│  Item label                          ⌘1  │
+│  ▢  Item label                       ⌘1  │
 └──────────────────────────────────────────┘
 ```
-- Text-only rows (v4.2): no color dots — they clash with the accent tint. `.color-dot` inside `.nav-link` is hidden by the CSS.
+- v4.2 rows: a 17px outline icon + label. No color dots — they clash with the accent tint (`.color-dot` inside `.nav-link` is hidden by the CSS).
+- Icons: `<span class="nav-ico" data-ico="name"></span>` — shared-core.js injects the SVG from its `NAV_ICONS` registry (Feather-style, 1.7px stroke, `currentColor`). Muted at rest, `--text` on hover/active; the accent never colors them.
 - Item height: 32px, padding: 6px 12px
 - Hover: `--panel` background, no border change
 - Selected (v4.2): `--accent-soft` tinted background + semibold only — the label keeps `--text`, never `--accent-text`

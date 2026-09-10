@@ -835,9 +835,26 @@ label {
     font-weight: var(--weight-semibold);
 }
 
-/* v4.2: nav rows are text-only — categorical dots clash with the accent
-   tint. Apps may still render the spans; they're hidden here. */
+/* v4.2: categorical dots clash with the accent tint — gone from nav. Apps
+   may still render the spans; they're hidden here. Rows carry a quiet
+   outline icon instead (.nav-ico below). */
 .nav-link .color-dot { display: none; }
+
+/* v4.2 nav icons — 17px stroke outline glyphs, injected by shared-core.js
+   into <span class="nav-ico" data-ico="name"></span>. Muted at rest; text
+   color on hover/active (the accent stays out of them). */
+.nav-ico {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    transition: color var(--motion-fast);
+}
+
+.nav-ico svg { width: 100%; height: 100%; display: block; }
+
+.nav-link:hover .nav-ico,
+.nav-link.active .nav-ico { color: var(--text); }
 
 .nav-link .nav-icon {
     font-size: var(--text-base);

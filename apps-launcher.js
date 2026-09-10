@@ -172,4 +172,7 @@
   } else {
     init();
   }
+  // Turbo swaps <body> on navigation (mealplanner, postings), which discards
+  // the rendered dock — re-render on every Turbo visit. init() is idempotent.
+  document.addEventListener("turbo:load", init);
 })();
