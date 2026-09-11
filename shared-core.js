@@ -20,6 +20,12 @@
                                         renders btn-danger; false → btn-primary).
                                         Handles data-turbo-confirm forms with or
                                         without Turbo (delegated submit fallback).
+     - initSettingsPanes(opts)          wires a .settings-pane section list: shows one
+                                        .pane at a time, syncs the #hash for deep links
+                                        and reload, marks the active .settings-nav link,
+                                        and fires a bubbling "settingspane:change" event
+                                        ({detail:{pane}}) so a page can retitle its header.
+                                        Returns {show(name), panes:[…]} or null.
      - installNavHotkeys(opts)          ⌘1..⌘9 sidebar nav; call once per page.
                                         opts.allowCtrl — also respond to Ctrl (default
                                         false: Mac-only Meta, so Ctrl+1..9 tab switching
@@ -240,6 +246,50 @@
     };
     document.addEventListener('DOMContentLoaded', () => global.renderNavIcons());
     document.addEventListener('turbo:load', () => global.renderNavIcons());
+
+    // Settings panes — one section visible at a time (see .settings-pane in
+    // design-system.css). Deep-linkable: /settings#connector opens that pane,
+    // and switching panes rewrites the hash WITHOUT pushing history entries,
+    // so Back leaves settings instead of walking the panes you clicked.
+    global.initSettingsPanes = function initSettingsPanes(opts = {}) {
+        const root = typeof opts.root === 'string'
+            ? document.querySelector(opts.root)
+            : (opts.root || document.querySelector('.settings-pane'));
+        if (!root) return null;
+
+        const links = Array.from(root.querySelectorAll('.settings-nav a[data-pane]'));
+        const panes = Array.from(root.querySelectorAll('.pane[data-pane]'));
+        if (!links.length || !panes.length) return null;
+        const names = links.map(a => a.getAttribute('data-pane'));
+
+        function show(name, o) {
+            o = o || {};
+            if (names.indexOf(name) === -1) name = names[0];
+            panes.forEach(p => { p.hidden = p.getAttribute('data-pane') !== name; });
+            links.forEach(a => {
+                const on = a.getAttribute('data-pane') === name;
+                a.classList.toggle('active', on);
+                if (on) a.setAttribute('aria-current', 'page');
+                else a.removeAttribute('aria-current');
+            });
+            if (o.hash !== false) {
+                try { history.replaceState(null, '', '#' + name); } catch (e) { /* file:// */ }
+            }
+            root.dispatchEvent(new CustomEvent('settingspane:change', {
+                detail: { pane: name }, bubbles: true
+            }));
+            return name;
+        }
+
+        links.forEach(a => a.addEventListener('click', e => {
+            e.preventDefault();
+            show(a.getAttribute('data-pane'));
+        }));
+        global.addEventListener('hashchange', () => show(location.hash.slice(1), { hash: false }));
+
+        show(location.hash.slice(1) || names[0], { hash: false });
+        return { show: show, panes: names };
+    };
 
     // Mobile menu toggle / overlay / close-on-navigate. Delegated at the
     // document so Turbo body swaps (mealplanner, postings) don't orphan the

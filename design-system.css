@@ -634,12 +634,45 @@ label {
     color: var(--text);
 }
 
+/* Below ~640px a title plus an action cluster cannot share one row without
+   crushing the title to a few characters per line. Let the actions wrap onto
+   their own full-width line instead. */
+@media (max-width: 640px) {
+    .page-header > div:not(.page-crumb) {
+        flex-wrap: wrap;
+        gap: var(--space-3);
+    }
+
+    .header-actions {
+        margin-left: 0;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+}
+
 /* Right-aligned action buttons inside a page-header title row. */
 .header-actions {
     display: flex;
     align-items: center;
     gap: var(--space-2);
     margin-left: auto;
+}
+
+/* Month stepper for a page header: ‹ September 2026 ›
+   Lives inside .header-actions. The label is tabular and min-width'd so the
+   arrows hold still as the month name changes length. */
+.month-nav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.month-nav .month-label {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    min-width: 124px;
+    text-align: center;
 }
 
 .page-title {
@@ -1463,6 +1496,39 @@ tbody td {
     color: var(--text-muted);
 }
 
+/* Section and total rows inside a data table.
+   .row-section labels a group of rows AND carries that group's subtotals in
+   the same columns, so everything stays on one column grid instead of
+   splitting into a card per group. .row-total closes the table.
+   Neither is a clickable record, so both opt out of the tbody hover tint. */
+tbody tr.row-section > td {
+    background: var(--bg-subtle);
+    height: 34px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+}
+
+tbody tr.row-total > td {
+    background: var(--bg-subtle);
+    height: 44px;
+    border-top: 2px solid var(--border);
+    border-bottom: none;
+    font-weight: var(--weight-semibold);
+}
+
+tbody tr.row-section:hover,
+tbody tr.row-total:hover { background: var(--bg-subtle); }
+
+.row-section-label {
+    font-size: 11px;
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
 /* ============================================================
    Modals — solid scrim, no blur
    ============================================================ */
@@ -2079,6 +2145,130 @@ tbody td {
 }
 
 /* ============================================================
+   Settings panes — section list on the left, one pane at a time
+   The shared shape for every app's settings page. Markup:
+     <div class="settings-pane">
+       <nav class="settings-nav">
+         <a class="active" data-pane="x">…</a>
+         <div class="settings-nav-label">Reference</div>
+         <a data-pane="y">…</a>
+       </nav>
+       <div>
+         <section class="pane" data-pane="x">…</section>
+         <section class="pane" data-pane="y" hidden>…</section>
+       </div>
+     </div>
+   Pane switching lives in shared-core.js (initSettingsPanes).
+   ============================================================ */
+.settings-pane {
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+}
+
+.settings-nav {
+    position: sticky;
+    top: 84px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settings-nav a {
+    display: block;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--motion-fast), color var(--motion-fast);
+}
+
+.settings-nav a:hover { background: var(--panel); color: var(--text); }
+
+.settings-nav a.active {
+    background: var(--accent-soft);
+    color: var(--text);
+    font-weight: var(--weight-semibold);
+}
+
+.settings-nav-label {
+    margin: var(--space-3) 0 var(--space-1);
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: var(--weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
+}
+
+.settings-pane .pane[hidden] { display: none; }
+
+@media (max-width: 900px) {
+    .settings-pane { grid-template-columns: 1fr; }
+    .settings-nav { position: static; flex-direction: row; flex-wrap: wrap; }
+    .settings-nav-label { display: none; }
+}
+
+/* Key/value facts — connector details, "about this app", any settings pane
+   that is a list of labelled values rather than a form. */
+.detail-list {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: var(--space-2) var(--space-4);
+    align-items: center;
+    margin: 0;
+}
+
+.detail-list dt {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+
+.detail-list dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+    .detail-list { grid-template-columns: 1fr; gap: 2px var(--space-4); }
+}
+
+/* MCP tool list — rendered from each app's ToolRegistry. */
+.tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: var(--space-2);
+}
+
+.tool-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+}
+
+.tool-item code {
+    font-size: var(--text-xs);
+    background: none;
+    padding: 0;
+    color: var(--text);
+}
+
+.tool-item span {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ============================================================
    Dropdowns — floating menu, slate-2 surface, shadow-floating
    ============================================================ */
 .dropdown {
@@ -2167,6 +2357,81 @@ tbody td {
     border-radius: var(--radius-full);
     transition: width var(--motion-base);
 }
+
+/* ============================================================
+   Meters — "spent against an allocation"
+   Distinct from .progress-bar, which reports completion of a task. A meter
+   is bounded: clamp the fill at 100% and let COLOUR, not length, report
+   overspend — otherwise an over-budget row silently looks the same as a
+   full one.
+   ============================================================ */
+.meter {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    background: var(--panel);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.meter--sm { height: 4px; }
+.meter--lg { height: 14px; }
+
+.meter-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--color-success);
+    transition: width var(--motion-base);
+}
+
+.meter--over   .meter-fill { background: var(--color-error); }
+.meter--warn   .meter-fill { background: var(--color-pending); }
+.meter--idle   .meter-fill { background: var(--text-faint); }
+.meter--accent .meter-fill { background: var(--accent-500); }
+
+/* Segmented meter — several kinds of spend sharing one track. */
+.meter-stack { display: flex; height: 100%; }
+.meter-seg { height: 100%; }
+.meter-seg--accent  { background: var(--accent-500); }
+.meter-seg--success { background: var(--color-success); }
+.meter-seg--warn    { background: var(--color-pending); }
+
+/* "You are here" marker (e.g. how much of the month has elapsed).
+   .meter clips its children, so the marker is a SIBLING of the track
+   inside .meter-wrap — not a child of .meter. */
+.meter-wrap { position: relative; }
+
+.meter-marker {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    background: var(--text);
+    border-radius: 1px;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.meter-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-top: var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+
+.meter-legend .swatch {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    margin-right: 6px;
+}
+
+.swatch--accent  { background: var(--accent-500); }
+.swatch--success { background: var(--color-success); }
+.swatch--track   { background: var(--panel); border: 1px solid var(--border); }
 
 /* ============================================================
    Filter chips (pill-style filter buttons)
