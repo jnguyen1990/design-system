@@ -953,6 +953,13 @@ label {
     margin-bottom: var(--space-4);
 }
 
+/* A heading with a description plus a control alongside it cannot share one
+   row on a phone without crushing the description into a narrow column. */
+@media (max-width: 640px) {
+    .card-header { flex-wrap: wrap; gap: var(--space-3); }
+    .card-header > * { min-width: 0; }
+}
+
 .card-title {
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
@@ -2244,6 +2251,9 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
     gap: var(--space-2);
+    /* Size each card to its own text — one long description should not
+       stretch every other card on its row. */
+    align-items: start;
 }
 
 .tool-item {
