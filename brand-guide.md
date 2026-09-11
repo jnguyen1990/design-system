@@ -517,6 +517,51 @@ and **29px in upkeep and postings**, both of which render a crumb.
 
 ---
 
+### 11.z The consolidation — app stylesheets are empty now
+
+On 2026-09-11 every app stylesheet was emptied into this file. Before: base 25
+lines, fitness 10, budgeter 10, postings 51, upkeep 109, **mealplanner 652**.
+After: comment headers only, plus two ID-selector hooks in base for its own
+todo/mood markup.
+
+**The rule is now absolute: an app stylesheet declares nothing.** If you are
+about to write CSS in an app repo, you are about to create the sixth private
+copy of something. Put it here.
+
+What the audit found, and what it became:
+
+| Private copies | Now |
+|---|---|
+| `.component-chip`, `.chip` (mealplanner), `.info-chip`, `.ref-chip` (upkeep), `.file-chip`, `.term-chip` (postings) | `.choice-chip` (sets a value), `.filter-chip` (toggles a view), `.meta-chip` (a fact), `.pick-chip` (picks a record) |
+| `.item-grid`, `.artifact-grid`, `.profile-grid`, `.recipe-grid`, `.grocery-grid`, `.sale-grid`, `.recipe-suggest-grid` | `.auto-grid` + `--auto-min` / `--xs --sm --md --lg` |
+| `.artifact-thumb`, `.item-photo`, `.r-thumb` | `.media-thumb` + `--thumb-ratio`, `.media-thumb--text` |
+| `.task-row`, `.history-entry`, `.recent-row`, `.doc-row` | `.list-rows` (border rhythm) + `.list-row` / `.icon-row` |
+| `.spec-row` (upkeep), `.row` (mealplanner) | `.spec-row`, `.spec-row--tight` |
+| `.meta-list` (postings, 92px) | `.detail-list` + `--detail-label-w` |
+| ~25 hand-written `font-mono; 11px; muted` | `.mono-meta` / `.mono-faint` / `.tabular` |
+| `.posting-body` | `.prose` |
+| `.status-pills` | `.segmented` / `.segment` |
+| `.g-line` / `.g-check` | `.check-row` / `.check-box` |
+| `.year-strip` / `.ys-*` | `.month-strip` / `.ms-*` |
+| `.step-list`, `.step-flow` (mealplanner) | both, here |
+| `.icon-btn`, `.artifact-open`, `.artifact-remove` | `.btn-icon`, `.btn-reset`, `.hover-reveal` |
+
+Two bugs fell out of doing it:
+
+- **base's Today meal picker wrote `class="chip"` against a class that existed
+  in neither base's stylesheet nor this file** — those chips had been rendering
+  unstyled. `.pick-chip` is that fix.
+- **`.stat-card.card-dense` silently rendered at 20px**, because `.card-dense`
+  is declared ~700 lines before `.stat-card` at equal specificity. Mealplanner
+  carried a local override for it. Fixed at the source.
+
+Mealplanner's domain components (`.r-card`, `.nutri-grid`/`.n-day`,
+`.macro-bar`, `.drawer`, `.meal-form`/`.dish-*`, `.sale-*`) were relocated
+verbatim into a **Mealplanner components** section, beside the app-scoped
+families this file already owned (`.cal-*`, `.meter`, `.session-type-*`).
+
+---
+
 ## 12. Light ↔ dark parity
 
 Both modes are first-class. Test every screen in both. Use Radix paired scales — never hardcode hex except for shadows. Toggle via `data-theme="light"` / `data-theme="dark"` on `<html>`. Default to system preference (`prefers-color-scheme`).

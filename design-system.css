@@ -1662,6 +1662,12 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     border-color: var(--card-border-hover);
 }
 
+/* .card-dense is declared ~700 lines earlier, so at equal specificity
+   .stat-card's padding won and `.stat-card.card-dense` silently rendered at
+   20px. Mealplanner carried a local override for exactly this. */
+.stat-card.card-dense   { padding: var(--space-4); }
+.stat-card.card-compact { padding: var(--space-3); }
+
 /* v4: uppercase micro-label (kept deliberately as an instrument-panel
    signature alongside mono numbers — copy elsewhere is sentence case) */
 .stat-label {
@@ -2231,7 +2237,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
    that is a list of labelled values rather than a form. */
 .detail-list {
     display: grid;
-    grid-template-columns: 140px minmax(0, 1fr);
+    grid-template-columns: var(--detail-label-w, 140px) minmax(0, 1fr);
     gap: var(--space-2) var(--space-4);
     align-items: center;
     margin: 0;
@@ -2247,6 +2253,14 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+/* .td-amount is a table-cell style (nowrap, right-aligned); inside a fact
+   list the value is often a sentence ("$59,924-$84,505 depending on…"). */
+.detail-list .td-amount {
+    white-space: normal;
+    text-align: left;
     overflow-wrap: anywhere;
 }
 
@@ -2442,6 +2456,1211 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 @media (max-width: 560px) {
     .decide-bar { flex-wrap: wrap; }
     .decide-bar .decide-hint { display: none; }
+}
+
+/* ============================================================
+   Shared app furniture — consolidated out of the six app
+   stylesheets 2026-09-11 on Joe's instruction ("nothing is
+   referenced locally anymore"). Everything below existed as one
+   or more private copies in base/fitness/budgeter/mealplanner/
+   upkeep/postings. Do not re-declare any of it in an app.
+   ============================================================ */
+
+/* ── Mono micro-text ──────────────────────────────────────────
+   `font-family: var(--font-mono); font-size: 11px; color: muted`
+   appeared ~25 times across the apps. */
+.mono-meta,
+.mono-faint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+}
+
+.mono-meta  { color: var(--text-muted); }
+.mono-faint { color: var(--text-faint); }
+.tabular    { font-variant-numeric: tabular-nums; }
+
+/* ── Metadata chips ───────────────────────────────────────────
+   A small mono fact, bordered and pill-shaped. Replaces
+   .info-chip + .ref-chip (upkeep) and .term-chip + .file-chip
+   (postings). NOT interactive — see .choice-chip (sets a value)
+   and .filter-chip (toggles a view). */
+.meta-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.meta-chip .lbl { color: var(--text-faint); }
+
+/* A chip that links somewhere (postings' attached files). */
+a.meta-chip:hover {
+    color: var(--accent-text);
+    border-color: var(--accent-300);
+}
+
+/* Remove affordance on an uncommitted chip — ghost, no confirm, per the
+   2026-09-01 modal/row convention. */
+.meta-chip-x {
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--text-muted);
+    opacity: 0.6;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.meta-chip-x:hover { opacity: 1; color: var(--color-error); }
+
+/* ── Bordered list rhythm ─────────────────────────────────────
+   `border-bottom` on every child and none on the last was written
+   out by hand in nine places. Put it on the container instead. */
+.list-rows > * {
+    border-bottom: 1px solid var(--border);
+}
+
+.list-rows > *:last-child { border-bottom: none; }
+
+/* Label left, value right — settings rows, spec sheets, fact lists.
+   Replaces upkeep's .spec-row and mealplanner's .row. */
+.spec-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) 0;
+    font-size: var(--text-sm);
+}
+
+.spec-row > .k,
+.spec-row .lbl { color: var(--text-muted); }
+
+.spec-row > .v {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-align: right;
+}
+
+.spec-row .sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 2px;
+}
+
+/* ── Auto-filling card grid ───────────────────────────────────
+   Seven private copies differing only in the minimum track. */
+.auto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--auto-min, 280px), 1fr));
+    gap: var(--space-4);
+    align-items: start;
+}
+
+.auto-grid--xs { --auto-min: 150px; gap: var(--space-3); }
+.auto-grid--sm { --auto-min: 220px; gap: var(--space-2); }
+.auto-grid--md { --auto-min: 280px; }
+.auto-grid--lg { --auto-min: 320px; }
+
+/* ── Detail layout: body + rail ───────────────────────────────
+   upkeep declared it, postings styled it inline and then needed
+   !important to override itself, mealplanner had two variants. */
+.detail-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--detail-rail, 320px);
+    gap: var(--space-6);
+    align-items: start;
+}
+
+.detail-columns--wide { --detail-rail: 1fr; grid-template-columns: 2fr 1fr; }
+
+@media (max-width: 1024px) {
+    .detail-columns,
+    .detail-columns--wide { grid-template-columns: 1fr; }
+}
+
+/* ── Media thumbnail ──────────────────────────────────────────
+   Fixed-ratio box, cover-fitted image, centred placeholder when
+   empty. Replaces .artifact-thumb / .item-photo / .r-thumb. */
+.media-thumb {
+    position: relative;
+    aspect-ratio: var(--thumb-ratio, 16 / 9);
+    border-radius: var(--radius-sm);
+    background: var(--panel-hover);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    overflow: hidden;
+}
+
+.media-thumb img,
+.media-thumb video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.media-thumb svg { width: 34%; height: 34%; }
+
+.media-thumb .thumb-hint {
+    position: absolute;
+    bottom: var(--space-2);
+    right: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+}
+
+.media-thumb .thumb-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Read-only numbered steps ─────────────────────────────────
+   The display counterpart of .step-rows (which is editable). */
+.step-list {
+    counter-reset: step;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.step-list > li {
+    counter-increment: step;
+    position: relative;
+    padding: 10px 0 10px 32px;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+
+.step-list > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-full);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+/* ── Segmented control ────────────────────────────────────────
+   Radios that look like a switch. From mealplanner's .status-pills. */
+.segmented {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.segment {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background var(--motion-fast), color var(--motion-fast);
+}
+
+.segment input[type="radio"] { display: none; }
+.segment:hover { color: var(--text); }
+
+.segment:has(input:checked) {
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ── Code block + copy affordance ─────────────────────────────
+   Every settings page shows an MCP URL or a JSON payload. */
+.codeblock {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 0;
+}
+
+.copy-wrap { position: relative; }
+
+.copy-wrap .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+}
+
+.copy-btn.ok {
+    color: var(--green-11);
+    border-color: var(--green-6);
+    background: var(--green-3);
+}
+
+/* ── Prose ────────────────────────────────────────────────────
+   Long-form imported text (a job posting body, a recipe method
+   pasted whole). Scopes heading sizes so an h1 inside content
+   doesn't compete with the page title. */
+.prose {
+    font-size: var(--text-sm);
+    line-height: 1.65;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    margin: var(--space-4) 0 var(--space-1);
+}
+
+.prose p  { margin: 0 0 var(--space-3); }
+.prose ul,
+.prose ol { margin: 0 0 var(--space-3); padding-left: 18px; }
+.prose li { margin-bottom: 3px; }
+
+/* ── Square icon button ───────────────────────────────────────
+   Compose with .btn .btn-ghost / .btn-secondary. */
+.btn-icon {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+/* ── Form sections ────────────────────────────────────────────
+   Lifted from mealplanner's meal/recipe forms. */
+.form-section {
+    padding: var(--space-4) 0;
+    border-top: 1px solid var(--border);
+}
+
+.form-section:first-of-type { border-top: none; padding-top: 0; }
+
+.form-section-title {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    font-weight: var(--weight-medium);
+    margin: 0 0 var(--space-3) 0;
+    list-style: none;
+    cursor: default;
+}
+
+h3.form-section-title { margin: var(--space-6) 0 var(--space-2); }
+
+details.form-section > summary.form-section-title { cursor: pointer; }
+details.form-section > summary.form-section-title::-webkit-details-marker { display: none; }
+
+details.form-section > summary.form-section-title::before {
+    content: "\25B8";
+    display: inline-block;
+    width: 1em;
+    color: var(--text-faint);
+    transition: transform var(--motion-fast);
+}
+
+details.form-section[open] > summary.form-section-title::before { transform: rotate(90deg); }
+
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-4);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-2);
+    padding-top: var(--space-4);
+    margin-top: var(--space-2);
+    border-top: 1px solid var(--border);
+}
+
+/* A destructive action that must sit in its own <form>, since button_to
+   cannot nest inside form_with. */
+.form-danger {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+}
+
+@media (max-width: 720px) {
+    .form-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* ── Checkable list row ───────────────────────────────────────
+   A row that toggles done/not-done, with the label struck through
+   when checked. From mealplanner's grocery lines. */
+.check-row {
+    display: grid;
+    grid-template-columns: 16px 1fr auto;
+    gap: var(--space-3);
+    align-items: baseline;
+    padding: 9px 0;
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+
+.check-box {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--border-hover);
+    border-radius: 3px;
+    background: var(--bg);
+    transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+
+.check-row.checked .check-box {
+    position: relative;
+    background: var(--green-9);
+    border-color: var(--green-9);
+}
+
+.check-row.checked .check-box::after {
+    content: "\2713";
+    position: absolute;
+    inset: 0;
+    color: #fff;
+    font-size: 10px;
+    line-height: 14px;
+    text-align: center;
+}
+
+.check-row.checked .check-name,
+.check-row.checked .check-qty { color: var(--text-faint); }
+.check-row.checked .check-name { text-decoration: line-through; }
+
+.check-row:focus-visible {
+    outline: 2px solid var(--indigo-7);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+/* ── Legend ───────────────────────────────────────────────────
+   Dot + label pairs under a chart or a coloured grid. */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+
+.legend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ── Long lists: paint only what's near the viewport ──────────
+   Set --row-h to the approximate row height so the scrollbar
+   doesn't jump. */
+.virtual-rows > * {
+    content-visibility: auto;
+    contain-intrinsic-size: auto var(--row-h, 56px);
+}
+
+/* ── Spacing utilities missing from the set ───────────────────
+   mealplanner backfilled these locally with a "until the DS
+   exposes them" note. It does now. */
+.mt-3 { margin-top: var(--space-3) !important; }
+.mb-3 { margin-bottom: var(--space-3) !important; }
+.m-0  { margin: 0 !important; }
+
+/* ── Row primitives ───────────────────────────────────────────
+   The pieces every list row in every app is built from. */
+
+/* A link that reads as body text until you hover it. */
+.row-link {
+    font-weight: var(--weight-medium);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.row-link:hover { color: var(--accent-text); }
+
+.row-title {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    line-height: 1.3;
+}
+
+.row-sub {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Fixed-width leading column — a date, an item name, a source. Keeps the
+   bodies of a list aligned regardless of how long the lead is. */
+.row-lead {
+    width: var(--lead-w, 110px);
+    flex: 0 0 var(--lead-w, 110px);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Icon tile + body + trailing actions. */
+.icon-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+}
+
+.icon-tile {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: 7px;
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+/* Trailing value pushed to the right edge of a flex row. */
+.row-end {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* Past due — semantic, so the colour lives in one place. */
+.is-overdue { color: var(--red-11); }
+
+/* A whole card that is a link. */
+.card-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text);
+    transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+
+.card-link:hover { background: var(--panel-hover); }
+
+/* Media beside a body — an item dossier, a recipe header. */
+.hero-split {
+    display: flex;
+    gap: var(--space-6);
+}
+
+.hero-split > .hero-media {
+    width: var(--hero-media, 240px);
+    flex-shrink: 0;
+}
+
+.hero-split > .hero-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+@media (max-width: 900px) {
+    .hero-split { flex-direction: column; }
+    .hero-split > .hero-media { width: 100%; }
+}
+
+/* A full list row: flex, centred, padded, hover. Pair with .list-rows on
+   the container for the border rhythm. */
+.list-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 10px var(--space-4);
+    min-height: 40px;
+    font-size: var(--text-sm);
+}
+
+.list-row:hover { background: var(--panel-hover); }
+
+/* The flexible middle of a row — must be able to shrink below its content
+   or long titles blow the row out instead of ellipsing. */
+.row-body {
+    flex: 1;
+    min-width: 0;
+}
+
+/* A separated block at the foot of a card. */
+.card-divide {
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-3);
+    margin-top: var(--space-3);
+}
+
+/* Tighter spec row for inside a card where the rhythm is already set. */
+.spec-row--tight { padding: 0; }
+
+/* Two-column facts, used under a hero. */
+.spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--space-8);
+}
+
+@media (max-width: 900px) {
+    .spec-grid { grid-template-columns: 1fr; }
+}
+
+/* A thumbnail whose content is text rather than an image (a pasted note). */
+.media-thumb--text {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: var(--space-2) var(--space-3);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    letter-spacing: normal;
+}
+
+/* ── Month strip ──────────────────────────────────────────────
+   A rolling year, one cell per month. Sits beside .cal-grid as a
+   calendar-family component (from upkeep's maintenance seasons). */
+.month-strip {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-2);
+}
+
+.ms-month {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-2);
+    min-height: 74px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ms-month.current { border-color: var(--accent-500); }
+
+.ms-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+}
+
+.ms-month.current .ms-label { color: var(--text); }
+
+.ms-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    line-height: 1.3;
+    min-width: 0;
+}
+
+.ms-item > .t {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-muted);
+}
+
+.ms-item.strong > .t { color: var(--text); }
+
+.ms-foot {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    margin-top: auto;
+}
+
+@media (max-width: 900px) {
+    .month-strip { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ── Small utilities ──────────────────────────────────────────
+   Each of these was written inline or re-declared per app. */
+
+/* Strip a <button> back to plain text so it can wrap arbitrary content
+   while staying keyboard-accessible (never use a div with onclick). */
+.btn-reset {
+    display: block;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: none;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Reveal an affordance only while its container is hovered. Stays visible
+   on keyboard focus, which a plain :hover rule would strand. */
+.hover-reveal { visibility: hidden; }
+:hover > .hover-reveal,
+.hover-reveal:focus-visible { visibility: visible; }
+
+/* ── Pick chip ────────────────────────────────────────────────
+   A chip you tap to select something from a list, with an .on
+   state. The third and last chip shape: .choice-chip sets a form
+   value, .filter-chip toggles a view, .pick-chip picks a record.
+
+   Promoted from mealplanner 2026-09-11. base's Today meal picker
+   was already writing class="chip" / "chip on" from JS against a
+   class that existed in NEITHER base's stylesheet nor here — so
+   those chips have been rendering unstyled. This is that fix. */
+.pick-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+
+.pick-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: var(--panel);
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+
+.pick-chip:hover { background: var(--panel-hover); }
+
+.pick-chip.on {
+    border-color: var(--accent-500);
+    background: var(--accent-soft);
+    color: var(--accent-text);
+}
+
+.pick-chip .dots { display: inline-flex; gap: 2px; }
+.pick-chip .dots .color-dot { width: 6px; height: 6px; }
+
+/* The counterpart: something already picked, listed with a remove. */
+.picked-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    margin-top: var(--space-3);
+}
+
+.picked-row + .picked-row { margin-top: var(--space-2); }
+.picked-row .name { font-weight: var(--weight-medium); font-size: var(--text-sm); }
+
+.picked-row .kind {
+    display: block;
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+}
+
+.picked-row .x { color: var(--text-faint); }
+.picked-row .x:hover { color: var(--red-11); background: var(--red-3); }
+
+/* ── Rating dots ──────────────────────────────────────────────
+   Read-only (.rating) and tap-to-set (.rate-dots). */
+.rating {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.rating .color-dot { width: 9px; height: 9px; }
+
+.rate-dots {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.rate-dots button {
+    border: none;
+    background: none;
+    padding: 3px;
+    line-height: 0;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+}
+
+.rate-dots button:hover { background: var(--panel-hover); }
+.rate-dots .color-dot { width: 10px; height: 10px; }
+
+/* ── Numbered instruction block ───────────────────────────────
+   A numbered badge beside a titled body — setup guides, help
+   sections. (.step-list is a plain ordered list; this is richer.) */
+.step-flow {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.step-num {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: var(--weight-semibold);
+}
+
+.step-body { font-size: var(--text-sm); color: var(--text); padding-top: 4px; }
+.step-body .h { font-weight: var(--weight-semibold); margin-bottom: 2px; }
+
+.step-body .m {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ── Section headings ─────────────────────────────────────────
+   Smaller than .subsection-title, used inside cards and above
+   grouped lists. */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 var(--space-3) 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.04em;
+}
+
+.section-title .count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-xs);
+    font-weight: 400;
+    color: var(--text-faint);
+}
+
+.subsection-title--mini {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    margin: 0 0 var(--space-2);
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+}
+
+/* Banner above a settings sub-section. */
+.section-banner {
+    font-size: var(--text-md);
+    margin: var(--space-8) 0 var(--space-3);
+    color: var(--text-muted);
+    font-weight: var(--weight-medium);
+}
+
+/* Card title with a micro-label directly beneath it. */
+.card-title--tight { margin: 0 0 2px 0; }
+
+/* ── Two-column card grid ─────────────────────────────────────
+   Settings pages that pair cards side by side. */
+.card-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    margin-bottom: var(--space-5);
+}
+
+.card-grid-2 .span-full { grid-column: 1 / -1; }
+
+@media (max-width: 1100px) {
+    .card-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* An input sized to its content rather than the row it sits in. */
+.row-input { width: auto; max-width: 260px; }
+
+/* A textarea you paste machine-shaped text into. */
+.mono-input {
+    min-height: 140px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+/* Dimmed table row — hidden/archived records that stay scannable. */
+tr.is-muted td { color: var(--text-muted); }
+tr.is-muted .badge { opacity: 0.55; }
+
+/* ── Compare row ──────────────────────────────────────────────
+   Name plus a few right-aligned numeric columns (target vs actual). */
+.target-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: var(--space-3);
+    align-items: center;
+    padding: 10px 0;
+}
+
+.target-row .tname { font-weight: var(--weight-medium); font-size: var(--text-sm); }
+
+.target-row .tprev,
+.target-row .ttarget,
+.target-row .tact {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-sm);
+}
+
+.target-row .tprev   { color: var(--text-faint); }
+.target-row .ttarget { color: var(--text-muted); }
+.target-row .tact    { font-weight: var(--weight-semibold); }
+
+/* ============================================================
+   Mealplanner components
+   Relocated verbatim from mealplanner/application.css 2026-09-11
+   so no app declares its own CSS. Sits alongside the other
+   app-scoped families already here (.cal-* calendar, .meter,
+   .session-type-*). Domain-shaped, but shared-system-owned.
+   ============================================================ */
+
+/* Recipe card */
+.r-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    cursor: pointer;
+    transition: border-color var(--motion-fast);
+}
+
+.r-card:hover { border-color: var(--border-hover); }
+
+.r-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+.r-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: var(--space-2);
+}
+
+/* Ingredient line: name left, quantity right. */
+.ingredient-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-3);
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.ingredient-row:last-child { border-bottom: none; }
+.ingredient-row .i-name { font-size: var(--text-sm); }
+
+/* Settings / label rows */
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.row:last-child { border-bottom: none; }
+.row .lbl { font-size: var(--text-sm); color: var(--text); }
+
+.row .sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 2px;
+}
+
+/* Nutrition: one column per day of the week */
+.nutri-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--space-2);
+}
+
+.n-day {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.n-day.today { border-color: var(--accent-500); }
+
+.n-day .nh {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.n-day .nm-name {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+}
+
+.n-day .nm-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+}
+
+.n-day.today .nm-num { color: var(--accent-700); }
+
+.n-day .kcal {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.01em;
+}
+
+.n-day .target {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+/* Macro split bar. Colours mirror Palette (app/models/palette.rb):
+   protein=red, carbs=amber, fat=purple. Keep the two in sync. */
+.macro-bar {
+    display: flex;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--panel);
+    margin-top: var(--space-2);
+}
+
+.macro-bar > span { display: block; }
+.m-protein { background: var(--red-9); }
+.m-carbs   { background: var(--amber-9); }
+.m-fat     { background: var(--purple-9); }
+
+/* Day drawer (log / plan / edit) */
+.drawer {
+    border-color: var(--accent-500);
+    margin-bottom: var(--space-6);
+}
+
+.capture-day {
+    font-size: var(--text-lg);
+    font-weight: 650;
+    margin: 0 0 2px;
+}
+
+.drawer-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+/* Meal form */
+.meal-form { padding: var(--space-6); }
+.dish-list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.dish-row {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.dish-row .dish-index,
+.dish-remove-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+}
+
+.dish-remove-label { display: flex; align-items: center; gap: 4px; }
+
+.dish-row .dish-remove {
+    padding: 4px 8px;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--text-faint);
+}
+
+.dish-row .dish-remove:hover { color: var(--red-11); background: var(--red-3); }
+
+/* Sale cards (this week's flyers) */
+.sale-item {
+    padding: var(--space-3);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: border-color var(--motion-fast);
+    /* Paint only what's near the viewport — a full flyer is hundreds of rows. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 96px;
+}
+
+.sale-item:hover { border-color: var(--border-hover); }
+
+.sale-store {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.05em;
+}
+
+.sale-name { font-size: var(--text-sm); line-height: 1.3; color: var(--text); }
+
+.sale-meta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin-top: 2px;
+}
+
+.sale-price {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--text);
+}
+
+.sale-discount,
+.sale-match {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--green-11);
+    letter-spacing: 0.02em;
+}
+
+.sale-discount { font-weight: var(--weight-medium); }
+
+/* Recipe suggestions on the sales page */
+.recipe-suggest-card {
+    display: block;
+    padding: var(--space-3);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color var(--motion-fast);
+}
+
+.recipe-suggest-card:hover { border-color: var(--border-hover); }
+
+.recipe-suggest-card .rsc-name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    line-height: 1.3;
+    margin-bottom: 4px;
+}
+
+.recipe-suggest-card .rsc-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+}
+
+/* Products table: hidden rows stay scannable but recede. */
+tr.is-hidden-product td { color: var(--text-muted); }
+tr.is-hidden-product .badge { opacity: 0.55; }
+
+tr.product-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 56px;
 }
 
 /* ============================================================
