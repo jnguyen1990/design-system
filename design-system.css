@@ -2179,7 +2179,12 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 
 .settings-nav {
     position: sticky;
-    top: 84px;
+    /* Derived, not guessed: shared-core.js measures `.page-header` (which is
+       sticky at top:0) and publishes --header-h. The old hardcoded 84px was
+       short for every real composition — 87px with a subtitle, 113px with a
+       crumb — so the top of this rail sat under the header. The fallback is
+       the subtitle case, which is what four of the six apps render. */
+    top: calc(var(--header-h, 87px) + var(--space-3));
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -2279,6 +2284,164 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 .tool-item span {
     font-size: 11px;
     color: var(--text-muted);
+}
+
+/* ============================================================
+   Record editors — chips, editable row lists, decision bars
+   Added 2026-09-11 for mealplanner's recipe-draft review page, but
+   every one of these already existed app-locally somewhere. Chips in
+   particular had five private copies across three apps
+   (.component-chip + .chip in mealplanner, .info-chip + .ref-chip in
+   upkeep, .file-chip + .term-chip in postings). New editors consume
+   these; never re-declare them in an app stylesheet.
+   ============================================================ */
+
+/* A chip that IS a checkbox or radio — the label wraps the input, so the
+   whole chip is the hit target. Distinct from .filter-chip (which toggles a
+   view, not a value) and .badge (which is not interactive at all). */
+.choice-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color var(--motion-fast), background var(--motion-fast);
+}
+
+.choice-chip:hover { border-color: var(--border-hover); }
+.choice-chip input { margin: 0; }
+
+/* :has() so the checked state needs no JS and no extra class. */
+.choice-chip:has(input:checked) {
+    background: var(--accent-soft);
+    border-color: var(--accent-500);
+}
+
+.choice-chip-row {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+/* Dense editable rows — ingredients, line items, key/value pairs. A table so
+   the columns actually align down the list; column widths are set by the host
+   via .edit-rows td:nth-child(n), or the utility widths below. */
+.edit-rows {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.edit-rows td {
+    padding: 3px 4px;
+    vertical-align: middle;
+    border: none;
+}
+
+.edit-rows td:first-child { padding-left: 0; }
+.edit-rows td:last-child  { padding-right: 0; text-align: right; }
+
+.edit-rows .form-control {
+    width: 100%;
+    padding: 5px 8px;
+    font-size: var(--text-sm);
+}
+
+.edit-rows td.col-narrow { width: 74px; }
+.edit-rows td.col-short  { width: 84px; }
+.edit-rows td.col-select { width: 116px; }
+.edit-rows td.col-action { width: 32px; }
+
+/* Numbered editable steps — a method, a checklist, an ordered procedure.
+   Replaces mealplanner's .step-list / .step-num. */
+.step-rows .step-row {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.step-rows .step-row:last-child { border-bottom: none; }
+
+.step-rows .step-n {
+    flex: 0 0 20px;
+    height: 20px;
+    margin-top: 3px;
+    border-radius: var(--radius-full);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.step-rows .step-row textarea {
+    flex: 1;
+    min-height: 38px;
+    resize: vertical;
+    font-size: var(--text-sm);
+}
+
+/* Sticky decision bar — accept/discard for one record, reachable without
+   scrolling to the bottom of a long form. Button order mirrors .modal-footer:
+   destructive far left, affirmative rightmost. */
+.decide-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    margin-top: var(--space-4);
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+}
+
+.decide-bar > .btn-danger:first-child { margin-right: auto; }
+
+.decide-bar .decide-hint {
+    font-size: var(--text-xs);
+    color: var(--text-faint);
+    margin-right: var(--space-2);
+}
+
+/* File drop target. */
+.dropzone {
+    border: 1px dashed var(--border-hover);
+    border-radius: var(--radius-md);
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    background: var(--panel);
+    cursor: pointer;
+    transition: border-color var(--motion-fast), background var(--motion-fast);
+}
+
+.dropzone:hover,
+.dropzone.dragover { border-color: var(--accent-500); }
+
+.dropzone strong {
+    display: block;
+    color: var(--text);
+    font-weight: var(--weight-medium);
+    margin-bottom: 4px;
+}
+
+@media (max-width: 560px) {
+    .decide-bar { flex-wrap: wrap; }
+    .decide-bar .decide-hint { display: none; }
 }
 
 /* ============================================================

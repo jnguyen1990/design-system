@@ -291,6 +291,33 @@
         return { show: show, panes: names };
     };
 
+    // ── Sticky-header height ──────────────────────────────────────────
+    // `.page-header` is sticky at top:0, so anything else that sticks has to
+    // start below it. Its height is NOT a constant: 63px with a title alone,
+    // 87px with a subtitle, 113px with a crumb as well, and ~15px less below
+    // 1024px. The design system hardcoded 84px for `.settings-nav`, which put
+    // 3px of the rail under the header in four apps and 29px in upkeep and
+    // postings (both render a crumb). Measuring is the only thing that holds
+    // across compositions, so publish it as a custom property and let CSS do
+    // the arithmetic: `top: calc(var(--header-h) + var(--space-3))`.
+    function syncHeaderHeight() {
+        const h = document.querySelector('.page-header');
+        if (!h) return;
+        const px = Math.round(h.getBoundingClientRect().height);
+        if (px > 0) document.documentElement.style.setProperty('--header-h', px + 'px');
+    }
+    global.syncHeaderHeight = syncHeaderHeight;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        syncHeaderHeight();
+        // The header also changes height on its own — a subtitle wrapping at a
+        // narrow width, or header-actions reflowing — so watch it rather than
+        // only sampling on resize.
+        const h = document.querySelector('.page-header');
+        if (h && global.ResizeObserver) new ResizeObserver(syncHeaderHeight).observe(h);
+    });
+    document.addEventListener('turbo:load', syncHeaderHeight);
+
     // Mobile menu toggle / overlay / close-on-navigate. Delegated at the
     // document so Turbo body swaps (mealplanner, postings) don't orphan the
     // handlers with the old <body>.

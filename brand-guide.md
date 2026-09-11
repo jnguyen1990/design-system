@@ -472,6 +472,51 @@ showStatus('page-status', 'save failed — network unreachable', 'error');
 
 ---
 
+### 11.x Record editors — chips, editable rows, decision bars
+
+Added 2026-09-11. All five live in `design-system.css`. Every one of them
+existed as a private app copy first — chips alone had five (`.component-chip`
+and `.chip` in mealplanner, `.info-chip` and `.ref-chip` in upkeep,
+`.file-chip` and `.term-chip` in postings). **Never re-declare these in an app
+stylesheet.**
+
+- **`.choice-chip`** (in a `.choice-chip-row`) — a chip that *is* a checkbox or
+  radio: the `<label>` wraps the input so the whole chip is the hit target, and
+  the checked state comes from `:has(input:checked)`, no JS and no extra class.
+  Distinct from `.filter-chip` (toggles a *view*, not a value) and `.badge`
+  (not interactive at all). Picking one of those three wrongly is the most
+  common chip mistake.
+- **`.edit-rows`** — dense editable row list as a real `<table>`, so columns
+  align down the list. Width utilities on the cells: `.col-narrow` (74px),
+  `.col-short` (84px), `.col-select` (116px), `.col-action` (32px).
+- **`.step-rows`** — numbered editable steps (`.step-row` + `.step-n` + a
+  textarea). A method, a checklist, an ordered procedure.
+- **`.decide-bar`** — sticky accept/discard bar for one record, so the decision
+  is reachable without scrolling past a long form. Button order mirrors
+  `.modal-footer`: destructive far left (a first-child `.btn-danger` is pushed
+  there automatically), affirmative rightmost.
+- **`.dropzone`** — file drop target; add `.dragover` on drag.
+
+### 11.y Sticky offsets — derive them, never hardcode
+
+`.page-header` is sticky at `top: 0`, so anything else that sticks must start
+below it — and **its height is not a constant**: 63px with a title alone, 87px
+with a subtitle, 113px with a crumb as well, and ~15px less below 1024px.
+
+`shared-core.js` measures it and publishes **`--header-h`** on `:root`
+(re-measured via `ResizeObserver`, since a subtitle can wrap). Sticky
+components consume it:
+
+```css
+.settings-nav { top: calc(var(--header-h, 87px) + var(--space-3)); }
+```
+
+This was a real bug, not a hypothetical: `.settings-nav` shipped with a
+hardcoded `top: 84px`, which put 3px of the rail under the header in four apps
+and **29px in upkeep and postings**, both of which render a crumb.
+
+---
+
 ## 12. Light ↔ dark parity
 
 Both modes are first-class. Test every screen in both. Use Radix paired scales — never hardcode hex except for shadows. Toggle via `data-theme="light"` / `data-theme="dark"` on `<html>`. Default to system preference (`prefers-color-scheme`).
