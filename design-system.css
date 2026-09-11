@@ -1166,6 +1166,9 @@ label {
     border: 1px solid transparent;
     letter-spacing: 0;
     text-transform: none;
+    /* A badge is a label, never a paragraph: it must not wrap inside a
+       flex card-header and become two lines. */
+    white-space: nowrap;
 }
 
 .badge-success   { background: var(--green-a3);  color: var(--green-11); }
