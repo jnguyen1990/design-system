@@ -2395,6 +2395,9 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 .meter-seg--accent  { background: var(--accent-500); }
 .meter-seg--success { background: var(--color-success); }
 .meter-seg--warn    { background: var(--color-pending); }
+/* For a two-part split, pair --accent with --info: in budgeter the accent IS
+   green, so accent-plus-success renders as one undifferentiated green bar. */
+.meter-seg--info    { background: var(--color-info); }
 
 /* "You are here" marker (e.g. how much of the month has elapsed).
    .meter clips its children, so the marker is a SIBLING of the track
@@ -2431,6 +2434,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 
 .swatch--accent  { background: var(--accent-500); }
 .swatch--success { background: var(--color-success); }
+.swatch--info    { background: var(--color-info); }
 .swatch--track   { background: var(--panel); border: 1px solid var(--border); }
 
 /* ============================================================
