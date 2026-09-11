@@ -2590,6 +2590,24 @@ a.meta-chip:hover {
 
 .detail-columns--wide { --detail-rail: 1fr; grid-template-columns: 2fr 1fr; }
 
+/* Rail FIRST — for review/compare screens where the thing you are checking
+   against (a source photo, the original text) has to sit beside the fields it
+   produced rather than after them. */
+.detail-columns--rail-first {
+    grid-template-columns: minmax(280px, var(--detail-rail, 360px)) minmax(0, 1fr);
+}
+
+/* A rail that stays put while the long column scrolls. Uses the measured
+   header height so it cannot slide underneath the sticky page header. */
+.rail-sticky {
+    position: sticky;
+    top: calc(var(--header-h, 87px) + var(--space-3));
+}
+
+@media (max-width: 900px) {
+    .rail-sticky { position: static; }
+}
+
 @media (max-width: 1024px) {
     .detail-columns,
     .detail-columns--wide { grid-template-columns: 1fr; }
