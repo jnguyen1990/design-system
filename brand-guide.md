@@ -633,6 +633,36 @@ Sign + color for positive/negative values:
 
 Use the unicode minus `−` (U+2212), not the hyphen `-`, so widths match the plus.
 
+### Meters — `.meter`
+
+For "spent against an allocation", not "task N% complete" (that is `.progress-bar`). A meter is **bounded**: clamp the fill at 100% and let colour report overspend, so an over-budget row can never look identical to a full one.
+
+```html
+<div class="meter meter--sm meter--over"><div class="meter-fill" style="width:100%"></div></div>
+```
+
+Modifiers: `--sm` / `--lg`, and `--over` / `--warn` / `--idle` / `--accent`. For a two-part split use `.meter-stack` with `.meter-seg--accent` + `.meter-seg--info` — pairing accent with `--success` renders as one undifferentiated bar in any app whose accent is already green. A "you are here" marker (`.meter-marker`) must be a **sibling** of `.meter` inside `.meter-wrap`, because `.meter` clips its children.
+
+Two rules that came out of budgeter:
+
+- **"Warn" means ahead of pace, not near the ceiling.** A bill paid in full sits at exactly 100% and is the definition of on-plan — it must read green. Warn when the share of the envelope spent meaningfully exceeds the share of the period elapsed, and only below 100%.
+- **Summary rows never warn.** Group and total meters aggregate commitments that land early in the period, so a pace rule paints them amber for weeks at a time. Colour them accent, and reserve red for a genuine overspend.
+
+### Grouped tables — `.row-section` / `.row-total`
+
+A group label that carries its own subtotals **in the same columns**, instead of splitting the data into a card per group where no column lines up with any other.
+
+```html
+<tr class="row-section">
+  <td><span class="row-section-label">Bills</span></td>
+  <td class="td-amount">$2,370.00</td>
+  …
+</tr>
+<tr class="row-total"><td>Total</td>…</tr>
+```
+
+Below ~768px a wide numeric table starves its label column to nothing. Stack the rows instead — and remember the `<table>` and `<tbody>` must become `display:block` too, not just the rows: grid `<tr>`s leave the table with no cells to size from and it shrink-wraps to ~100px.
+
 ### Tables
 
 Wrap every `<table>` in `<div class="table-responsive">` so it scrolls inside its card on mobile instead of pushing the page wider. Dense embedded tables (modal detail tables, plan segments, logged sets) take `class="table-compact"` (12px) instead of an inline `font-size` — one class, same density everywhere. For column-aligned tables across multiple cards (e.g. the budget page's "Monthly Bills" + "Everyday Expenses"), use a shared class with explicit `<colgroup>` widths so headers and cells line up identically across cards.
@@ -685,21 +715,55 @@ The brand says no emoji. The exceptions — characters that read as **functional
 
 Anything else (📊 📄 📋 🤖 📈 📉 🏆 💾 🗑️ ⚠️ ⚙️ ➕ ✏️ ✂️ 📅 ⬇️ 🔄 🎉 ⬛ ✅ 💰 📥 📂 etc.) does not appear in headings, button labels, or section titles. Use the chip + `.color-dot` system for categorical signaling instead.
 
-### Settings / config pages
+### Settings / config pages — panes
 
-A settings page is a stack of full-width cards, one per concern (Integrations, MCP, Backup & restore, Danger zone, Help, etc.). Two-column grid layouts (`grid-template-columns: 1fr 1fr; gap: 20px`) work for related-pair sections (e.g. Fitness app + iCloud, Google Calendar + Telegram). MCP / advanced cards span full width via `grid-column: 1 / -1`. Save/Test buttons inside an integration card go side-by-side with `gap:8px` and consistent sizing (both `btn-sm`).
+**Every app's settings page is a `.settings-pane`: a section list on the left, one pane visible at a time.** (Joe's call, 2026-09-11; all six apps swept the same day. Supersedes the old "stack of full-width cards in a 1fr 1fr grid" pattern.) The page is never taller than its tallest section, and the danger zone becomes somewhere you choose to go rather than something you scroll past on the way to the README editor.
+
+```html
+<div class="settings-pane">
+  <nav class="settings-nav" id="settingsNav">
+    <a href="#categories" data-pane="categories">Categories</a>
+    <a href="#connector"  data-pane="connector">Claude connector</a>
+    <div class="settings-nav-label">Reference</div>
+    <a href="#help"  data-pane="help">Help</a>
+    <a href="#about" data-pane="about">About this app</a>
+    <div class="settings-nav-label">Careful</div>
+    <a href="#danger" data-pane="danger">Danger zone</a>
+  </nav>
+  <div>
+    <section class="pane" data-pane="categories">…</section>
+    <section class="pane" data-pane="connector" hidden>…</section>
+  </div>
+</div>
+```
+
+`initSettingsPanes()` (shared-core.js) wires it: shows one pane, marks the active nav link, keeps the `#hash` in sync for deep links and reloads, and fires a bubbling `settingspane:change` event so the page can swap its header actions.
+
+Rules learned in the sweep:
+
+- **Subscribe to `settingspane:change` BEFORE calling `initSettingsPanes()`** — it fires for the pane it opens with, and a listener attached afterwards misses it.
+- **Modals live outside the pane grid.** An overlay hidden along with the pane it happened to sit in is a bug waiting to happen.
+- **A form that POSTs should redirect back to its own pane** (`settings_path(anchor: "notifications")`), or saving bounces the user to the first pane.
+- **Every app gets an "about this app" pane**: version, host, database size, record counts, connector tool count. Facts like these go stale silently when they live in prose — budgeter's connector card claimed "no tools registered yet" for two months after six shipped.
+- **The connector pane renders from the app's `Mcp::ToolRegistry`**, never a hand-written list, so a newly registered tool appears on its own.
+
+Use `.detail-list` (a `<dl>`) for labelled facts and `.tool-grid` / `.tool-item` for the MCP tool list, rather than per-app `.kv` / `.tool-pill` copies.
 
 ### Danger-zone card
 
 ```html
-<div class="card" style="margin-bottom:16px;border-color:var(--red-9)">
-    <h3 style="color:var(--red-11)">Danger zone</h3>
-    <p class="stat-label">What this deletes, and that it cannot be undone.</p>
-    <button class="btn btn-danger btn-sm" style="margin-top:12px" onclick="…">Action verb</button>
+<div class="card danger-zone">
+    <h3>Danger zone</h3>
+    <p class="card-subtitle">Exactly what this deletes, what survives, and that it cannot be undone.</p>
+    <button class="btn btn-danger" style="margin-top:var(--space-4)" onclick="…">Action verb</button>
 </div>
 ```
 
-Always require a confirm dialog (`confirm()` or a typed-confirmation modal for catastrophic actions like wipe-all).
+Always require a confirm dialog — `dsConfirm()`, or a typed-confirmation modal for catastrophic actions like wipe-all.
+
+**The button label and the modal must promise the same thing.** Budgeter's button said "Remove all transactions" while its modal said "delete ALL your data"; they were the same action, and the mismatch is the kind of thing that stops you trusting either one.
+
+Note `.card-subtitle`, not `.stat-label`. `.stat-label` is the UPPERCASE micro-label for stat tiles — used as body copy it renders whole sentences in caps, which is how it went unnoticed across four apps until the 2026-09-11 sweep.
 
 ### Session card + vitals chip (fitness pattern)
 
