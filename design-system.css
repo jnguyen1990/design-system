@@ -1509,6 +1509,10 @@ tbody tr:last-child { border-bottom: none; }
 
 tbody tr:hover { background: var(--panel); }
 
+/* Row-select tables (shared-core.js): the whole row is a click target for
+   a checkbox that opts in via data-row-select */
+tbody tr:has(input[type="checkbox"][data-row-select]) { cursor: pointer; }
+
 tbody td {
     padding: 8px 12px;
     height: var(--row-h-default);

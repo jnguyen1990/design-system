@@ -42,6 +42,9 @@
      - applies the saved theme from localStorage immediately (before first paint)
      - syncs #theme-icon on DOMContentLoaded
      - wires the mobile menu toggle / overlay / nav-link close (delegated, Turbo-safe)
+     - row-select tables: clicking a row toggles its checkbox when that
+       checkbox opts in with data-row-select (delegated; clicks on the row's
+       own links/buttons/inputs are left alone)
      - click-to-dismiss for any .status-message toast (delegated document listener)
      - renderNavIcons(): fills <span class="nav-ico" data-ico="name"> with the
        shared outline icon set on DOMContentLoaded + turbo:load (v4.2 nav)
@@ -395,6 +398,27 @@
     };
     document.addEventListener('DOMContentLoaded', () => global.enhanceFileInputs());
     document.addEventListener('turbo:load', () => global.enhanceFileInputs());
+
+    // ── Row-select tables ──────────────────────────────────────────────────
+    // Clicking anywhere on a row toggles its selection checkbox — but only
+    // when that checkbox opts in with data-row-select, because most
+    // checkboxes across the apps are state toggles (complete a task,
+    // settings flags) where a stray row click must NOT flip them. The
+    // dispatched change event keeps existing per-page count/bulk-bar
+    // handlers working untouched. Delegated at the document, so rows
+    // re-rendered via innerHTML need no re-wiring.
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        if (e.target.closest('a, button, input, select, textarea, label, [contenteditable]')) return;
+        // A stray click while a dropdown is open is a dismiss, not a select.
+        if (document.querySelector('.dropdown-menu.open')) return;
+        const row = e.target.closest('tr');
+        if (!row) return;
+        const box = row.querySelector('input[type="checkbox"][data-row-select]');
+        if (!box || box.disabled) return;
+        box.checked = !box.checked;
+        box.dispatchEvent(new Event('change', { bubbles: true }));
+    });
 
     // Mobile menu toggle / overlay / close-on-navigate. Delegated at the
     // document so Turbo body swaps (mealplanner, postings) don't orphan the
