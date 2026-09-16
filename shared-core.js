@@ -26,6 +26,12 @@
                                         and fires a bubbling "settingspane:change" event
                                         ({detail:{pane}}) so a page can retitle its header.
                                         Returns {show(name), panes:[…]} or null.
+     - enhanceFileInputs(root)          wraps every input[type="file"] in a
+                                        .drop-zone (click browses, drag-drop
+                                        assigns + fires change). Auto-runs on
+                                        DOMContentLoaded/turbo:load; call again
+                                        for dynamically inserted inputs. Opt out
+                                        per input with data-dz-skip.
      - installNavHotkeys(opts)          ⌘1..⌘9 sidebar nav; call once per page.
                                         opts.allowCtrl — also respond to Ctrl (default
                                         false: Mac-only Meta, so Ctrl+1..9 tab switching
@@ -317,6 +323,78 @@
         if (h && global.ResizeObserver) new ResizeObserver(syncHeaderHeight).observe(h);
     });
     document.addEventListener('turbo:load', syncHeaderHeight);
+
+    // ── Drop zones ─────────────────────────────────────────────────────────
+    // Every input[type="file"] gets wrapped in a .drop-zone: click browses,
+    // drag-and-drop assigns the files to the hidden input and fires its
+    // change event, so existing per-app JS reading input.files keeps working
+    // untouched. Opt out per input with data-dz-skip. Re-runnable for
+    // dynamically inserted inputs via enhanceFileInputs(root).
+    global.enhanceFileInputs = function enhanceFileInputs(root) {
+        (root || document).querySelectorAll('input[type="file"]:not([data-dz-skip]):not([data-dz-enhanced])').forEach(input => {
+            // Inputs already hidden behind their own trigger button (the
+            // style="display:none" + button.click() pattern several apps use)
+            // keep their existing flow — injecting a visible zone there would
+            // break the layout around the trigger.
+            if (input.hidden || input.style.display === 'none' || getComputedStyle(input).display === 'none') return;
+            input.setAttribute('data-dz-enhanced', '1');
+
+            const zone = document.createElement('div');
+            zone.className = 'drop-zone';
+            zone.setAttribute('tabindex', '0');
+            zone.setAttribute('role', 'button');
+            zone.setAttribute('aria-label', 'Choose or drop ' + (input.multiple ? 'files' : 'a file'));
+
+            const label = document.createElement('div');
+            const hint = document.createElement('div');
+            hint.className = 'drop-zone-hint';
+            const files = document.createElement('div');
+            files.className = 'drop-zone-files';
+            zone.append(label, hint, files);
+
+            const accept = (input.getAttribute('accept') || '').trim();
+            const idle = () => {
+                label.textContent = input.multiple ? 'Drop files here or click to browse' : 'Drop a file here or click to browse';
+                hint.textContent = accept ? accept.split(',').map(s => s.trim()).join(' · ') : '';
+            };
+            const update = () => {
+                idle();
+                const names = Array.from(input.files || []).map(f => f.name);
+                if (!names.length) { files.textContent = ''; return; }
+                const shown = names.slice(0, 3).join(', ');
+                files.textContent = names.length > 3 ? shown + ' +' + (names.length - 3) + ' more' : shown;
+            };
+
+            input.classList.add('drop-zone-input');
+            input.insertAdjacentElement('afterend', zone);
+            update();
+
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+            });
+            ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            }));
+            zone.addEventListener('dragleave', e => {
+                if (!zone.contains(e.relatedTarget)) zone.classList.remove('dragover');
+            });
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                const dropped = Array.from((e.dataTransfer && e.dataTransfer.files) || []);
+                if (!dropped.length) return;
+                const dt = new DataTransfer();
+                (input.multiple ? dropped : dropped.slice(0, 1)).forEach(f => dt.items.add(f));
+                input.files = dt.files;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            input.addEventListener('change', update);
+        });
+    };
+    document.addEventListener('DOMContentLoaded', () => global.enhanceFileInputs());
+    document.addEventListener('turbo:load', () => global.enhanceFileInputs());
 
     // Mobile menu toggle / overlay / close-on-navigate. Delegated at the
     // document so Turbo body swaps (mealplanner, postings) don't orphan the
