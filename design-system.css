@@ -2588,6 +2588,17 @@ a.meta-chip:hover {
     align-items: start;
 }
 
+/* Column wrappers inside .detail-columns. Budgeter's dashboard renamed its
+   .brief-main/.brief-rail to these during the 2026-09-11 consolidation, but
+   the child styling never moved with them — cards stacked with zero gap. */
+.dc-main,
+.dc-rail {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
 .detail-columns--wide { --detail-rail: 1fr; grid-template-columns: 2fr 1fr; }
 
 /* Rail FIRST — for review/compare screens where the thing you are checking
