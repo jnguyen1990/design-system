@@ -32,6 +32,13 @@
                                         DOMContentLoaded/turbo:load; call again
                                         for dynamically inserted inputs. Opt out
                                         per input with data-dz-skip.
+     - placeDropdownMenu(menu)          anchors an open .dropdown-menu to its
+                                        .dropdown trigger as position: fixed, so a
+                                        card's overflow context cannot clip it;
+                                        flips above when short of room below.
+                                        Applied automatically whenever the `open`
+                                        class lands on a .dropdown-menu — pages keep
+                                        their own toggle functions and call nothing.
      - installNavHotkeys(opts)          ⌘1..⌘9 sidebar nav; call once per page.
                                         opts.allowCtrl — also respond to Ctrl (default
                                         false: Mac-only Meta, so Ctrl+1..9 tab switching
@@ -398,6 +405,115 @@
     };
     document.addEventListener('DOMContentLoaded', () => global.enhanceFileInputs());
     document.addEventListener('turbo:load', () => global.enhanceFileInputs());
+
+    // ── Dropdown placement ─────────────────────────────────────────────────
+    // A .dropdown-menu is absolutely positioned inside its .dropdown, which
+    // means any ancestor with an overflow context clips it — notably
+    // .table-responsive, whose overflow-y MUST be hidden (overflow-x: auto
+    // forces the other axis to compute as auto, which would put a second
+    // scrollbar inside every tall table card). The visible symptom was a row
+    // menu near the bottom of a card being cut in half.
+    //
+    // So on open the menu switches to position: fixed and is anchored to its
+    // trigger by script: fixed escapes ancestor overflow entirely. It flips
+    // above the trigger when there is not room below, clamps to the viewport
+    // on both axes, and caps its own height so a long menu scrolls itself
+    // instead of running off-screen.
+    //
+    // Driven by a MutationObserver on the `open` class rather than by wrapping
+    // a toggle function, so every existing per-page toggleMenu() keeps working
+    // untouched.
+    var GAP = 4;        // menu-to-trigger offset, matches the CSS fallback
+    var MARGIN = 8;     // smallest gap we will leave against a viewport edge
+
+    function placeDropdownMenu(menu) {
+        var dropdown = menu.closest('.dropdown');
+        if (!dropdown) return;
+
+        // Measure unstyled by the previous placement, and untransformed —
+        // offsetWidth/Height ignore the open/close translate.
+        menu.style.maxHeight = '';
+        var anchorRect = dropdown.getBoundingClientRect();
+        var width = menu.offsetWidth;
+        var height = menu.offsetHeight;
+        var below = window.innerHeight - anchorRect.bottom - GAP - MARGIN;
+        var above = anchorRect.top - GAP - MARGIN;
+
+        // Prefer below; flip only when below cannot hold the menu AND above
+        // is the roomier side, so a menu that fits stays where it is expected.
+        var up = height > below && above > below;
+        // A data attribute, not a class: the observer below filters on
+        // `class`, so writing a class here would re-enter this function on
+        // every open — Chrome re-serialises the attribute even for a no-op
+        // toggle, which turns that into an unbounded microtask loop.
+        menu.dataset.dropdownPlacement = up ? 'up' : 'down';
+
+        var room = up ? above : below;
+        if (height > room) menu.style.maxHeight = Math.max(room, 120) + 'px';
+
+        var top = up ? anchorRect.top - Math.min(height, room) - GAP : anchorRect.bottom + GAP;
+        var left = anchorRect.right - width;
+        left = Math.min(Math.max(left, MARGIN), Math.max(window.innerWidth - width - MARGIN, MARGIN));
+
+        menu.style.position = 'fixed';
+        menu.style.top = Math.max(top, MARGIN) + 'px';
+        menu.style.left = left + 'px';
+        menu.style.right = 'auto';
+        menu.style.bottom = 'auto';
+    }
+
+    function clearDropdownMenu(menu) {
+        delete menu.dataset.dropdownPlacement;
+        menu.style.position = '';
+        menu.style.top = '';
+        menu.style.left = '';
+        menu.style.right = '';
+        menu.style.bottom = '';
+        menu.style.maxHeight = '';
+    }
+
+    global.placeDropdownMenu = placeDropdownMenu;
+
+    new MutationObserver(function (records) {
+        records.forEach(function (record) {
+            var el = record.target;
+            if (!el.classList || !el.classList.contains('dropdown-menu')) return;
+            if (el.classList.contains('open')) placeDropdownMenu(el);
+            else clearDropdownMenu(el);
+        });
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'], subtree: true });
+
+    // A fixed menu does not travel with the page, so follow the trigger while
+    // anything scrolls (capture: true — scrolls inside a table wrapper do not
+    // bubble). Once the trigger has left the viewport the menu is pointing at
+    // nothing; close it rather than leave it stranded.
+    var reflowQueued = false;
+    function reflowOpenDropdowns() {
+        if (reflowQueued) return;
+        reflowQueued = true;
+        requestAnimationFrame(function () {
+            reflowQueued = false;
+            document.querySelectorAll('.dropdown-menu.open').forEach(function (menu) {
+                var dropdown = menu.closest('.dropdown');
+                if (!dropdown) return;
+                var rect = dropdown.getBoundingClientRect();
+                if (rect.bottom < 0 || rect.top > window.innerHeight) menu.classList.remove('open');
+                else placeDropdownMenu(menu);
+            });
+        });
+    }
+    window.addEventListener('scroll', reflowOpenDropdowns, true);
+    window.addEventListener('resize', reflowOpenDropdowns);
+
+    // Esc closes the top-most menu — a floating layer the keyboard cannot
+    // dismiss is a trap.
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        var open = document.querySelectorAll('.dropdown-menu.open');
+        if (!open.length) return;
+        e.stopPropagation();
+        open.forEach(function (menu) { menu.classList.remove('open'); });
+    });
 
     // ── Row-select tables ──────────────────────────────────────────────────
     // Clicking anywhere on a row toggles its selection checkbox — but only

@@ -4308,6 +4308,12 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
 
 /* ============================================================
    Dropdowns — floating menu, slate-2 surface, shadow-floating
+
+   Placement is handled by shared-core.js, which switches an open
+   menu to position: fixed and anchors it to its trigger. The
+   absolute rules below are the un-scripted fallback and the
+   resting state; without them a menu inside a table card's
+   overflow context gets clipped at the card edge.
    ============================================================ */
 .dropdown {
     position: relative;
@@ -4318,7 +4324,14 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
     position: absolute;
     right: 0;
     top: calc(100% + var(--space-1));
-    min-width: 160px;
+    /* max-content so the menu sizes to its longest label instead of
+       wrapping it — "Rename payee everywhere" wrapped at the old
+       160px floor and collided with the fixed 32px item height. */
+    width: max-content;
+    min-width: 200px;
+    max-width: min(300px, calc(100vw - var(--space-4) * 2));
+    max-height: calc(100vh - var(--space-5) * 2);
+    overflow-y: auto;
     background: var(--card);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
@@ -4332,6 +4345,15 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
     transform-origin: top right;
 }
 
+/* Flipped above its trigger — the menu grows upward, so it should scale
+   from the corner it is pinned to. Set as a data attribute rather than a
+   class because shared-core's placement observer watches `class`: writing
+   a class from inside that callback would re-enter it on every open. */
+.dropdown-menu[data-dropdown-placement="up"] {
+    transform: translateY(4px);
+    transform-origin: bottom right;
+}
+
 .dropdown-menu.open {
     opacity: 1;
     visibility: visible;
@@ -4343,11 +4365,14 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
     align-items: center;
     gap: var(--space-2);
     width: 100%;
-    height: 32px;
-    padding: 0 var(--space-3);
+    /* min-height, not height: a label that does wrap must grow its
+       row rather than overflow it. 36px matches the control floor. */
+    min-height: 36px;
+    padding: var(--space-2) var(--space-3);
     font-family: var(--font-sans);
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
+    line-height: 1.35;
     color: var(--text);
     background: transparent;
     border: none;
