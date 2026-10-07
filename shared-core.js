@@ -38,6 +38,10 @@
                                         are all generated from it), value, onChange,
                                         errorEl, builderButton, textField. Returns
                                         {tags, query, set, add, clear, focus, parse}.
+                                        opts.navigate {path, map, keep, tagsParam,
+                                        textParam} wires a server-rendered page: tags
+                                        become the params its controller already
+                                        accepts and the page navigates.
      - filterTagsMatch(row, tags, get)  client-side matcher for pages that already
                                         hold their rows; `get(field, row)` returns the
                                         value to test. Server-backed pages translate
@@ -751,6 +755,41 @@
             document.addEventListener('click', e => {
                 if (!e.target.closest('.filter-tags-builder') && e.target !== opts.builderButton) box.classList.remove('open');
             });
+        }
+
+        // ── Server-rendered pages: navigate instead of re-fetching ───────────
+        // Four pages repeated the same shape — collect free text into one param,
+        // map each remaining term onto a param the controller already accepts,
+        // stash the tags themselves so the field can rebuild, navigate. That is
+        // the shape, so it lives here; a page supplies only what is genuinely
+        // its own (the path, and a `map` for terms that are not a plain
+        // field=value).
+        const nav = opts.navigate;
+        if (nav) {
+            const tagsParam = nav.tagsParam || 'tags';
+            const textParam = nav.textParam === undefined ? 'q' : nav.textParam;
+            const textField = opts.textField === undefined ? 'keyword' : opts.textField;
+            const current = new URLSearchParams(global.location.search);
+
+            opts.onChange = function (tagList, q) {
+                const params = new URLSearchParams();
+                const words = [];
+                tagList.forEach(t => {
+                    if (textParam && t.field === textField) { words.push(t.raw); return; }
+                    // A page's map() returns true when it has handled the term;
+                    // anything else falls through to plain field=value.
+                    if (nav.map && nav.map(t, params) === true) return;
+                    params.set(t.field, t.raw);
+                });
+                if (words.length) params.set(textParam, words.join(' '));
+                if (q) params.set(tagsParam, q);
+                (nav.keep || []).forEach(k => { if (current.get(k)) params.set(k, current.get(k)); });
+                global.location = nav.path + '?' + params.toString();
+            };
+
+            // Tags in the URL win over whatever the page reconstructed from
+            // legacy params — a ?tags= link is the authoritative form.
+            if (current.get(tagsParam)) opts.value = current.get(tagsParam);
         }
 
         if (opts.value) api.set(opts.value, false);
