@@ -38,6 +38,10 @@
                                         are all generated from it), value, onChange,
                                         errorEl, builderButton, textField. Returns
                                         {tags, query, set, add, clear, focus, parse}.
+     - filterTagsMatch(row, tags, get)  client-side matcher for pages that already
+                                        hold their rows; `get(field, row)` returns the
+                                        value to test. Server-backed pages translate
+                                        tags into query params instead.
      - placeDropdownMenu(menu)          anchors an open .dropdown-menu to its
                                         .dropdown trigger as position: fixed, so a
                                         card's overflow context cannot clip it;
@@ -448,6 +452,50 @@
     function ftDay(d) {
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
+
+    // Client-side matcher for pages that already hold their rows in memory.
+    // `get` maps a field name to that row's value; dates must come back as
+    // YYYY-MM-DD and numbers as numbers. Server-backed pages ignore this and
+    // translate tags into query params instead.
+    function filterTagsMatch(row, tags, get) {
+        return (tags || []).every(t => {
+            const got = get(t.field, row);
+            if (got === undefined || got === null) return t.op === '!=';
+            if (t.date) {
+                const cmp = t.date.kind === 'month' ? String(got).slice(0, 7)
+                          : t.date.kind === 'year'  ? String(got).slice(0, 4) : String(got);
+                switch (t.op) {
+                    case '=':  return cmp === t.date.value;
+                    case '!=': return cmp !== t.date.value;
+                    case '>':  return cmp >  t.date.value;
+                    case '<':  return cmp <  t.date.value;
+                    case '>=': return cmp >= t.date.value;
+                    case '<=': return cmp <= t.date.value;
+                }
+            }
+            if (t.num !== undefined) {
+                const n = Number(got);
+                switch (t.op) {
+                    case '=':  return n === t.num;
+                    case '!=': return n !== t.num;
+                    case '>':  return n >  t.num;
+                    case '<':  return n <  t.num;
+                    case '>=': return n >= t.num;
+                    case '<=': return n <= t.num;
+                }
+            }
+            // Text and enum. An array value (tags on a record) matches if any
+            // element does; a string matches as a substring for free text and
+            // exactly for everything else.
+            const hay = Array.isArray(got) ? got.map(v => String(v).toLowerCase()) : String(got).toLowerCase();
+            const want = String(t.raw).toLowerCase();
+            const hit = Array.isArray(hay) ? hay.includes(want)
+                      : t.loose === false ? hay === want
+                      : hay.includes(want);
+            return t.op === '!=' ? !hit : hit;
+        });
+    }
+    global.filterTagsMatch = filterTagsMatch;
 
     function installFilterTags(root, opts) {
         if (!root) return null;

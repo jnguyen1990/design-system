@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-app="budgeter" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Query search — working prototypes</title>
+<link rel="stylesheet" href="./design-system.css">
+<style>
+  body { padding: var(--space-6) var(--space-8) var(--space-9); max-width: 1180px; margin: 0 auto; }
+  .opt { margin-bottom: var(--space-9); }
+  .opt-head { display: flex; align-items: baseline; gap: var(--space-3); margin-bottom: var(--space-2); flex-wrap: wrap; }
+  .opt-key { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--accent-text); letter-spacing: 0.08em; }
+  .opt-h { margin: 0; font-size: var(--text-lg); }
+  .say { color: var(--text-muted); font-size: var(--text-sm); margin: 0 0 var(--space-4); max-width: 78ch; line-height: 1.6; }
+  .say code, .ex code { font-family: var(--font-mono); font-size: 0.9em; background: var(--bg-subtle); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border); }
+  .rules { margin-top: var(--space-4); padding: var(--space-4) var(--space-5); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .rules h4 { margin: 0 0 var(--space-2); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+  .rules li { font-size: var(--text-sm); margin-bottom: 5px; line-height: 1.55; }
+  .cost { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-3); font-family: var(--font-mono); line-height: 1.6; }
+  .sep { height: 1px; background: var(--border); margin: var(--space-8) 0; }
+  .try { font-size: var(--text-xs); color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--space-2); }
+  .ex { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
+  .ex button { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--panel); border: 1px solid var(--border); color: var(--text-muted);
+               padding: 5px 9px; border-radius: var(--radius-sm); cursor: pointer; }
+  .ex button:hover { border-color: var(--border-hover); color: var(--text); }
+
+  /* Prototype primitives — these become DS components if this direction wins. */
+  .qbar { position: relative; display: flex; align-items: center; gap: var(--space-2); }
+  .qinput { flex: 1; font-family: var(--font-mono); font-size: var(--text-sm); }
+  .qmenu { position: absolute; top: calc(100% + 4px); left: 0; min-width: 300px; max-height: 280px; overflow-y: auto; background: var(--card);
+           border: 1px solid var(--card-border); border-radius: var(--radius-md); box-shadow: var(--shadow-floating); padding: var(--space-1); z-index: 200; display: none; }
+  .qmenu.open { display: block; }
+  .qmenu-head { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); padding: 6px var(--space-3) 4px; }
+  .qopt { display: flex; align-items: baseline; gap: var(--space-2); min-height: 32px; padding: 6px var(--space-3); border-radius: var(--radius-sm); cursor: pointer; font-size: var(--text-sm); }
+  .qopt:hover, .qopt.sel { background: var(--panel); }
+  .qopt .k { font-family: var(--font-mono); color: var(--text); }
+  .qopt .d { color: var(--text-muted); font-size: var(--text-xs); }
+  .chips { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-3); margin-top: var(--space-3); border-top: 1px solid var(--border); }
+  .chips:empty { display: none; }
+  .qchip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--radius-sm);
+           border: 1px solid var(--accent-300); background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-mono); font-size: var(--text-xs); }
+  .qchip.bad { border-color: var(--red-7); background: var(--red-3); color: var(--red-11); }
+  .qchip .x { cursor: pointer; opacity: 0.65; }
+  .qchip .x:hover { opacity: 1; }
+  .qtext { border-style: dashed; }
+  .ghost-link { background: none; border: none; color: var(--text-muted); font-size: var(--text-xs); cursor: pointer; text-decoration: underline; }
+  .f-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 var(--space-3); border-radius: var(--radius-sm);
+           border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer; }
+  .f-btn:hover { border-color: var(--border-hover); }
+  .count { font-weight: 400; color: var(--text-muted); }
+  .diagram { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--space-5); align-items: center; margin: var(--space-4) 0; }
+  .diagram .arrow { font-size: 22px; color: var(--text-faint); }
+  .fake-card { border: 1px dashed var(--border); border-radius: var(--radius-md); padding: var(--space-3); margin-bottom: var(--space-2); }
+  .fake-card.solid { border-style: solid; border-color: var(--card-border); background: var(--card); }
+  .fake-lbl { font-size: var(--text-xs); color: var(--text-faint); font-family: var(--font-mono); }
+  .fake-row { height: 8px; background: var(--panel); border-radius: 3px; margin-top: 6px; }
+  @media (max-width: 900px) { .diagram { grid-template-columns: 1fr; } .diagram .arrow { transform: rotate(90deg); } }
+</style>
+</head>
+<body>
+
+<header style="margin-bottom: var(--space-7);">
+  <h1 style="margin: 0 0 var(--space-2); font-size: var(--text-xl);">Query search — working prototypes</h1>
+  <p class="say">The three demos below are <strong>live</strong>. Type in them, click the example queries, watch the rows and chips react. Same 14 rows of fake budgeter data in each, same parser underneath — only the syntax and the way you build a query differ.</p>
+</header>
+
+<!-- ───────────────── What D meant ───────────────── -->
+<section class="opt">
+  <div class="opt-head"><span class="opt-key">FIRST</span><h2 class="opt-h">What "filters live in the table's card" meant</h2></div>
+  <p class="say">Nothing clever — it's about <em>how many boxes are on the page</em>. Today the transactions page is two separate cards: a filter panel floating on top, and a table card below it with its own "Transactions (141)" heading. The controls and the number they produce are in different boxes, so nothing connects "I filtered" to "that's why it says 32".</p>
+  <div class="diagram">
+    <div>
+      <div class="fake-lbl">today — two cards</div>
+      <div class="fake-card"><span class="fake-lbl">filter card</span><div class="fake-row" style="width:90%"></div></div>
+      <div class="fake-card"><span class="fake-lbl">table card — "Transactions (141)"</span><div class="fake-row"></div><div class="fake-row"></div><div class="fake-row" style="width:70%"></div></div>
+    </div>
+    <div class="arrow">→</div>
+    <div>
+      <div class="fake-lbl">option D — one card</div>
+      <div class="fake-card solid">
+        <span class="fake-lbl">"Transactions (32 of 141)" + search + filters + sort</span>
+        <div class="fake-row" style="width:60%; background: var(--accent-soft);"></div>
+        <div class="fake-row"></div><div class="fake-row"></div><div class="fake-row" style="width:70%"></div>
+      </div>
+    </div>
+  </div>
+  <p class="say">That's the whole idea: <strong>the controls that filter a table go in that table's card header</strong>, the count reads "32 of 141" so a filter can never be invisible, and the standalone filter panel disappears. It says nothing about <em>what</em> the controls are — which is what the rest of this page is about. D and a query box are compatible; the query box just becomes the one search control in that header.</p>
+</section>
+
+<div class="sep"></div>
+
+<!-- ───────────────── Option 1 ───────────────── -->
+<section class="opt" id="s1">
+  <div class="opt-head"><span class="opt-key">OPTION 1</span><h2 class="opt-h">Colon tokens, with autocomplete</h2></div>
+  <p class="say">The compact form: <code>field:value</code>, no spaces. Bare words search payee and memo. <code>&gt;</code> and <code>&lt;</code> work on amounts and dates. The menu opens as you type a field name, so you never have to remember the vocabulary — type <code>c</code> and it offers <code>category:</code>.</p>
+  <div class="try">Try</div>
+  <div class="ex" data-for="q1">
+    <button>imported:today</button><button>imported:today category:none</button><button>category:groceries amount&gt;50</button><button>sobeys</button><button>date:this-month amount&gt;100</button>
+  </div>
+  <div class="card">
+    <div class="toolbar" style="margin-bottom: var(--space-3);">
+      <div class="toolbar-start"><h3 class="card-title" style="margin:0;">Transactions <span class="count" id="c1">(14 of 14)</span></h3></div>
+      <div class="toolbar-end"><button class="f-btn">Date · newest ▾</button></div>
+    </div>
+    <div class="qbar">
+      <input class="form-control qinput" id="q1" placeholder="Search, or type a field like category:" autocomplete="off" spellcheck="false">
+      <div class="qmenu" id="m1"></div>
+    </div>
+    <div class="chips" id="ch1"></div>
+    <div class="table-responsive" style="margin-top: var(--space-3);"><table class="table-transactions"><thead><tr>
+      <th style="width:92px;">Date</th><th>Payee</th><th style="width:160px;">Category</th><th style="width:120px;" class="text-right">Amount</th><th style="width:110px;">Imported</th>
+    </tr></thead><tbody id="t1"></tbody></table></div>
+  </div>
+  <div class="rules">
+    <h4>Rules</h4>
+    <ol>
+      <li>Grammar is <code>field:value</code>, plus <code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code> for ordered fields. Terms are ANDed. Quote values with spaces: <code>category:"eating out"</code>.</li>
+      <li>Anything not matching a known field is free text over payee and memo — so a user who never learns the syntax still gets a working search box.</li>
+      <li>Every term renders as a chip below the input; removing a chip rewrites the query text.</li>
+      <li>An unknown field is a <strong>red chip</strong>, never a silent zero-result.</li>
+      <li>The field vocabulary is declared per page, and the autocomplete is generated from it — never hand-maintained.</li>
+    </ol>
+    <p class="cost">Cost: parser + autocomplete + server-side translation per page. Terse to type, least natural to read.</p>
+  </div>
+</section>
+
+<!-- ───────────────── Option 2 ───────────────── -->
+<section class="opt" id="s2">
+  <div class="opt-head"><span class="opt-key">OPTION 2</span><h2 class="opt-h">Spelled-out expressions, Excel-style</h2></div>
+  <p class="say">What you described: <code>date = today</code>, <code>imported date = today</code>, <code>amount &gt; 50</code>. Spaces allowed around operators, field names can be two words, <code>and</code> is optional. Reads like a sentence; costs more keystrokes and a looser grammar to parse.</p>
+  <div class="try">Try</div>
+  <div class="ex" data-for="q2">
+    <button>imported date = today</button><button>imported date = today and category = none</button><button>amount &gt; 50 and category = groceries</button><button>date = this month</button><button>payee = sobeys</button>
+  </div>
+  <div class="card">
+    <div class="toolbar" style="margin-bottom: var(--space-3);">
+      <div class="toolbar-start"><h3 class="card-title" style="margin:0;">Transactions <span class="count" id="c2">(14 of 14)</span></h3></div>
+      <div class="toolbar-end"><button class="f-btn">Date · newest ▾</button></div>
+    </div>
+    <div class="qbar">
+      <input class="form-control qinput" id="q2" placeholder="e.g. imported date = today and amount > 50" autocomplete="off" spellcheck="false">
+      <div class="qmenu" id="m2"></div>
+    </div>
+    <div class="chips" id="ch2"></div>
+    <div class="table-responsive" style="margin-top: var(--space-3);"><table class="table-transactions"><thead><tr>
+      <th style="width:92px;">Date</th><th>Payee</th><th style="width:160px;">Category</th><th style="width:120px;" class="text-right">Amount</th><th style="width:110px;">Imported</th>
+    </tr></thead><tbody id="t2"></tbody></table></div>
+  </div>
+  <div class="rules">
+    <h4>Rules</h4>
+    <ol>
+      <li>Grammar is <code>field operator value</code> with optional spaces; operators <code>=</code> <code>!=</code> <code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code>. Terms joined by <code>and</code>, or just by spaces.</li>
+      <li>Field names may contain spaces (<code>imported date</code>) — the page declares its aliases, and they are matched longest-first.</li>
+      <li>Values are bare words or quoted; <code>today</code>, <code>yesterday</code>, <code>this month</code>, <code>last month</code> and ISO dates are all understood.</li>
+      <li>Same chip + red-unknown-field rules as option 1.</li>
+      <li><code>or</code> is deliberately NOT supported. The moment a query needs <code>or</code>, the honest answer is a saved view, not a longer sentence.</li>
+    </ol>
+    <p class="cost">Cost: as option 1 plus a fuzzier tokenizer (spaces are ambiguous: "imported date" is a field, "eating out" is a value). Autocomplete mid-sentence is harder and less precise.</p>
+  </div>
+</section>
+
+<!-- ───────────────── Option 3 ───────────────── -->
+<section class="opt" id="s3">
+  <div class="opt-head"><span class="opt-key">OPTION 3</span><h2 class="opt-h">Builder and query, same thing (recommended)</h2></div>
+  <p class="say">Both syntaxes above work in this one — but you never have to type either. <strong>+ Filter</strong> walks you through field → operator → value and <em>writes the query for you</em>. You read what it wrote, so you learn the syntax by using the buttons; and once you know it, you just type. The filter popover from option D and the query box stop being two ideas.</p>
+  <div class="try">Try — click + Filter, or type either syntax</div>
+  <div class="ex" data-for="q3">
+    <button>imported:today</button><button>imported date = today and category = none</button><button>amount &gt; 100</button>
+  </div>
+  <div class="card">
+    <div class="toolbar" style="margin-bottom: var(--space-3);">
+      <div class="toolbar-start"><h3 class="card-title" style="margin:0;">Transactions <span class="count" id="c3">(14 of 14)</span></h3></div>
+      <div class="toolbar-end"><button class="f-btn">Date · newest ▾</button></div>
+    </div>
+    <div class="qbar">
+      <input class="form-control qinput" id="q3" placeholder="Search, or build a filter →" autocomplete="off" spellcheck="false">
+      <button class="f-btn" id="addf3">+ Filter</button>
+      <div class="qmenu" id="m3"></div>
+      <div class="qmenu" id="b3" style="left:auto; right:0;"></div>
+    </div>
+    <div class="chips" id="ch3"></div>
+    <div class="table-responsive" style="margin-top: var(--space-3);"><table class="table-transactions"><thead><tr>
+      <th style="width:92px;">Date</th><th>Payee</th><th style="width:160px;">Category</th><th style="width:120px;" class="text-right">Amount</th><th style="width:110px;">Imported</th>
+    </tr></thead><tbody id="t3"></tbody></table></div>
+  </div>
+  <div class="rules">
+    <h4>Rules</h4>
+    <ol>
+      <li>One input per list page. It is the search box <em>and</em> the filter state — there is no second place where filtering lives.</li>
+      <li>Every control that sets a filter does it by <strong>writing into the query</strong>. Clicking a category chip in a row, "show me this import", a saved view — all of them append a term you can then see and edit.</li>
+      <li>The builder accepts either syntax and always writes the terse one, so the canonical form is what you end up reading.</li>
+      <li>The query is the URL. <code>?q=imported:today+category:none</code> — so any filtered view is linkable, bookmarkable, and survives a reload.</li>
+      <li>A query you keep using becomes a saved view: a named chip that expands back into editable terms, never an opaque stored filter.</li>
+    </ol>
+    <p class="cost">Cost: highest — parser + autocomplete + builder + saved views. But it is the only one where a user who never learns the syntax and a user who lives in it get the same feature.</p>
+  </div>
+</section>
+
+<div class="sep"></div>
+<section class="opt">
+  <div class="opt-head"><span class="opt-key">BUILD</span><h2 class="opt-h">How this would actually ship</h2></div>
+  <p class="say">The parser is the shared part and the only genuinely new idea — everything else is wiring. It would live in <code>shared-core.js</code> as a declarative thing: a page hands it a field spec, it hands back a parsed query.</p>
+  <div class="rules">
+    <h4>Staging</h4>
+    <ol>
+      <li><strong>Parser + chips, client-side only</strong>, on budgeter's transactions page. Fields declared in one object; no server change — the existing endpoints already accept the equivalent params, so the parser just maps terms onto them. This is the step that proves the syntax.</li>
+      <li><strong>Autocomplete menu</strong>, generated from the same field spec. This is what makes it usable by someone who hasn't memorised anything.</li>
+      <li><strong>Builder + URL sync</strong> (<code>?q=</code>), which retires the separate filter popover and makes views linkable.</li>
+      <li><strong>Roll out per page</strong> by declaring a field spec: budgeter reports/uncategorized, fitness logbook, mealplanner recipes, postings. A page with two fields declares two; the component is the same.</li>
+      <li><strong>Saved views</strong> last, once real queries exist to save.</li>
+    </ol>
+    <p class="cost">Honest caveat: a query language only pays off where there is enough data to sift. Budgeter's transactions and mealplanner's recipes qualify. A page with 9 rows does not — those keep a plain search box, and that is fine. The rule should be "one input per list page", not "a query language everywhere".</p>
+  </div>
+</section>
+
+<script>
+// ── The shared parser ────────────────────────────────────────────────────────
+// One grammar, two surface syntaxes. A page declares its fields; everything
+// else — chips, autocomplete, the builder — is generated from this spec.
+const FIELDS = {
+  payee:    { type: 'text',   label: 'Payee',    aliases: ['payee', 'merchant'] },
+  memo:     { type: 'text',   label: 'Memo',     aliases: ['memo', 'note'] },
+  category: { type: 'enum',   label: 'Category', aliases: ['category', 'cat'],
+              values: ['groceries', 'restaurants', 'gas', 'rent', 'coffee', 'shopping', 'none'] },
+  amount:   { type: 'number', label: 'Amount',   aliases: ['amount', 'value'] },
+  date:     { type: 'date',   label: 'Date',     aliases: ['date', 'transaction date'] },
+  imported: { type: 'date',   label: 'Imported', aliases: ['imported', 'imported date', 'import date', 'import day'] },
+  account:  { type: 'enum',   label: 'Account',  aliases: ['account'], values: ['chequing', 'amex'] },
+};
+// Longest alias first so "imported date" wins over "imported".
+const ALIASES = Object.entries(FIELDS)
+  .flatMap(([key, f]) => f.aliases.map(a => [a, key]))
+  .sort((a, b) => b[0].length - a[0].length);
+
+const TODAY = new Date('2026-10-07T00:00:00');
+const dkey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+function resolveDate(raw) {
+  const v = raw.trim().toLowerCase().replace(/[-_]/g, ' ');
+  if (v === 'today')     return { kind: 'day',   value: dkey(TODAY) };
+  if (v === 'yesterday') { const d = new Date(TODAY); d.setDate(d.getDate()-1); return { kind: 'day', value: dkey(d) }; }
+  if (v === 'this month') return { kind: 'month', value: dkey(TODAY).slice(0,7) };
+  if (v === 'last month') { const d = new Date(TODAY); d.setMonth(d.getMonth()-1); return { kind: 'month', value: dkey(d).slice(0,7) }; }
+  if (/^\d{4}-\d{2}$/.test(v))    return { kind: 'month', value: v };
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return { kind: 'day', value: v };
+  return null;
+}
+
+// Split on whitespace but keep quoted runs together.
+function lex(s) {
+  const out = []; let cur = ''; let q = null;
+  for (const ch of s) {
+    if (q) { if (ch === q) { q = null; } else cur += ch; continue; }
+    if (ch === '"' || ch === "'") { q = ch; continue; }
+    if (/\s/.test(ch)) { if (cur) out.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+
+function parse(input) {
+  let s = ' ' + input.toLowerCase() + ' ';
+  const terms = [];
+
+  // Known multi-word values must be tried before the bare-word fallback, or
+  // "date = this month" captures only "this" and the rest becomes free text.
+  // This is the real cost of allowing spaces: values need a vocabulary too.
+  const PHRASES = ['this month', 'last month', 'this year'];
+  const VALUE = `("[^"]*"|'[^']*'|${PHRASES.map(v => v.replace(/ /g, '\\s+')).join('|')}|\\S+)`;
+
+  // Pull out `field <op> value` anywhere in the string, longest alias first, so
+  // both "imported date = today" and "imported:today" reduce to the same term.
+  for (const [alias, key] of ALIASES) {
+    const re = new RegExp(`(^|\\s)${alias.replace(/ /g, '\\s+')}\\s*(>=|<=|!=|=|>|<|:)\\s*${VALUE}`, 'gi');
+    s = s.replace(re, (m, pre, op, val) => {
+      terms.push({ field: key, op: op === ':' ? '=' : op, raw: val.replace(/^["']|["']$/g, '') });
+      return pre;
+    });
+  }
+  // Anything left that looks like `something <op> something` names a field we
+  // do not have — surface it rather than silently dropping it.
+  s = s.replace(new RegExp(`(^|\\s)([a-z][a-z ]*?)\\s*(>=|<=|!=|=|>|<|:)\\s*${VALUE}`, 'gi'), (m, pre, name, op, val) => {
+    terms.push({ field: null, name: name.trim(), op, raw: val.replace(/^["']|["']$/g, ''), error: `No field "${name.trim()}"` });
+    return pre;
+  });
+
+  const words = lex(s).filter(w => w !== 'and' && w !== '&&');
+  if (words.length) terms.push({ field: '_text', op: '~', raw: words.join(' ') });
+
+  return terms.map(t => {
+    if (t.error || t.field === null || t.field === '_text') return t;
+    const spec = FIELDS[t.field];
+    if (spec.type === 'date') {
+      const d = resolveDate(t.raw.replace(/\s+/g, ' '));
+      if (!d) return { ...t, error: `"${t.raw}" is not a date` };
+      return { ...t, date: d };
+    }
+    if (spec.type === 'number') {
+      const n = parseFloat(t.raw.replace(/[$,]/g, ''));
+      if (isNaN(n)) return { ...t, error: `"${t.raw}" is not an amount` };
+      return { ...t, num: n };
+    }
+    if (spec.type === 'enum' && spec.values && !spec.values.includes(t.raw)) {
+      return { ...t, error: `No ${spec.label.toLowerCase()} "${t.raw}"` };
+    }
+    return t;
+  });
+}
+
+function matches(row, terms) {
+  return terms.every(t => {
+    if (t.error) return true;                        // a broken term filters nothing
+    if (t.field === '_text') {
+      const hay = (row.payee + ' ' + (row.memo || '')).toLowerCase();
+      return t.raw.split(/\s+/).every(w => hay.includes(w));
+    }
+    if (t.field === '_text' || t.field === null) return true;
+    const spec = FIELDS[t.field];
+    if (spec.type === 'date') {
+      const got = t.field === 'imported' ? row.imported : row.date;
+      const want = t.date;
+      const cmp = want.kind === 'month' ? got.slice(0, 7) : got;
+      if (t.op === '=')  return cmp === want.value;
+      if (t.op === '!=') return cmp !== want.value;
+      if (t.op === '>')  return cmp >  want.value;
+      if (t.op === '<')  return cmp <  want.value;
+      if (t.op === '>=') return cmp >= want.value;
+      if (t.op === '<=') return cmp <= want.value;
+    }
+    if (spec.type === 'number') {
+      const got = row.amount;
+      if (t.op === '=')  return got === t.num;
+      if (t.op === '!=') return got !== t.num;
+      if (t.op === '>')  return got >  t.num;
+      if (t.op === '<')  return got <  t.num;
+      if (t.op === '>=') return got >= t.num;
+      if (t.op === '<=') return got <= t.num;
+    }
+    const got = String(row[t.field] ?? '').toLowerCase() || 'none';
+    return t.op === '!=' ? got !== t.raw : got === t.raw;
+  });
+}
+
+function chipLabel(t) {
+  if (t.error) return t.error;
+  if (t.field === '_text') return `contains "${t.raw}"`;
+  const op = t.op === '=' ? ':' : ' ' + t.op + ' ';
+  return `${FIELDS[t.field].label.toLowerCase()}${op}${t.raw}`;
+}
+
+// ── Demo data ───────────────────────────────────────────────────────────────
+const ROWS = [
+  { date:'2026-10-06', payee:'Sobeys #4412',       memo:'weekly shop', category:'groceries',   amount:34.70,  imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-05', payee:'Superstore #1123',   memo:'',            category:'groceries',   amount:112.08, imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-05', payee:'Sq *Thom Bargen',    memo:'',            category:'coffee',      amount:6.25,   imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-04', payee:'Petro Canada',       memo:'fill up',     category:'gas',         amount:84.50,  imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-03', payee:'Amzn Mktp Ca',       memo:'',            category:null,          amount:41.99,  imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-02', payee:'Peg City Car Co-op', memo:'',            category:null,          amount:23.15,  imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-01', payee:'Rent · landlord',    memo:'october',     category:'rent',        amount:1650.00,imported:'2026-10-07', account:'chequing' },
+  { date:'2026-09-30', payee:'Skip The Dishes',    memo:'',            category:'restaurants', amount:38.40,  imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-29', payee:'Sobeys #4412',       memo:'',            category:'groceries',   amount:52.19,  imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-28', payee:'Winners',            memo:'',            category:'shopping',    amount:76.30,  imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-27', payee:'Starbucks',          memo:'',            category:'coffee',      amount:5.85,   imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-26', payee:'Esso',               memo:'',            category:'gas',         amount:91.20,  imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-25', payee:'Amzn Mktp Ca',       memo:'cable',       category:'shopping',    amount:18.99,  imported:'2026-09-30', account:'amex' },
+  { date:'2026-09-24', payee:'Costco Wholesale',   memo:'bulk',        category:'groceries',   amount:244.12, imported:'2026-09-30', account:'chequing' },
+];
+
+const fmt = n => '−$' + n.toFixed(2);
+const shortDate = s => new Date(s + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const impLabel = s => s === dkey(TODAY) ? 'Today' : shortDate(s);
+
+function render(id) {
+  const q = document.getElementById('q' + id).value;
+  const terms = parse(q);
+  const rows = ROWS.filter(r => matches(r, terms));
+
+  document.getElementById('t' + id).innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td class="td-date">${shortDate(r.date)}</td>
+      <td><div class="row-title">${r.payee}</div>${r.memo ? `<div class="row-sub">${r.memo}</div>` : ''}</td>
+      <td>${r.category ? `<span class="badge badge--${{groceries:'green',restaurants:'amber',gas:'red',rent:'blue',coffee:'orange',shopping:'purple'}[r.category] || 'slate'}">${r.category}</span>` : '<span class="badge badge--slate">uncategorized</span>'}</td>
+      <td class="td-amount text-amount-negative">${fmt(r.amount)}</td>
+      <td class="td-date">${impLabel(r.imported)}</td>
+    </tr>`).join('') : '<tr><td colspan="5" class="text-center text-muted">No transactions match</td></tr>';
+
+  document.getElementById('c' + id).textContent = `(${rows.length} of ${ROWS.length})`;
+
+  const chips = document.getElementById('ch' + id);
+  chips.innerHTML = terms.length ? terms.map((t, i) =>
+    `<span class="qchip ${t.error ? 'bad' : ''} ${t.field === '_text' ? 'qtext' : ''}">${chipLabel(t)} <span class="x" data-i="${i}">×</span></span>`
+  ).join('') + `<button class="ghost-link" data-clear="1">Clear</button>` : '';
+}
+
+// Removing a chip rewrites the query text — the text stays the source of truth.
+function wireChips(id) {
+  document.getElementById('ch' + id).addEventListener('click', e => {
+    const input = document.getElementById('q' + id);
+    if (e.target.dataset.clear) { input.value = ''; render(id); return; }
+    if (e.target.dataset.i === undefined) return;
+    const terms = parse(input.value);
+    const keep = terms.filter((_, i) => i !== +e.target.dataset.i);
+    input.value = keep.map(t => t.field === '_text' ? t.raw
+      : t.error && t.field === null ? `${t.name}${t.op}${t.raw}`
+      : `${t.field}${t.op === '=' ? ':' : t.op}${/\s/.test(t.raw) ? `"${t.raw}"` : t.raw}`).join(' ');
+    render(id);
+  });
+}
+
+// ── Autocomplete ────────────────────────────────────────────────────────────
+function wireMenu(id) {
+  const input = document.getElementById('q' + id);
+  const menu = document.getElementById('m' + id);
+
+  const suggest = () => {
+    const upto = input.value.slice(0, input.selectionStart ?? input.value.length);
+    const word = (upto.split(/\s+/).pop() || '');
+    // Mid-term: suggest values for the field already typed.
+    const m = word.match(/^([a-z]+)(:|=)(.*)$/i);
+    if (m && FIELDS[m[1].toLowerCase()]) {
+      const spec = FIELDS[m[1].toLowerCase()];
+      const pool = spec.type === 'date' ? ['today', 'yesterday', 'this-month', 'last-month']
+                 : spec.values || [];
+      const hits = pool.filter(v => v.startsWith(m[3].toLowerCase()));
+      return hits.length ? { head: `${spec.label} is…`, items: hits.map(v => ({ k: v, d: '', insert: `${m[1]}${m[2]}${v}` })) } : null;
+    }
+    if (!word) return null;
+    const hits = Object.entries(FIELDS)
+      .filter(([k, f]) => k.startsWith(word.toLowerCase()) || f.label.toLowerCase().startsWith(word.toLowerCase()))
+      .map(([k, f]) => ({ k: k + ':', d: f.type, insert: k + ':' }));
+    return hits.length ? { head: 'Filter by', items: hits } : null;
+  };
+
+  const close = () => menu.classList.remove('open');
+  const open = () => {
+    const s = suggest();
+    if (!s) return close();
+    menu.innerHTML = `<div class="qmenu-head">${s.head}</div>` + s.items.map((it, i) =>
+      `<div class="qopt ${i === 0 ? 'sel' : ''}" data-insert="${it.insert}"><span class="k">${it.k}</span><span class="d">${it.d}</span></div>`).join('');
+    menu.classList.add('open');
+  };
+
+  const apply = ins => {
+    const words = input.value.split(/\s+/);
+    words[words.length - 1] = ins;
+    input.value = words.join(' ');
+    input.focus();
+    render(id); open();
+  };
+
+  input.addEventListener('input', () => { render(id); open(); });
+  input.addEventListener('focus', open);
+  input.addEventListener('blur', () => setTimeout(close, 150));
+  input.addEventListener('keydown', e => {
+    if (!menu.classList.contains('open')) return;
+    const opts = [...menu.querySelectorAll('.qopt')];
+    const cur = opts.findIndex(o => o.classList.contains('sel'));
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      opts.forEach(o => o.classList.remove('sel'));
+      opts[(cur + (e.key === 'ArrowDown' ? 1 : opts.length - 1)) % opts.length].classList.add('sel');
+    } else if (e.key === 'Tab' || e.key === 'Enter') {
+      if (cur >= 0) { e.preventDefault(); apply(opts[cur].dataset.insert); }
+    } else if (e.key === 'Escape') { close(); }
+  });
+  menu.addEventListener('mousedown', e => {
+    const o = e.target.closest('.qopt');
+    if (o) { e.preventDefault(); apply(o.dataset.insert); }
+  });
+}
+
+// ── The builder (option 3) ──────────────────────────────────────────────────
+function wireBuilder() {
+  const box = document.getElementById('b3');
+  const input = document.getElementById('q3');
+  let field = null;
+
+  const showFields = () => {
+    field = null;
+    box.innerHTML = `<div class="qmenu-head">Filter by</div>` + Object.entries(FIELDS).map(([k, f]) =>
+      `<div class="qopt" data-field="${k}"><span class="k">${f.label}</span><span class="d">${f.type}</span></div>`).join('');
+    box.classList.add('open');
+  };
+  const showValues = k => {
+    field = k;
+    const spec = FIELDS[k];
+    const vals = spec.type === 'date' ? ['today', 'yesterday', 'this-month', 'last-month']
+               : spec.type === 'number' ? ['>50', '>100', '<20']
+               : spec.values || [];
+    box.innerHTML = `<div class="qmenu-head">${spec.label} is…</div>` + vals.map(v =>
+      `<div class="qopt" data-value="${v}"><span class="k">${v}</span></div>`).join('')
+      + (spec.type === 'text' ? `<div class="qopt" data-value="__free"><span class="d">type a value in the box</span></div>` : '');
+  };
+
+  document.getElementById('addf3').addEventListener('click', e => {
+    e.stopPropagation();
+    box.classList.contains('open') ? box.classList.remove('open') : showFields();
+  });
+  box.addEventListener('click', e => {
+    const o = e.target.closest('.qopt');
+    if (!o) return;
+    // Stop here: showValues() replaces innerHTML, so by the time this event
+    // reaches the document handler below, e.target is detached and its
+    // closest('.qbar') is null — which would read as an outside click and
+    // close the builder the instant you pick a field.
+    e.stopPropagation();
+    if (o.dataset.field) return showValues(o.dataset.field);
+    if (o.dataset.value) {
+      const v = o.dataset.value;
+      // The builder writes the terse syntax — so what you read back is canonical.
+      const term = v.startsWith('>') || v.startsWith('<') ? `${field}${v}` : `${field}:${v}`;
+      input.value = (input.value.trim() + ' ' + term).trim();
+      box.classList.remove('open');
+      render(3);
+    }
+  });
+  document.addEventListener('click', e => { if (!e.target.closest('.qbar')) box.classList.remove('open'); });
+}
+
+// ── Boot ────────────────────────────────────────────────────────────────────
+[1, 2, 3].forEach(id => { wireMenu(id); wireChips(id); render(id); });
+wireBuilder();
+document.querySelectorAll('.ex').forEach(ex => ex.addEventListener('click', e => {
+  if (e.target.tagName !== 'BUTTON') return;
+  const input = document.getElementById(ex.dataset.for);
+  input.value = e.target.textContent;
+  render(ex.dataset.for.slice(1));
+}));
+</script>
+</body>
+</html>

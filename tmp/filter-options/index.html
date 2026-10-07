@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!-- class="dark" as well as data-theme: the Radix scales this stylesheet imports
+     gate on the class, and a static page has no shared-core.js to set both. -->
+<html lang="en" class="dark" data-app="budgeter" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filter bar — four directions</title>
+<!-- repo-local stylesheet, so the mockup matches this working tree rather than what is deployed -->
+<link rel="stylesheet" href="../../design-system.css">
+<style>
+  body { padding: var(--space-6) var(--space-8) var(--space-9); max-width: 1320px; margin: 0 auto; }
+  .opt { margin-bottom: var(--space-9); }
+  .opt-head { display: flex; align-items: baseline; gap: var(--space-3); margin-bottom: var(--space-2); }
+  .opt-key { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--accent-text); letter-spacing: 0.08em; }
+  .opt-h { margin: 0; font-size: var(--text-lg); }
+  .opt-say { color: var(--text-muted); font-size: var(--text-sm); margin: 0 0 var(--space-4); max-width: 70ch; }
+  .rules { margin: var(--space-4) 0 0; padding: var(--space-4) var(--space-5); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .rules h4 { margin: 0 0 var(--space-2); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+  .rules ol { margin: 0; padding-left: 1.2em; }
+  .rules li { font-size: var(--text-sm); margin-bottom: 5px; line-height: 1.5; }
+  .cost { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-3); font-family: var(--font-mono); }
+  .sep { height: 1px; background: var(--border); margin: var(--space-8) 0; }
+
+  /* Mockup-only primitives — these become DS components if the direction wins. */
+  .f-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 var(--space-3); border-radius: var(--radius-sm);
+           border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer; }
+  .f-btn:hover { border-color: var(--border-hover); }
+  .f-btn .cnt { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px;
+                border-radius: 99px; background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-mono); font-size: 11px; }
+  .f-pill { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 var(--space-3); border-radius: var(--radius-sm);
+            border: 1px dashed var(--border); background: transparent; color: var(--text-muted); font-size: var(--text-sm); cursor: pointer; }
+  .f-pill:hover { border-color: var(--border-hover); color: var(--text); }
+  .f-pill.set { border-style: solid; border-color: var(--accent-300); background: var(--accent-soft); color: var(--accent-text); font-weight: var(--weight-medium); }
+  .f-pill .x { opacity: 0.6; }
+  .applied { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-3); margin-top: var(--space-3); border-top: 1px solid var(--border); }
+  .applied-lbl { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); }
+  .ghost-link { background: none; border: none; color: var(--text-muted); font-size: var(--text-sm); cursor: pointer; text-decoration: underline; }
+  .mini-table { margin-top: var(--space-3); }
+  .mini-table td, .mini-table th { padding: 10px var(--space-3); }
+  .grow { flex: 1; min-width: 200px; }
+</style>
+</head>
+<body>
+
+<header style="margin-bottom: var(--space-7);">
+  <h1 style="margin: 0 0 var(--space-2); font-size: var(--text-xl);">Filter bar — four directions</h1>
+  <p class="opt-say">Budgeter's all-transactions page is the worst case in the constellation: nine controls of equal weight across two ragged rows. Each option below is a rule set first and a layout second, so whatever wins can be applied to every list page in every app. Shown at budgeter's real content width.</p>
+</header>
+
+<!-- ─────────────────────────── TODAY ─────────────────────────── -->
+<section class="opt">
+  <div class="opt-head"><span class="opt-key">TODAY</span><h2 class="opt-h">What's there now</h2></div>
+  <p class="opt-say">Nine controls, all shouting equally. Row two leaves a dead gap. The empty month input renders as <code>--------- ----</code>. Sort is mixed in with the filters even though it changes order, not the set. Nothing tells you whether a filter is even active.</p>
+  <div class="card">
+    <div class="toolbar" style="margin-bottom: 0;">
+      <div class="toolbar-start" style="flex-wrap: wrap;">
+        <input class="form-control" placeholder="Search payee or memo…" style="flex:1; min-width:200px;">
+        <select class="form-control" style="width:200px;"><option>All categories</option></select>
+        <input type="month" class="form-control" style="width:150px;">
+        <input type="number" class="form-control" placeholder="Min $" style="width:96px;">
+        <input type="number" class="form-control" placeholder="Max $" style="width:96px;">
+        <button class="btn btn-secondary btn-sm">Clear</button>
+      </div>
+    </div>
+    <div class="toolbar" style="margin-bottom:0; margin-top: var(--space-3);">
+      <div class="toolbar-start" style="flex-wrap: wrap;">
+        <select class="form-control" style="width:320px;"><option>All import days</option></select>
+        <select class="form-control" style="width:190px;"><option>Date · newest first</option></select>
+        <label class="choice-chip"><input type="checkbox"><span>Uncategorized only</span></label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ─────────────────────────── OPTION A ─────────────────────────── -->
+<section class="opt">
+  <div class="opt-head"><span class="opt-key">OPTION A</span><h2 class="opt-h">Search + one filter menu</h2></div>
+  <p class="opt-say">The bar holds search, a Filters button, and sort — nothing else, ever. Every facet lives in the popover. What you've actually set comes back as removable chips, so the bar's height tracks how much filtering you're doing instead of how many filters the page supports.</p>
+  <div class="card">
+    <div class="toolbar" style="margin-bottom: 0;">
+      <div class="toolbar-start" style="gap: var(--space-2);">
+        <input class="form-control grow" placeholder="Search payee or memo…">
+        <button class="f-btn">Filters <span class="cnt">2</span></button>
+        <button class="f-btn">Date · newest ▾</button>
+      </div>
+    </div>
+    <div class="applied">
+      <span class="applied-lbl">Filtering</span>
+      <span class="f-pill set">Category: Groceries <span class="x">×</span></span>
+      <span class="f-pill set">Imported: today <span class="x">×</span></span>
+      <button class="ghost-link">Clear all</button>
+    </div>
+  </div>
+  <div class="rules">
+    <h4>Rules this sets for every app</h4>
+    <ol>
+      <li>A list page's filter bar is exactly: free-text search, one <strong>Filters</strong> button, one <strong>sort</strong> control. Nothing else earns a slot.</li>
+      <li>Every facet lives inside the Filters popover, grouped and labelled. The popover is the only place a facet's full range is shown.</li>
+      <li>The Filters button carries a count of how many facets are set, and nothing else ever indicates filter state in the chrome.</li>
+      <li>Applied filters render as removable chips below the bar, and that row <strong>does not exist</strong> when nothing is set.</li>
+      <li>Sort is never a filter. It sits last, visually separated, and is labelled with its current value.</li>
+    </ol>
+    <p class="cost">Cost: a popover component + an applied-chips component. Biggest build, biggest payoff on dense pages. Scales to any number of facets.</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────── OPTION B ─────────────────────────── -->
+<section class="opt">
+  <div class="opt-head"><span class="opt-key">OPTION B</span><h2 class="opt-h">Chips first, search right</h2></div>
+  <p class="opt-say">Promotes what postings already does. The handful of views you actually use become one-click toggles you can read at a glance; the long-tail facets hide behind "More". Fastest to operate, but only honest when the common filters really are few and well known.</p>
+  <div class="card">
+    <div class="toolbar" style="margin-bottom: 0;">
+      <div class="toolbar-start" style="gap: var(--space-2); flex-wrap: wrap;">
+        <span class="filter-chip active">All</span>
+        <span class="filter-chip">Uncategorized</span>
+        <span class="filter-chip">This month</span>
+        <span class="filter-chip">Imported today</span>
+        <span style="width:1px; height:18px; background: var(--border); margin: 0 4px;"></span>
+        <button class="f-btn">More <span class="cnt">1</span></button>
+      </div>
+      <div class="toolbar-end" style="gap: var(--space-2);">
+        <input class="form-control" placeholder="Search…" style="width: 220px;">
+        <button class="f-btn">Date · newest ▾</button>
+      </div>
+    </div>
+  </div>
+  <div class="rules">
+    <h4>Rules this sets for every app</h4>
+    <ol>
+      <li>A facet with <strong>five or fewer</strong> values you'd actually pick is a row of <code>.filter-chip</code> toggles. Anything larger goes behind <strong>More</strong>.</li>
+      <li>The chip row is the page's saved views: the first chip is always the unfiltered default and is active on load.</li>
+      <li>Free-text search is always right-aligned and always last-but-one; sort is always last.</li>
+      <li>Chips show state by being active — there is no separate applied-filters row.</li>
+      <li>A page may have at most <strong>one</strong> chip row. A second dimension means you needed Option A.</li>
+    </ol>
+    <p class="cost">Cost: smallest — .filter-chip already exists and postings ships it. Breaks down on pages with several independent high-cardinality facets (budgeter has three).</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────── OPTION C ─────────────────────────── -->
+<section class="opt">
+  <div class="opt-head"><span class="opt-key">OPTION C</span><h2 class="opt-h">Quiet until set</h2></div>
+  <p class="opt-say">Everything stays on one line and nothing hides, but an unset filter is a dashed ghost and a set one is accent-tinted and states its value. The bar becomes readable left-to-right: you see what's filtering without reading any dropdown's contents.</p>
+  <div class="card">
+    <div class="toolbar" style="margin-bottom: 0;">
+      <div class="toolbar-start" style="gap: var(--space-2); flex-wrap: wrap;">
+        <input class="form-control grow" placeholder="Search payee or memo…">
+        <span class="f-pill set">Groceries <span class="x">×</span></span>
+        <span class="f-pill">Month ▾</span>
+        <span class="f-pill">Amount ▾</span>
+        <span class="f-pill set">Imported today <span class="x">×</span></span>
+        <span class="f-pill">Uncategorized</span>
+      </div>
+      <div class="toolbar-end"><button class="f-btn">Date · newest ▾</button></div>
+    </div>
+  </div>
+  <div class="rules">
+    <h4>Rules this sets for every app</h4>
+    <ol>
+      <li>Every facet is a <strong>pill</strong>, never a bare <code>&lt;select&gt;</code>. Unset: dashed border, muted, shows the facet name. Set: solid accent tint, shows the <em>value</em> and a × to clear.</li>
+      <li>A filter bar is <strong>one row</strong>. If it wraps on a 1280px viewport, the page has too many facets and the overflow moves behind a menu.</li>
+      <li>Search is the only full-weight input and always comes first.</li>
+      <li>No Clear button — clearing is per-pill via ×, because "clear everything" is rarely what you mean.</li>
+      <li>Sort sits in <code>.toolbar-end</code>, never among the pills.</li>
+    </ol>
+    <p class="cost">Cost: one new DS component (the filter pill, with its unset/set states). No popover needed. Still grows horizontally with facet count.</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────── OPTION D ─────────────────────────── -->
+<section class="opt">
+  <div class="opt-head"><span class="opt-key">OPTION D</span><h2 class="opt-h">Filters live in the table's own card</h2></div>
+  <p class="opt-say">A structural fix rather than a control fix: the floating filter panel disappears and the controls join the header of the card they filter, next to the result count. The count and the filters that produced it finally sit together.</p>
+  <div class="card">
+    <div class="toolbar">
+      <div class="toolbar-start">
+        <h3 class="card-title" style="margin:0;">Transactions <span class="text-muted" style="font-weight:400;">(32 of 141)</span></h3>
+      </div>
+      <div class="toolbar-end" style="gap: var(--space-2);">
+        <input class="form-control" placeholder="Search…" style="width: 200px;">
+        <button class="f-btn">Filters <span class="cnt">2</span></button>
+        <button class="f-btn">Date · newest ▾</button>
+        <button class="btn btn-primary btn-sm">+ add transaction</button>
+      </div>
+    </div>
+    <div class="applied" style="margin-top:0; border-top:none; padding-top:0; padding-bottom: var(--space-3);">
+      <span class="f-pill set">Category: Groceries <span class="x">×</span></span>
+      <span class="f-pill set">Imported: today <span class="x">×</span></span>
+      <button class="ghost-link">Clear all</button>
+    </div>
+    <div class="table-responsive mini-table">
+      <table class="table-transactions">
+        <thead><tr><th style="width:96px;">Date</th><th>Payee</th><th style="width:170px;">Category</th><th style="width:130px;" class="text-right">Amount</th><th style="width:110px;">Imported</th></tr></thead>
+        <tbody>
+          <tr><td class="td-date">Oct 1</td><td><div class="row-title">Sobeys #4412</div></td><td><span class="badge badge--green">Groceries</span></td><td class="td-amount text-amount-negative">−$34.70</td><td class="td-date">Today</td></tr>
+          <tr><td class="td-date">Sep 29</td><td><div class="row-title">Superstore #1123</div></td><td><span class="badge badge--green">Groceries</span></td><td class="td-amount text-amount-negative">−$112.08</td><td class="td-date">Today</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="rules">
+    <h4>Rules this sets for every app</h4>
+    <ol>
+      <li>Filters belong to the card they filter. <strong>No standalone filter card</strong>, ever — it separates the controls from the count they produce.</li>
+      <li>The card header is: title + "<em>n</em> of <em>total</em>" on the left; search, Filters, sort, primary action on the right, in that order.</li>
+      <li>The result count always states the filtered figure against the total, so a filter can never be invisible.</li>
+      <li>Applied filters are removable chips directly under the header, inside the same card.</li>
+      <li>On a page with no filters, the header keeps the same shape — just fewer controls.</li>
+    </ol>
+    <p class="cost">Cost: popover + chips (as A) plus touching each page's card structure. Most consistent result across apps; most markup churn.</p>
+  </div>
+</section>
+
+<div class="sep"></div>
+<p class="opt-say"><strong>Not proposed:</strong> token search (<code>category:groceries imported:today</code> parsed from one box). It is the most powerful option and the most work — a parser, a suggestion menu, and a syntax to remember — and it hides the available facets from a user who is scanning. Worth revisiting only if a page ever outgrows Option A's popover.</p>
+
+</body>
+</html>

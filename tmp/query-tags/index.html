@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-app="budgeter" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Option 3 — stacked tags</title>
+<link rel="stylesheet" href="./design-system.css">
+<style>
+  body { padding: var(--space-6) var(--space-8) var(--space-9); max-width: 1120px; margin: 0 auto; }
+  .say { color: var(--text-muted); font-size: var(--text-sm); margin: 0 0 var(--space-4); max-width: 78ch; line-height: 1.6; }
+  .say code, .ex code, li code { font-family: var(--font-mono); font-size: 0.9em; background: var(--bg-subtle); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border); }
+  .rules { margin-top: var(--space-5); padding: var(--space-4) var(--space-5); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .rules h4 { margin: 0 0 var(--space-2); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+  .rules li { font-size: var(--text-sm); margin-bottom: 6px; line-height: 1.55; }
+  .try { font-size: var(--text-xs); color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--space-2); }
+  .ex { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
+  .ex button { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--panel); border: 1px solid var(--border); color: var(--text-muted);
+               padding: 5px 9px; border-radius: var(--radius-sm); cursor: pointer; }
+  .ex button:hover { border-color: var(--border-hover); color: var(--text); }
+  .sep { height: 1px; background: var(--border); margin: var(--space-8) 0; }
+  .count { font-weight: 400; color: var(--text-muted); }
+
+  /* ── The token field: looks like one .form-control, holds chips + an input ── */
+  .qfield { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+            min-height: 36px; padding: 4px 8px; background: var(--input-bg, var(--panel));
+            border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: text; flex: 1; }
+  .qfield:focus-within { border-color: var(--accent-300); box-shadow: 0 0 0 3px var(--focus-ring); }
+  .qfield.err { border-color: var(--red-7); }
+  .qfield input { flex: 1; min-width: 160px; border: none; outline: none; background: transparent;
+                  color: var(--text); font-family: var(--font-mono); font-size: var(--text-sm); height: 26px; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px; border-radius: 5px;
+         border: 1px solid var(--accent-300); background: var(--accent-soft); color: var(--accent-text);
+         font-family: var(--font-mono); font-size: var(--text-xs); white-space: nowrap; }
+  .tag.text { border-style: dashed; }
+  .tag .x { cursor: pointer; opacity: 0.6; }
+  .tag .x:hover { opacity: 1; }
+  .tag.focus { outline: 2px solid var(--accent-300); outline-offset: 1px; }
+  .qerr { font-size: var(--text-xs); color: var(--red-11); margin-top: 6px; min-height: 16px; }
+  .qmenu { position: absolute; top: calc(100% + 4px); left: 0; min-width: 290px; max-height: 260px; overflow-y: auto;
+           background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-md);
+           box-shadow: var(--shadow-floating); padding: var(--space-1); z-index: 200; display: none; }
+  .qmenu.open { display: block; }
+  .qmenu-head { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); padding: 6px var(--space-3) 4px; }
+  .qopt { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); min-height: 32px;
+          padding: 6px var(--space-3); border-radius: var(--radius-sm); cursor: pointer; font-size: var(--text-sm); }
+  .qopt:hover, .qopt.sel { background: var(--panel); }
+  .qopt .k { font-family: var(--font-mono); color: var(--text); }
+  .qopt .d { color: var(--text-faint); font-size: var(--text-xs); font-family: var(--font-mono); }
+  .f-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 var(--space-3); border-radius: var(--radius-sm);
+           border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer; }
+  .f-btn:hover { border-color: var(--border-hover); }
+  .urlbar { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-faint); margin-top: var(--space-3); word-break: break-all; }
+</style>
+</head>
+<body>
+
+<header style="margin-bottom: var(--space-6);">
+  <h1 style="margin: 0 0 var(--space-2); font-size: var(--text-xl);">Option 3 — stacked tags</h1>
+  <p class="say">Type a term, press <kbd>Enter</kbd>, it becomes a tag and the box empties ready for the next one. The query string stops being something you look at and edit — the <strong>tags are the state</strong>, and the query is only how it's written to the URL. Free text is not a special case: it is the <code>keyword</code> field, so every tag has the same shape.</p>
+</header>
+
+<div class="try">Try — type these and press Enter, one after another</div>
+<div class="ex">
+  <button>imported date = today</button><button>category:none</button><button>amount &gt; 50</button><button>keyword = sobeys</button><button>sobeys</button><button>keyword:"thom bargen"</button><button>category:xyz</button>
+</div>
+
+<div class="card">
+  <div class="toolbar" style="margin-bottom: var(--space-3);">
+    <div class="toolbar-start"><h3 class="card-title" style="margin:0;">Transactions <span class="count" id="count">(14 of 14)</span></h3></div>
+    <div class="toolbar-end"><button class="f-btn">Date · newest ▾</button></div>
+  </div>
+
+  <div style="display:flex; gap: var(--space-2); align-items: flex-start;">
+    <div class="qfield" id="field">
+      <input id="q" placeholder="Filter or search…" autocomplete="off" spellcheck="false">
+      <div class="qmenu" id="menu"></div>
+    </div>
+    <button class="f-btn" id="addf" style="position:relative;">+ Filter</button>
+    <div class="qmenu" id="builder" style="right:0; left:auto; top:46px;"></div>
+  </div>
+  <div class="qerr" id="err"></div>
+
+  <div class="table-responsive" style="margin-top: var(--space-3);">
+    <table class="table-transactions"><thead><tr>
+      <th style="width:92px;">Date</th><th>Payee</th><th style="width:160px;">Category</th><th style="width:120px;" class="text-right">Amount</th><th style="width:110px;">Imported</th>
+    </tr></thead><tbody id="tbody"></tbody></table>
+  </div>
+  <div class="urlbar" id="url"></div>
+</div>
+
+<div class="rules">
+  <h4>Rules this sets</h4>
+  <ol>
+    <li><strong>Enter commits.</strong> A complete term becomes a tag and the box clears. The box is never a place where filters accumulate as text.</li>
+    <li><strong>Tags are the filter state.</strong> Nothing else holds it. The query string exists only to put that state in the URL (<code>?q=imported:today category:none</code>) so a view is linkable and survives reload.</li>
+    <li><strong>Tags are written canonically</strong>, whatever you typed. <code>imported date = today</code> and <code>imported:today</code> both land as the tag <code>imported:today</code> — so the terse form is what you learn by reading back.</li>
+    <li><strong>An incomplete term never commits.</strong> <code>category:</code> + Enter opens the value menu instead of making a broken tag.</li>
+    <li><strong>An invalid term never commits either.</strong> The text stays in the box, the field goes red and says why — so you fix it rather than hunt a silent zero-result.</li>
+    <li><strong>Backspace on an empty box removes the last tag</strong>, and clicking a tag puts it back in the box for editing. Nothing is a dead end.</li>
+    <li><strong>Everything that filters appends a tag</strong> — the + Filter builder, a click on a row's category, "review this import". There is one mechanism, and you can always see and remove what it did.</li>
+    <li><strong>Free text is the <code>keyword</code> field</strong>, not an exception. Bare words are sugar — typing <code>sobeys</code> commits as <code>keyword:sobeys</code> — so there is exactly one kind of tag and one commit rule. <code>payee:</code> and <code>memo:</code> stay available when you want to search one column rather than both.</li>
+    <li>Because nothing filters until Enter, there is no debounce and no as-you-type request. Every keystroke is free; the list changes only when you commit. This is a <em>change from today</em>, where budgeter searches 300ms after you stop typing.</li>
+  </ol>
+</div>
+
+<script>
+// ── Field spec: a page declares this, everything else is generated ───────────
+const FIELDS = {
+  // Free text is a field like any other — there is no special "plain words"
+  // path, so every tag has the same shape and the same commit rule.
+  keyword:  { type:'text',   label:'Keyword',  aliases:['keyword','search','text','q'], hint:'matches payee or memo' },
+  payee:    { type:'text',   label:'Payee',    aliases:['payee','merchant'] },
+  memo:     { type:'text',   label:'Memo',     aliases:['memo','note'] },
+  category: { type:'enum',   label:'Category', aliases:['category','cat'],
+              values:['groceries','restaurants','gas','rent','coffee','shopping','none'] },
+  amount:   { type:'number', label:'Amount',   aliases:['amount','value'] },
+  date:     { type:'date',   label:'Date',     aliases:['date','transaction date'] },
+  imported: { type:'date',   label:'Imported', aliases:['imported','imported date','import date','import day'] },
+  account:  { type:'enum',   label:'Account',  aliases:['account'], values:['chequing','amex'] },
+};
+const ALIASES = Object.entries(FIELDS).flatMap(([k,f]) => f.aliases.map(a => [a,k]))
+  .sort((a,b) => b[0].length - a[0].length);
+const DATE_WORDS = ['today','yesterday','this month','last month'];
+const TODAY = new Date('2026-10-07T00:00:00');
+const dkey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+function resolveDate(raw) {
+  const t = raw.trim().toLowerCase();
+  // ISO forms first: the word normalisation below turns hyphens into spaces
+  // (so "this-month" reads as "this month"), which would shred 2026-10-01.
+  if (/^\d{4}-\d{2}$/.test(t))       return { kind:'month', value:t, word:t };
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return { kind:'day',   value:t, word:t };
+  const v = t.replace(/[-_]+/g,' ').replace(/\s+/g,' ');
+  if (v === 'today')      return { kind:'day',   value:dkey(TODAY), word:'today' };
+  if (v === 'yesterday')  { const d=new Date(TODAY); d.setDate(d.getDate()-1); return { kind:'day', value:dkey(d), word:'yesterday' }; }
+  if (v === 'this month') { return { kind:'month', value:dkey(TODAY).slice(0,7), word:'this-month' }; }
+  if (v === 'last month') { const d=new Date(TODAY); d.setMonth(d.getMonth()-1); return { kind:'month', value:dkey(d).slice(0,7), word:'last-month' }; }
+  return null;
+}
+
+// Parse ONE term — the whole input is a single term now, which is what makes
+// the errors precise enough to refuse a commit.
+function parseTerm(input) {
+  const s = input.trim();
+  if (!s) return null;
+  const valuePart = `("[^"]*"|'[^']*'|${DATE_WORDS.map(w=>w.replace(/ /g,'\\s+')).join('|')}|.+)`;
+  for (const [alias, key] of ALIASES) {
+    const re = new RegExp(`^${alias.replace(/ /g,'\\s+')}\\s*(>=|<=|!=|=|>|<|:)\\s*${valuePart}$`, 'i');
+    const m = s.match(re);
+    if (!m) continue;
+    let op = m[1] === ':' ? '=' : m[1];
+    let raw = m[2].replace(/^["']|["']$/g,'').trim();
+    const spec = FIELDS[key];
+    // `amount:>90` — a colon followed by a comparison. The colon just means
+    // "this field", so lift the real operator out of the value. Without this,
+    // the shape the suggestion menu itself proposes (`amount:> 50`) is rejected.
+    if (op === '=' && spec.type !== 'text') {
+      const lifted = raw.match(/^(>=|<=|!=|>|<)\s*(.+)$/);
+      if (lifted) { op = lifted[1]; raw = lifted[2].trim(); }
+    }
+    if (spec.type === 'date') {
+      const d = resolveDate(raw);
+      if (!d) return { error: `"${raw}" isn't a date. Try today, yesterday, this month, or 2026-10-07.` };
+      return { field:key, op, raw:d.word, date:d };
+    }
+    if (spec.type === 'number') {
+      const n = parseFloat(raw.replace(/[$,]/g,''));
+      if (isNaN(n)) return { error: `"${raw}" isn't an amount.` };
+      return { field:key, op, raw:String(n), num:n };
+    }
+    if (spec.type === 'enum' && !spec.values.includes(raw.toLowerCase()))
+      return { error: `No ${spec.label.toLowerCase()} called "${raw}". Try: ${spec.values.join(', ')}.` };
+    return { field:key, op, raw:raw.toLowerCase() };
+  }
+  // A trailing operator with no value is incomplete, not wrong.
+  for (const [alias, key] of ALIASES) {
+    if (new RegExp(`^${alias.replace(/ /g,'\\s+')}\\s*(>=|<=|!=|=|>|<|:)\\s*$`, 'i').test(s))
+      return { incomplete:key };
+  }
+  // Looks like field:value but names nothing we know.
+  const m = s.match(/^([a-z][a-z ]*?)\s*(>=|<=|!=|=|>|<|:)\s*(.+)$/i);
+  if (m) return { error: `There's no "${m[1].trim()}" to filter on. Fields: ${Object.keys(FIELDS).join(', ')}.` };
+  // Bare words are sugar for keyword: — forgiving to type, but it commits as
+  // an explicit tag, so the uniform syntax is what you read back.
+  return { field:'keyword', op:'=', raw:s.toLowerCase() };
+}
+
+const tagLabel = t => {
+  const v = /\s/.test(t.raw) ? `"${t.raw}"` : t.raw;
+  return `${t.field}${t.op === '=' ? ':' : t.op}${v}`;
+};
+
+// ── State: the tags ARE the filter ──────────────────────────────────────────
+let TAGS = [];
+let focusedTag = -1;
+
+function matches(row, tags) {
+  return tags.every(t => {
+    const spec = FIELDS[t.field];
+    if (spec.type === 'text') {
+      const hay = (t.field === 'keyword' ? row.payee + ' ' + (row.memo || '') : String(row[t.field] || '')).toLowerCase();
+      const hit = t.raw.split(/\s+/).every(w => hay.includes(w));
+      return t.op === '!=' ? !hit : hit;
+    }
+    if (spec.type === 'date') {
+      const got = t.field === 'imported' ? row.imported : row.date;
+      const cmp = t.date.kind === 'month' ? got.slice(0,7) : got;
+      return ({ '=':cmp===t.date.value, '!=':cmp!==t.date.value, '>':cmp>t.date.value,
+                '<':cmp<t.date.value, '>=':cmp>=t.date.value, '<=':cmp<=t.date.value })[t.op];
+    }
+    if (spec.type === 'number') {
+      const got = row.amount;
+      return ({ '=':got===t.num, '!=':got!==t.num, '>':got>t.num,
+                '<':got<t.num, '>=':got>=t.num, '<=':got<=t.num })[t.op];
+    }
+    const got = String(row[t.field] ?? '').toLowerCase() || 'none';
+    return t.op === '!=' ? got !== t.raw : got === t.raw;
+  });
+}
+
+const ROWS = [
+  { date:'2026-10-06', payee:'Sobeys #4412',       memo:'weekly shop', category:'groceries',   amount:34.70,  imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-05', payee:'Superstore #1123',   memo:'',            category:'groceries',   amount:112.08, imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-05', payee:'Sq *Thom Bargen',    memo:'',            category:'coffee',      amount:6.25,   imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-04', payee:'Petro Canada',       memo:'fill up',     category:'gas',         amount:84.50,  imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-03', payee:'Amzn Mktp Ca',       memo:'',            category:null,          amount:41.99,  imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-02', payee:'Peg City Car Co-op', memo:'',            category:null,          amount:23.15,  imported:'2026-10-07', account:'amex' },
+  { date:'2026-10-01', payee:'Rent · landlord',    memo:'october',     category:'rent',        amount:1650.00,imported:'2026-10-07', account:'chequing' },
+  { date:'2026-09-30', payee:'Skip The Dishes',    memo:'',            category:'restaurants', amount:38.40,  imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-29', payee:'Sobeys #4412',       memo:'',            category:'groceries',   amount:52.19,  imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-28', payee:'Winners',            memo:'',            category:'shopping',    amount:76.30,  imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-27', payee:'Starbucks',          memo:'',            category:'coffee',      amount:5.85,   imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-26', payee:'Esso',               memo:'',            category:'gas',         amount:91.20,  imported:'2026-10-06', account:'amex' },
+  { date:'2026-09-25', payee:'Amzn Mktp Ca',       memo:'cable',       category:'shopping',    amount:18.99,  imported:'2026-09-30', account:'amex' },
+  { date:'2026-09-24', payee:'Costco Wholesale',   memo:'bulk',        category:'groceries',   amount:244.12, imported:'2026-09-30', account:'chequing' },
+];
+
+const DOT = { groceries:'green', restaurants:'amber', gas:'red', rent:'blue', coffee:'orange', shopping:'purple' };
+const shortDate = s => new Date(s+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const impLabel = s => s === dkey(TODAY) ? 'Today' : shortDate(s);
+
+function render() {
+  const field = document.getElementById('field');
+  const input = document.getElementById('q');
+  // Tags render before the input, inside the same field box.
+  [...field.querySelectorAll('.tag')].forEach(n => n.remove());
+  TAGS.forEach((t, i) => {
+    const el = document.createElement('span');
+    el.className = 'tag' + (t.field === 'keyword' ? ' text' : '') + (i === focusedTag ? ' focus' : '');
+    el.innerHTML = `${tagLabel(t)} <span class="x" data-i="${i}">×</span>`;
+    field.insertBefore(el, input);
+  });
+
+  const rows = ROWS.filter(r => matches(r, TAGS));
+  document.getElementById('tbody').innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td class="td-date">${shortDate(r.date)}</td>
+      <td><div class="row-title">${r.payee}</div>${r.memo ? `<div class="row-sub">${r.memo}</div>` : ''}</td>
+      <td>${r.category ? `<span class="badge badge--${DOT[r.category]||'slate'}">${r.category}</span>` : '<span class="badge badge--slate">uncategorized</span>'}</td>
+      <td class="td-amount text-amount-negative">−$${r.amount.toFixed(2)}</td>
+      <td class="td-date">${impLabel(r.imported)}</td>
+    </tr>`).join('') : '<tr><td colspan="5" class="text-center text-muted">No transactions match</td></tr>';
+  document.getElementById('count').textContent = `(${rows.length} of ${ROWS.length})`;
+  document.getElementById('url').textContent = TAGS.length
+    ? '/transactions?q=' + encodeURIComponent(TAGS.map(tagLabel).join(' '))
+    : '/transactions';
+}
+
+function commit(term) { TAGS.push(term); focusedTag = -1; document.getElementById('q').value = ''; setErr(''); render(); }
+function setErr(msg) {
+  document.getElementById('err').textContent = msg;
+  document.getElementById('field').classList.toggle('err', !!msg);
+}
+
+// ── Suggestions ─────────────────────────────────────────────────────────────
+const menu = document.getElementById('menu');
+function suggest() {
+  const v = document.getElementById('q').value;
+  if (!v.trim()) {
+    return { head:'Filter by', items: Object.entries(FIELDS).map(([k,f]) => ({ k:k+':', d:f.type, insert:k+':' })) };
+  }
+  const m = v.match(/^(.*?)(:|=)\s*(.*)$/);
+  if (m) {
+    const key = (ALIASES.find(([a]) => a === m[1].trim().toLowerCase()) || [])[1];
+    if (key) {
+      const spec = FIELDS[key];
+      if (spec.type === 'text')
+        return { head:`${spec.label} contains…`, items:[{ k: m[3] || '…', d: spec.hint || 'type a value, then Enter', insert:null }] };
+      const pool = spec.type === 'date' ? ['today','yesterday','this month','last month']
+                 : spec.type === 'number' ? ['>50','>100','<20'] : (spec.values || []);
+      const typed = m[3].replace(/\s+/g,'').toLowerCase();
+      const hits = pool.filter(x => x.replace(/\s+/g,'').toLowerCase().startsWith(typed));
+      return hits.length ? { head:`${spec.label} is…`, items: hits.map(x => ({ k:x, d:'',
+        insert: /^[<>]/.test(x) ? `${key}${x}` : `${key}:${x}` })) } : null;
+    }
+  }
+  const hits = Object.entries(FIELDS)
+    .filter(([k,f]) => k.startsWith(v.toLowerCase()) || f.label.toLowerCase().startsWith(v.toLowerCase()))
+    .map(([k,f]) => ({ k:k+':', d:f.type, insert:k+':' }));
+  return hits.length ? { head:'Filter by', items:hits } : null;
+}
+function openMenu() {
+  const s = suggest();
+  if (!s) return menu.classList.remove('open');
+  menu.innerHTML = `<div class="qmenu-head">${s.head}</div>` + s.items.map((it,i) =>
+    it.insert === null
+      ? `<div class="qopt" style="cursor:default;"><span class="k">${it.k}</span><span class="d">${it.d}</span></div>`
+      : `<div class="qopt ${i===0?'sel':''}" data-insert="${it.insert}"><span class="k">${it.k}</span><span class="d">${it.d}</span></div>`).join('');
+  menu.classList.add('open');
+}
+const closeMenu = () => menu.classList.remove('open');
+
+function applySuggestion(ins) {
+  const input = document.getElementById('q');
+  const term = parseTerm(ins);
+  // A suggestion that completes a whole term commits straight away — picking
+  // "today" from the menu should not leave you with text still to confirm.
+  if (term && term.field) commit(term);
+  else { input.value = ins; render(); }
+  input.focus();
+  openMenu();
+}
+
+// ── Wiring ──────────────────────────────────────────────────────────────────
+const input = document.getElementById('q');
+document.getElementById('field').addEventListener('mousedown', e => {
+  if (e.target.classList.contains('x')) {
+    TAGS.splice(+e.target.dataset.i, 1); render(); e.preventDefault(); return;
+  }
+  const tag = e.target.closest('.tag');
+  if (tag) {
+    // Click a tag to put it back in the box and keep editing it.
+    const i = [...document.querySelectorAll('.tag')].indexOf(tag);
+    input.value = tagLabel(TAGS[i]);
+    TAGS.splice(i,1); render(); input.focus(); openMenu(); e.preventDefault(); return;
+  }
+  if (e.target !== input) { input.focus(); e.preventDefault(); }
+});
+input.addEventListener('input', () => { setErr(''); focusedTag = -1; render(); openMenu(); });
+input.addEventListener('focus', openMenu);
+input.addEventListener('blur', () => setTimeout(closeMenu, 150));
+input.addEventListener('keydown', e => {
+  const opts = [...menu.querySelectorAll('.qopt')];
+  const cur = opts.findIndex(o => o.classList.contains('sel'));
+
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    if (!menu.classList.contains('open')) return;
+    e.preventDefault();
+    opts.forEach(o => o.classList.remove('sel'));
+    opts[(cur + (e.key === 'ArrowDown' ? 1 : opts.length - 1)) % opts.length].classList.add('sel');
+    return;
+  }
+  if (e.key === 'Tab' && menu.classList.contains('open') && cur >= 0) {
+    e.preventDefault(); applySuggestion(opts[cur].dataset.insert); return;
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const term = parseTerm(input.value);
+    if (!term) return;
+    if (term.incomplete) { openMenu(); setErr(''); return; }   // rule 4
+    if (term.error) { setErr(term.error); return; }            // rule 5
+    commit(term); closeMenu(); openMenu();
+    return;
+  }
+  if (e.key === 'Backspace' && !input.value) {                  // rule 6
+    if (focusedTag === -1 && TAGS.length) { focusedTag = TAGS.length - 1; render(); }
+    else if (focusedTag >= 0) { TAGS.splice(focusedTag,1); focusedTag = -1; render(); }
+    return;
+  }
+  if (e.key === 'Escape') { closeMenu(); }
+});
+menu.addEventListener('mousedown', e => {
+  const o = e.target.closest('.qopt');
+  if (o) { e.preventDefault(); applySuggestion(o.dataset.insert); }
+});
+
+// ── + Filter builder: appends a tag, same as typing one ─────────────────────
+const builder = document.getElementById('builder');
+let bField = null;
+function showFields() {
+  bField = null;
+  builder.innerHTML = `<div class="qmenu-head">Filter by</div>` + Object.entries(FIELDS).map(([k,f]) =>
+    `<div class="qopt" data-field="${k}"><span class="k">${f.label}</span><span class="d">${f.type}</span></div>`).join('');
+  builder.classList.add('open');
+}
+function showValues(k) {
+  bField = k;
+  const spec = FIELDS[k];
+  if (spec.type === 'text') {
+    // No value list to offer — hand the user back to the box, primed.
+    builder.classList.remove('open');
+    const input = document.getElementById('q');
+    input.value = k + ':'; input.focus(); openMenu();
+    return;
+  }
+  const vals = spec.type === 'date' ? ['today','yesterday','this month','last month']
+             : spec.type === 'number' ? ['>50','>100','<20'] : (spec.values || []);
+  builder.innerHTML = `<div class="qmenu-head">${spec.label} is…</div>` + vals.map(v =>
+    `<div class="qopt" data-value="${v}"><span class="k">${v}</span></div>`).join('');
+}
+document.getElementById('addf').addEventListener('click', e => {
+  e.stopPropagation();
+  builder.classList.contains('open') ? builder.classList.remove('open') : showFields();
+});
+builder.addEventListener('click', e => {
+  const o = e.target.closest('.qopt');
+  if (!o) return;
+  // Stop here: showValues() replaces innerHTML, so by the time this reaches the
+  // document handler the clicked node is detached and reads as an outside click.
+  e.stopPropagation();
+  if (o.dataset.field) return showValues(o.dataset.field);
+  if (o.dataset.value) {
+    const term = parseTerm(`${bField}:${o.dataset.value}`);
+    if (term && term.field) commit(term);
+    builder.classList.remove('open');
+  }
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#builder') && !e.target.closest('#addf')) builder.classList.remove('open');
+});
+
+document.querySelector('.ex').addEventListener('click', e => {
+  if (e.target.tagName !== 'BUTTON') return;
+  input.value = e.target.textContent;
+  input.focus();
+  input.dispatchEvent(new KeyboardEvent('keydown', { key:'Enter', bubbles:true, cancelable:true }));
+});
+
+render();
+</script>
+</body>
+</html>
