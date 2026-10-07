@@ -4306,6 +4306,133 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
 .kw-row { display: flex; gap: var(--space-2); align-items: center; margin-bottom: var(--space-2); }
 
 /* ============================================================
+   Filter tags — the list-page filter bar (shared-core.js
+   installFilterTags). One field that looks like a .form-control
+   and holds committed terms as tags plus the input you type the
+   next one into. The tags ARE the filter state.
+   ============================================================ */
+.filter-tags {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+    min-height: 36px;
+    padding: 4px var(--space-2);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: text;
+    transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
+}
+
+.filter-tags:focus-within {
+    border-color: var(--accent-300);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.filter-tags.is-invalid { border-color: var(--red-7); }
+
+.filter-tags > input {
+    flex: 1;
+    min-width: 160px;
+    height: 26px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+}
+
+/* A committed term. Monospace because it is literal syntax you can
+   type back, not prose. */
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 8px;
+    border: 1px solid var(--accent-300);
+    border-radius: 5px;
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+}
+
+/* Free text reads as a looser constraint than a field match. */
+.filter-tag--text { border-style: dashed; }
+
+/* Backspace on an empty box selects the last tag before removing it. */
+.filter-tag.is-focused { outline: 2px solid var(--accent-300); outline-offset: 1px; }
+
+.filter-tag-x { cursor: pointer; opacity: 0.6; }
+.filter-tag-x:hover { opacity: 1; }
+
+.filter-tags-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 290px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: var(--space-1);
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-floating);
+    z-index: 160;
+    display: none;
+}
+
+.filter-tags-menu.open { display: block; }
+
+/* The builder hangs off its own button, not the field. */
+.filter-tags-builder { left: auto; right: 0; top: calc(100% + 4px); }
+
+.filter-tags-menu-head {
+    padding: 6px var(--space-3) 4px;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+}
+
+.filter-tags-opt {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 36px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+
+.filter-tags-opt:hover,
+.filter-tags-opt.is-sel { background: var(--panel); }
+
+/* A hint line (free-text fields have no values to list) — not pickable. */
+.filter-tags-opt.is-static { cursor: default; }
+.filter-tags-opt.is-static:hover { background: transparent; }
+
+.filter-tags-opt .k { font-family: var(--font-mono); color: var(--text); }
+.filter-tags-opt .d { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-faint); }
+
+/* Why a commit was refused. Reserves its line so the table below does
+   not jump as you type. */
+.filter-tags-error {
+    min-height: 16px;
+    margin-top: 6px;
+    font-size: var(--text-xs);
+    color: var(--red-11);
+}
+
+/* ============================================================
    Dropdowns — floating menu, slate-2 surface, shadow-floating
 
    Placement is handled by shared-core.js, which switches an open

@@ -32,6 +32,12 @@
                                         DOMContentLoaded/turbo:load; call again
                                         for dynamically inserted inputs. Opt out
                                         per input with data-dz-skip.
+     - installFilterTags(el, opts)      list-page filter bar: a committed term becomes
+                                        a tag and the box clears. opts: fields (the
+                                        per-page spec — the menu, builder and parser
+                                        are all generated from it), value, onChange,
+                                        errorEl, builderButton, textField. Returns
+                                        {tags, query, set, add, clear, focus, parse}.
      - placeDropdownMenu(menu)          anchors an open .dropdown-menu to its
                                         .dropdown trigger as position: fixed, so a
                                         card's overflow context cannot clip it;
@@ -405,6 +411,305 @@
     };
     document.addEventListener('DOMContentLoaded', () => global.enhanceFileInputs());
     document.addEventListener('turbo:load', () => global.enhanceFileInputs());
+
+    // ── Filter tags ────────────────────────────────────────────────────────
+    // A list page's filter bar: one field where a committed term becomes a tag.
+    // Type `imported:today` or `imported date = today`, press Enter, it becomes
+    // the tag `imported:today` and the box clears for the next one. The TAGS are
+    // the filter state; the query string exists only to carry that state in the
+    // URL. Free text is not a special case — it is the `keyword` field.
+    //
+    //   const f = installFilterTags(el, {
+    //     fields: { keyword:{type:'text'}, category:{type:'enum', values:[…]} },
+    //     value: 'imported:today',
+    //     onChange(tags, q) { … }
+    //   });
+    //
+    // Pages declare fields; the suggestion menu, the builder and the parser are
+    // all generated from that one spec.
+    const FT_DATE_WORDS = [ 'today', 'yesterday', 'this month', 'last month', 'this year' ];
+
+    function ftResolveDate(raw, today) {
+        const t = String(raw).trim().toLowerCase();
+        // ISO first: the word normalisation below turns hyphens into spaces so
+        // "this-month" reads as "this month", which would shred 2026-10-01.
+        if (/^\d{4}$/.test(t))             return { kind: 'year',  value: t, word: t };
+        if (/^\d{4}-\d{2}$/.test(t))       return { kind: 'month', value: t, word: t };
+        if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return { kind: 'day',   value: t, word: t };
+        const v = t.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+        const d = new Date(today);
+        if (v === 'today')      return { kind: 'day',   value: ftDay(d), word: 'today' };
+        if (v === 'yesterday')  { d.setDate(d.getDate() - 1); return { kind: 'day', value: ftDay(d), word: 'yesterday' }; }
+        if (v === 'this month') return { kind: 'month', value: ftDay(d).slice(0, 7), word: 'this-month' };
+        if (v === 'last month') { d.setMonth(d.getMonth() - 1); return { kind: 'month', value: ftDay(d).slice(0, 7), word: 'last-month' }; }
+        if (v === 'this year')  return { kind: 'year',  value: String(d.getFullYear()), word: 'this-year' };
+        return null;
+    }
+    function ftDay(d) {
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function installFilterTags(root, opts) {
+        if (!root) return null;
+        const fields = opts.fields || {};
+        const today = opts.today ? new Date(opts.today) : new Date();
+        // Longest alias first so "imported date" beats "imported".
+        const aliases = Object.entries(fields)
+            .flatMap(([key, f]) => (f.aliases || [key]).map(a => [ a.toLowerCase(), key ]))
+            .sort((a, b) => b[0].length - a[0].length);
+
+        let tags = [];
+        let focused = -1;
+
+        root.classList.add('filter-tags');
+        root.innerHTML = '<input type="text" autocomplete="off" spellcheck="false">'
+            + '<div class="filter-tags-menu"></div>';
+        const input = root.querySelector('input');
+        const menu = root.querySelector('.filter-tags-menu');
+        input.placeholder = opts.placeholder || 'Filter or search…';
+
+        // ── Parse exactly one term; precision here is what lets Enter refuse ──
+        function parseTerm(text) {
+            const s = String(text).trim();
+            if (!s) return null;
+            const phrase = FT_DATE_WORDS.map(w => w.replace(/ /g, '\\s+')).join('|');
+            const value = '("[^"]*"|\'[^\']*\'|' + phrase + '|.+)';
+
+            for (const [ alias, key ] of aliases) {
+                const m = s.match(new RegExp('^' + alias.replace(/ /g, '\\s+') + '\\s*(>=|<=|!=|=|>|<|:)\\s*' + value + '$', 'i'));
+                if (!m) continue;
+                const spec = fields[key];
+                let op = m[1] === ':' ? '=' : m[1];
+                let raw = m[2].replace(/^["']|["']$/g, '').trim();
+                // `amount:>90` — the colon only names the field, so lift the real
+                // operator out of the value. The suggestion menu proposes this shape.
+                if (op === '=' && spec.type !== 'text') {
+                    const lifted = raw.match(/^(>=|<=|!=|>|<)\s*(.+)$/);
+                    if (lifted) { op = lifted[1]; raw = lifted[2].trim(); }
+                }
+                if (spec.type === 'date') {
+                    const d = ftResolveDate(raw, today);
+                    if (!d) return { error: '"' + raw + '" isn\'t a date. Try today, yesterday, this month, or ' + ftDay(today) + '.' };
+                    return { field: key, op, raw: d.word, date: d };
+                }
+                if (spec.type === 'number') {
+                    const n = parseFloat(raw.replace(/[$,\s]/g, ''));
+                    if (isNaN(n)) return { error: '"' + raw + '" isn\'t a number.' };
+                    return { field: key, op, raw: String(n), num: n };
+                }
+                if (spec.type === 'enum') {
+                    const vals = ftValues(key);
+                    const hit = vals.find(v => String(v).toLowerCase() === raw.toLowerCase());
+                    if (!hit) return { error: 'No ' + (spec.label || key).toLowerCase() + ' called "' + raw + '".'
+                        + (vals.length ? ' Try: ' + vals.slice(0, 6).join(', ') + (vals.length > 6 ? '…' : '') + '.' : '') };
+                    return { field: key, op, raw: String(hit).toLowerCase() };
+                }
+                return { field: key, op, raw: raw.toLowerCase() };
+            }
+            // A trailing operator is incomplete, not wrong.
+            for (const [ alias, key ] of aliases) {
+                if (new RegExp('^' + alias.replace(/ /g, '\\s+') + '\\s*(>=|<=|!=|=|>|<|:)\\s*$', 'i').test(s)) return { incomplete: key };
+            }
+            const named = s.match(/^([a-z][a-z ]*?)\s*(>=|<=|!=|=|>|<|:)\s*(.+)$/i);
+            if (named) return { error: 'There\'s no "' + named[1].trim() + '" to filter on. Fields: ' + Object.keys(fields).join(', ') + '.' };
+            // Bare words are sugar for the free-text field.
+            const free = opts.textField || 'keyword';
+            return fields[free] ? { field: free, op: '=', raw: s.toLowerCase() } : { error: 'Type a filter like ' + Object.keys(fields)[0] + ':…' };
+        }
+
+        function ftValues(key) {
+            const v = fields[key].values;
+            return (typeof v === 'function' ? v() : v) || [];
+        }
+        function label(t) {
+            const v = /\s/.test(t.raw) ? '"' + t.raw + '"' : t.raw;
+            return t.field + (t.op === '=' ? ':' : t.op) + v;
+        }
+        const query = () => tags.map(label).join(' ');
+
+        // ── Render ────────────────────────────────────────────────────────────
+        function render(fire) {
+            [ ...root.querySelectorAll('.filter-tag') ].forEach(n => n.remove());
+            tags.forEach((t, i) => {
+                const el = document.createElement('span');
+                el.className = 'filter-tag' + (t.field === (opts.textField || 'keyword') ? ' filter-tag--text' : '')
+                    + (i === focused ? ' is-focused' : '');
+                el.innerHTML = escapeForTag(label(t)) + ' <span class="filter-tag-x" data-i="' + i + '" aria-label="Remove">&times;</span>';
+                root.insertBefore(el, input);
+            });
+            root.classList.toggle('has-tags', tags.length > 0);
+            if (fire !== false && opts.onChange) opts.onChange(tags.slice(), query());
+        }
+        function escapeForTag(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function setError(msg) {
+            root.classList.toggle('is-invalid', !!msg);
+            if (opts.errorEl) opts.errorEl.textContent = msg || '';
+        }
+        function commit(term) { tags.push(term); focused = -1; input.value = ''; setError(''); render(); }
+
+        // ── Suggestions ───────────────────────────────────────────────────────
+        function suggest() {
+            const v = input.value;
+            if (!v.trim()) return { head: 'Filter by', items: Object.keys(fields).map(k => ftFieldItem(k)) };
+            const m = v.match(/^(.*?)(:|=)\s*(.*)$/);
+            if (m) {
+                const key = (aliases.find(a => a[0] === m[1].trim().toLowerCase()) || [])[1];
+                if (key) {
+                    const spec = fields[key];
+                    if (spec.type === 'text')
+                        return { head: (spec.label || key) + ' contains…', items: [ { k: m[3] || '…', d: spec.hint || 'type a value, then Enter', insert: null } ] };
+                    const pool = spec.type === 'date' ? [ 'today', 'yesterday', 'this month', 'last month' ]
+                        : spec.type === 'number' ? [ '>50', '>100', '<20' ] : ftValues(key).map(String);
+                    const typed = m[3].replace(/\s+/g, '').toLowerCase();
+                    const hits = pool.filter(x => x.replace(/\s+/g, '').toLowerCase().startsWith(typed));
+                    return hits.length ? { head: (spec.label || key) + ' is…',
+                        items: hits.slice(0, 40).map(x => ({ k: x, d: '', insert: /^[<>]/.test(x) ? key + x : key + ':' + x })) } : null;
+                }
+            }
+            const hits = Object.keys(fields).filter(k =>
+                k.startsWith(v.toLowerCase()) || (fields[k].label || '').toLowerCase().startsWith(v.toLowerCase()));
+            return hits.length ? { head: 'Filter by', items: hits.map(k => ftFieldItem(k)) } : null;
+        }
+        function ftFieldItem(k) { return { k: k + ':', d: fields[k].type || 'text', insert: k + ':' }; }
+
+        function openMenu() {
+            const s = suggest();
+            if (!s) return closeMenu();
+            menu.innerHTML = '<div class="filter-tags-menu-head">' + s.head + '</div>' + s.items.map((it, i) =>
+                it.insert === null
+                    ? '<div class="filter-tags-opt is-static"><span class="k">' + escapeForTag(it.k) + '</span><span class="d">' + escapeForTag(it.d) + '</span></div>'
+                    : '<div class="filter-tags-opt' + (i === 0 ? ' is-sel' : '') + '" data-insert="' + escapeForTag(it.insert) + '">'
+                      + '<span class="k">' + escapeForTag(it.k) + '</span><span class="d">' + escapeForTag(it.d) + '</span></div>').join('');
+            menu.classList.add('open');
+        }
+        const closeMenu = () => menu.classList.remove('open');
+
+        function applySuggestion(ins) {
+            const term = parseTerm(ins);
+            // A suggestion that completes a term commits immediately — picking
+            // "today" should not leave you with text still to confirm.
+            if (term && term.field) commit(term); else { input.value = ins; }
+            input.focus(); openMenu();
+        }
+
+        // ── Events ────────────────────────────────────────────────────────────
+        root.addEventListener('mousedown', e => {
+            if (e.target.classList.contains('filter-tag-x')) {
+                tags.splice(+e.target.dataset.i, 1); render(); e.preventDefault(); return;
+            }
+            const tag = e.target.closest('.filter-tag');
+            if (tag) {
+                const i = [ ...root.querySelectorAll('.filter-tag') ].indexOf(tag);
+                input.value = label(tags[i]);
+                tags.splice(i, 1); render(); input.focus(); openMenu(); e.preventDefault(); return;
+            }
+            if (e.target !== input) { input.focus(); e.preventDefault(); }
+        });
+        input.addEventListener('input', () => { setError(''); focused = -1; render(false); openMenu(); });
+        input.addEventListener('focus', openMenu);
+        input.addEventListener('blur', () => setTimeout(closeMenu, 150));
+        input.addEventListener('keydown', e => {
+            const opts_ = [ ...menu.querySelectorAll('.filter-tags-opt[data-insert]') ];
+            const cur = opts_.findIndex(o => o.classList.contains('is-sel'));
+            if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && menu.classList.contains('open') && opts_.length) {
+                e.preventDefault();
+                opts_.forEach(o => o.classList.remove('is-sel'));
+                opts_[(cur + (e.key === 'ArrowDown' ? 1 : opts_.length - 1) + opts_.length) % opts_.length].classList.add('is-sel');
+                return;
+            }
+            if (e.key === 'Tab' && menu.classList.contains('open') && cur >= 0) { e.preventDefault(); applySuggestion(opts_[cur].dataset.insert); return; }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const term = parseTerm(input.value);
+                if (!term) return;
+                if (term.incomplete) { setError(''); openMenu(); return; }
+                if (term.error) { setError(term.error); return; }
+                commit(term); openMenu();
+                return;
+            }
+            if (e.key === 'Backspace' && !input.value) {
+                if (focused === -1 && tags.length) { focused = tags.length - 1; render(false); }
+                else if (focused >= 0) { tags.splice(focused, 1); focused = -1; render(); }
+                return;
+            }
+            if (e.key === 'Escape') closeMenu();
+        });
+        menu.addEventListener('mousedown', e => {
+            const o = e.target.closest('.filter-tags-opt[data-insert]');
+            if (o) { e.preventDefault(); applySuggestion(o.dataset.insert); }
+        });
+
+        // ── Public surface ────────────────────────────────────────────────────
+        const api = {
+            get tags() { return tags.slice(); },
+            get query() { return query(); },
+            set(q, fire) {
+                tags = [];
+                String(q || '').split(/\s+(?=[^"]*(?:"[^"]*"[^"]*)*$)/).filter(Boolean).forEach(part => {
+                    const t = parseTerm(part);
+                    if (t && t.field) tags.push(t);
+                });
+                focused = -1; input.value = ''; setError('');
+                render(fire !== false);
+                return api;
+            },
+            add(text) { const t = parseTerm(text); if (t && t.field) commit(t); return api; },
+            clear() { tags = []; focused = -1; render(); return api; },
+            focus() { input.focus(); return api; },
+            fields,
+            parse: parseTerm,
+        };
+
+        // Optional "+ Filter" builder — appends a tag, same as typing one.
+        if (opts.builderButton) {
+            const box = document.createElement('div');
+            box.className = 'filter-tags-menu filter-tags-builder';
+            opts.builderButton.parentNode.insertBefore(box, opts.builderButton.nextSibling);
+            let bField = null;
+            const showFields = () => {
+                bField = null;
+                box.innerHTML = '<div class="filter-tags-menu-head">Filter by</div>' + Object.keys(fields).map(k =>
+                    '<div class="filter-tags-opt" data-field="' + k + '"><span class="k">' + escapeForTag(fields[k].label || k)
+                    + '</span><span class="d">' + (fields[k].type || 'text') + '</span></div>').join('');
+                box.classList.add('open');
+            };
+            opts.builderButton.addEventListener('click', e => {
+                e.stopPropagation();
+                box.classList.contains('open') ? box.classList.remove('open') : showFields();
+            });
+            box.addEventListener('click', e => {
+                const o = e.target.closest('.filter-tags-opt');
+                if (!o) return;
+                // Stop here: the innerHTML swap below detaches the clicked node, so
+                // the document handler would read this as an outside click.
+                e.stopPropagation();
+                if (o.dataset.field) {
+                    const k = o.dataset.field, spec = fields[k];
+                    if (spec.type === 'text') { box.classList.remove('open'); input.value = k + ':'; input.focus(); openMenu(); return; }
+                    bField = k;
+                    const vals = spec.type === 'date' ? [ 'today', 'yesterday', 'this month', 'last month' ]
+                        : spec.type === 'number' ? [ '>50', '>100', '<20' ] : ftValues(k).map(String);
+                    box.innerHTML = '<div class="filter-tags-menu-head">' + escapeForTag(spec.label || k) + ' is…</div>'
+                        + vals.slice(0, 40).map(v => '<div class="filter-tags-opt" data-value="' + escapeForTag(v) + '"><span class="k">' + escapeForTag(v) + '</span></div>').join('');
+                    return;
+                }
+                if (o.dataset.value !== undefined) {
+                    api.add(bField + ':' + o.dataset.value);
+                    box.classList.remove('open');
+                }
+            });
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.filter-tags-builder') && e.target !== opts.builderButton) box.classList.remove('open');
+            });
+        }
+
+        if (opts.value) api.set(opts.value, false);
+        else render(false);
+        return api;
+    }
+    global.installFilterTags = installFilterTags;
 
     // ── Dropdown placement ─────────────────────────────────────────────────
     // A .dropdown-menu is absolutely positioned inside its .dropdown, which
