@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" data-app="budgeter" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>settings · direction b · budgeter mockup</title>
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+<script src="mock.js"></script>
+<script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+<style>
+  .pane[hidden] { display: none; }
+  .help-item { border-top: 1px solid var(--border); }
+  .help-item:first-of-type { border-top: none; }
+  .help-item > summary {
+    cursor: pointer; list-style: none; padding: 11px 0;
+    font-size: var(--text-sm); font-weight: var(--weight-medium);
+    display: flex; align-items: center; gap: var(--space-2);
+  }
+  .help-item > summary::-webkit-details-marker { display: none; }
+  .help-item > summary::before { content: '\25B8'; color: var(--text-faint); font-size: 11px; transition: transform var(--motion-fast); }
+  .help-item[open] > summary::before { transform: rotate(90deg); }
+  .help-body { padding: 0 0 var(--space-4) 18px; font-size: var(--text-sm); color: var(--text-muted); line-height: var(--lh-body); }
+  .help-body p { margin: 0 0 var(--space-3); }
+  .help-body ul { margin: 0 0 var(--space-3); padding-left: 18px; }
+</style>
+</head>
+<body>
+
+<button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-title"><span class="brand-logo"><img src="icon.svg" alt=""></span>Budgeter</div>
+  </div>
+  <div class="nav-section">
+    <ul class="nav-menu">
+      <li><a href="dashboard-b.html" class="nav-link"><span class="nav-ico" data-ico="grid"></span>dashboard<kbd class="kbd nav-kbd">⌘1</kbd></a></li>
+      <li><a href="budget-b.html" class="nav-link"><span class="nav-ico" data-ico="pie-chart"></span>budget<kbd class="kbd nav-kbd">⌘2</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="list"></span>all<kbd class="kbd nav-kbd">⌘3</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="inbox"></span>uncategorized<kbd class="kbd nav-kbd">⌘4</kbd></a></li>
+      <li><a href="settings-b.html" class="nav-link active"><span class="nav-ico" data-ico="sliders"></span>settings<kbd class="kbd nav-kbd">⌘5</kbd></a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer"></div>
+</nav>
+
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">budgeter mockups</a> / settings · direction b — panes</span>
+    <div>
+      <div>
+        <h1 class="page-title">settings</h1>
+        <p class="page-subtitle" id="paneSub">4 groups · 17 categories</p>
+      </div>
+      <div class="header-actions" id="paneActions"></div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="set-pane">
+
+      <nav class="set-nav" id="setNav">
+        <a href="#" class="active" data-pane="categories">Categories</a>
+        <a href="#" data-pane="connector">Claude connector</a>
+        <a href="#" data-pane="data">Backup and restore</a>
+        <a href="#" data-pane="files">Repo files</a>
+        <div class="set-nav-sep">Reference</div>
+        <a href="#" data-pane="help">Help</a>
+        <a href="#" data-pane="about">About this app</a>
+        <div class="set-nav-sep">Careful</div>
+        <a href="#" data-pane="danger">Danger zone</a>
+      </nav>
+
+      <div>
+        <!-- Categories -->
+        <div class="pane" data-pane="categories">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Categories</h2>
+                <p class="card-subtitle">Keywords match anywhere in the payee on import. First match wins, top to bottom.</p>
+              </div>
+              <input type="search" class="form-control" placeholder="Filter…" style="width: 180px" id="catFilter">
+            </div>
+            <div id="catList"></div>
+          </div>
+        </div>
+
+        <!-- Connector -->
+        <div class="pane" data-pane="connector" hidden>
+          <div class="card-stack">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">Claude connector</h2>
+                  <p class="card-subtitle">Lets Claude read and edit your budget in plain language, without opening the app.</p>
+                </div>
+                <span class="badge badge--green">Connected</span>
+              </div>
+              <dl class="kv">
+                <dt>Endpoint</dt>
+                <dd style="display:flex;gap:var(--space-2);align-items:center">
+                  <span class="truncate">https://budgeter.joenguyen.ca/api/mcp</span>
+                  <button class="btn btn-ghost btn-sm">Copy</button>
+                </dd>
+                <dt>Authentication</dt>
+                <dd>OAuth 2.1 via base · claude.ai account connector</dd>
+                <dt>Last call</dt>
+                <dd>sep 10, 9:42 pm · spending_summary</dd>
+                <dt>Fallback key</dt>
+                <dd style="display:flex;gap:var(--space-2);align-items:center">
+                  <span id="keyMask">••••••••••••••••••••</span>
+                  <button class="btn btn-ghost btn-sm" id="keyToggle">Show</button>
+                </dd>
+              </dl>
+            </div>
+            <div class="card">
+              <h2 class="card-title" style="margin-bottom: var(--space-3)">Available tools</h2>
+              <div class="tool-grid">
+                <div class="tool-item"><code>list_transactions</code><span>Search and filter the ledger</span></div>
+                <div class="tool-item"><code>spending_summary</code><span>Totals by category and month</span></div>
+                <div class="tool-item"><code>budget_status</code><span>Allocated vs spent vs left</span></div>
+                <div class="tool-item"><code>create_transaction</code><span>Add a transaction</span></div>
+                <div class="tool-item"><code>categorize_transaction</code><span>Assign or change a category</span></div>
+                <div class="tool-item"><code>list_categories</code><span>Categories and their groups</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data -->
+        <div class="pane" data-pane="data" hidden>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Backup and restore</h2>
+                <p class="card-subtitle">A backup is a ZIP of the database plus the repo files. Restoring overwrites everything, after taking a safety backup first.</p>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-secondary btn-sm">Upload ZIP</button>
+                <button class="btn btn-primary btn-sm">Create backup</button>
+              </div>
+            </div>
+            <h3 class="subsection-title" style="margin: 0 0 var(--space-1)">Recent backups</h3>
+            <div class="bk-row">
+              <div><div class="bk-name">budgeter_backup_20260910_0312.zip</div><div class="bk-meta">4.2 MB · sep 10, 3:12 am · automatic</div></div>
+              <span class="row-actions"><button class="btn btn-ghost btn-sm">Download</button><button class="btn btn-ghost btn-sm">Restore</button></span>
+            </div>
+            <div class="bk-row">
+              <div><div class="bk-name">budgeter_backup_20260903_0312.zip</div><div class="bk-meta">4.1 MB · sep 3, 3:12 am · automatic</div></div>
+              <span class="row-actions"><button class="btn btn-ghost btn-sm">Download</button><button class="btn btn-ghost btn-sm">Restore</button></span>
+            </div>
+            <div class="bk-row">
+              <div><div class="bk-name">budgeter_backup_20260827_1841.zip</div><div class="bk-meta">4.0 MB · aug 27, 6:41 pm · manual</div></div>
+              <span class="row-actions"><button class="btn btn-ghost btn-sm">Download</button><button class="btn btn-ghost btn-sm">Restore</button></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Files -->
+        <div class="pane" data-pane="files" hidden>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Repo files</h2>
+                <p class="card-subtitle">Edit the files that live in the GitHub repo. A copy of the previous version is kept on every save.</p>
+              </div>
+              <div class="d-flex gap-2">
+                <span class="filter-chip active">README.md</span>
+                <span class="filter-chip">CLAUDE.md</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="fileBody">Content</label>
+              <textarea class="form-control" id="fileBody" rows="14" style="font-family:var(--font-mono);font-size:var(--text-xs)"># Budgeter
+
+Rails 8.1 personal budgeting app. Imports bank and credit-card statements,
+auto-categorizes by keyword rules, and tracks monthly allocations against actuals.
+
+Part of the personal-app constellation — see `CLAUDE.md` for architecture notes.</textarea>
+              <p class="form-hint">Markdown. Appears on the GitHub repo homepage. Last saved sep 6, 11:04 pm.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary btn-sm">Save README.md</button>
+              <button class="btn btn-secondary btn-sm">Revert</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help -->
+        <div class="pane" data-pane="help" hidden>
+          <div class="card">
+            <h2 class="card-title" style="margin-bottom: var(--space-2)">Help</h2>
+            <details class="help-item">
+              <summary>What each page does</summary>
+              <div class="help-body">
+                <ul>
+                  <li><strong>Dashboard</strong> — the month at a glance: spent, pace against your goal, what needs attention.</li>
+                  <li><strong>Budget</strong> — allocate a dollar amount per category and watch it against actuals.</li>
+                  <li><strong>All</strong> — the full ledger. Edit, split, flag recurring, bulk-categorize.</li>
+                  <li><strong>Uncategorized</strong> — anything the keyword rules missed.</li>
+                </ul>
+              </div>
+            </details>
+            <details class="help-item">
+              <summary>Categories and auto-categorization</summary>
+              <div class="help-body">
+                <p>Categories live inside groups such as bills, everyday and discretionary. On import, any transaction whose payee contains one of a category's keywords is categorized automatically.</p>
+                <ul>
+                  <li>Keywords are case-insensitive and match anywhere in the payee.</li>
+                  <li>If several categories match, the first one wins, in group order.</li>
+                </ul>
+              </div>
+            </details>
+            <details class="help-item">
+              <summary>Importing transactions</summary>
+              <div class="help-body">
+                <p>Drop a CSV from your bank onto the import button. The importer parses it, deduplicates against what is already stored, and runs auto-categorization on whatever is new. Required columns: date, payee or description, and amount.</p>
+              </div>
+            </details>
+            <details class="help-item">
+              <summary>Splits and recurring transactions</summary>
+              <div class="help-body">
+                <p><strong>Split</strong> — one transaction divided across several categories. <strong>Recurring split</strong> — apply the same split to every future transaction from that payee. <strong>Split payment</strong> — mark a transaction as a payment toward another, so a card payment does not double-count.</p>
+              </div>
+            </details>
+            <details class="help-item">
+              <summary>Access and security</summary>
+              <div class="help-body">
+                <p>Budgeter is reachable at budgeter.joenguyen.ca through a Cloudflare tunnel. Browser routes sit behind Cloudflare Access on your email. API routes bypass Access and carry their own auth headers plus rate limiting at 120 requests per minute per IP.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="pane" data-pane="about" hidden>
+          <div class="card">
+            <h2 class="card-title" style="margin-bottom: var(--space-4)">About this app</h2>
+            <dl class="kv">
+              <dt>Version</dt><dd>1.0.0 · rails 8.1.3</dd>
+              <dt>Host</dt><dd>proxmox lxc 107 · budgeter.joenguyen.ca</dd>
+              <dt>Database</dt><dd>sqlite · 4.2 MB · 2,918 transactions</dd>
+              <dt>Deployed</dt><dd>sep 10, 8:22 pm · 5b4fc64</dd>
+              <dt>Design system</dt><dd>v4.2 · design-system.joenguyen.ca</dd>
+            </dl>
+          </div>
+        </div>
+
+        <!-- Danger -->
+        <div class="pane" data-pane="danger" hidden>
+          <div class="card danger-zone">
+            <h3>Danger zone</h3>
+            <p class="card-subtitle">Deletes every transaction, split and import record. Categories and allocations are kept. This cannot be undone.</p>
+            <button class="btn btn-danger" style="margin-top: var(--space-4)">Delete all transactions</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── mockup chrome, would not ship ── -->
+    <div class="card mock-notes" style="margin-top: var(--space-4)">
+      <h2 class="card-title" style="margin-bottom: var(--space-3)">Notes on direction b</h2>
+      <ul>
+        <li><span class="mock-tag">structure</span><strong>One section visible at a time.</strong> Settings today is a 520-line scroll of eight cards; here it is a 190px section list and a single pane. The page is never taller than its tallest section.</li>
+        <li><span class="mock-tag">structure</span><strong>The danger zone is a section you have to choose.</strong> Right now it sits at the bottom of the same scroll as the README editor, which means you pass it every time you use the page.</li>
+        <li><span class="mock-tag">new</span><strong>An "about this app" pane</strong> gives version, host, database size, deployed commit and design-system version somewhere to live. That information is currently buried in the help text where it goes stale — which is exactly what happened to the MCP card.</li>
+        <li><span class="mock-tag">same</span>Every content fix from direction a applies here too: corrected connector card, DS form classes, sentence case, hover row actions, honest danger-zone copy.</li>
+        <li><span class="mock-tag">risk</span><strong>Trade-off:</strong> you cannot ⌘F the whole page any more, and it is more machinery than a single-user app may need. Direction a is closer to how base and fitness settings already look, so it keeps the constellation consistent; this one is nicer to use but makes budgeter the odd app out unless the pattern is adopted everywhere.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const KEYWORDS = {
+    Rent: 'rent, landlord, property mgmt', Insurance: 'wawanesa, insur',
+    Childcare: 'daycare, kindercare', Internet: 'shaw, rogers',
+    Utilities: 'hydro, manitoba hydro, centra', Phone: 'telus, koodo',
+    Groceries: 'superstore, no frills, costco, safeway, sobeys',
+    Gas: 'petro, esso, shell, co-op gas', Restaurants: 'skip, ubereats, doordash, restaurant',
+    Coffee: 'starbucks, tim hortons, thom bargen', Shopping: 'amazon, winners, indigo',
+    Subscriptions: 'spotify, netflix, icloud, github', Entertainment: 'cineplex, steam',
+    Travel: 'aircanada, westjet, airbnb', Medical: 'pharmacy, shoppers drug, dental',
+    Gifts: '', Fitness: 'goodlife, strava, intervals'
+  };
+
+  const render = (filter = '') => {
+    const f = filter.trim().toLowerCase();
+    document.getElementById('catList').innerHTML = M.groups.map(g => {
+      const cats = g.cats.filter(c => !f || c.name.toLowerCase().includes(f) || (KEYWORDS[c.name] || '').includes(f));
+      if (!cats.length) return '';
+      return `
+      <div class="cat-group">
+        <div class="cat-group-title"><span>${g.name}</span><span style="font-weight:400">${cats.length}</span></div>
+        ${cats.map(c => `
+          <div class="cat-row">
+            <div>
+              <div class="cat-name-row"><span class="color-dot color-dot--${c.dot}"></span>${c.name}</div>
+              <div class="cat-keywords">${KEYWORDS[c.name] || '<span class="text-faint">no keywords — will never auto-match</span>'}</div>
+            </div>
+            <span class="row-actions">
+              <button class="btn btn-ghost btn-sm">Edit</button>
+              <button class="btn btn-ghost btn-sm" aria-label="More">&#8942;</button>
+            </span>
+          </div>`).join('')}
+      </div>`;
+    }).join('') || '<p class="text-muted" style="font-size:var(--text-sm)">No categories match that filter.</p>';
+  };
+  render();
+  document.getElementById('catFilter').addEventListener('input', e => render(e.target.value));
+
+  // Pane switching + per-pane header actions and subtitle
+  const META = {
+    categories: { sub: '4 groups · 17 categories', actions: '<button class="btn btn-secondary btn-sm">+ Add group</button><button class="btn btn-primary btn-sm">+ Add category</button>' },
+    connector:  { sub: '6 tools · connected', actions: '<button class="btn btn-secondary btn-sm">Rotate key</button>' },
+    data:       { sub: '3 backups · 4.2 MB', actions: '<button class="btn btn-primary btn-sm">Create backup</button>' },
+    files:      { sub: 'README.md · CLAUDE.md', actions: '' },
+    help:       { sub: 'how budgeter works', actions: '' },
+    about:      { sub: 'version and host', actions: '' },
+    danger:     { sub: 'irreversible actions', actions: '' }
+  };
+  const setPane = name => {
+    document.querySelectorAll('.pane').forEach(p => p.hidden = p.dataset.pane !== name);
+    document.querySelectorAll('#setNav a').forEach(a => a.classList.toggle('active', a.dataset.pane === name));
+    document.getElementById('paneSub').textContent = META[name].sub;
+    document.getElementById('paneActions').innerHTML = META[name].actions;
+  };
+  setPane('categories');
+  document.querySelectorAll('#setNav a').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); setPane(a.dataset.pane); });
+  });
+
+  document.getElementById('keyToggle').addEventListener('click', function () {
+    const el = document.getElementById('keyMask');
+    const shown = this.textContent === 'Hide';
+    el.textContent = shown ? '••••••••••••••••••••' : 'bk_live_7c41f9ae22d84b6e';
+    this.textContent = shown ? 'Show' : 'Hide';
+  });
+});
+</script>
+</body>
+</html>

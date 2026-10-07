@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" data-app="mealplanner" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>review · direction a · recipe builder mockup</title>
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script src="/shared-core.js"></script>
+<script src="mock.js"></script>
+<script src="/apps-launcher.js" defer></script>
+</head>
+<body>
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">recipe builder mockups</a> / direction a — source beside draft (chosen)</span>
+    <div>
+      <div>
+        <h1 class="page-title">review</h1>
+        <p class="page-subtitle" id="sub"></p>
+      </div>
+      <div class="header-actions">
+        <div class="month-nav" style="display:flex;align-items:center;gap:2px">
+          <button class="btn btn-secondary btn-sm" id="prev" aria-label="Previous draft">&lsaquo;</button>
+          <span style="font-family:var(--font-mono);font-size:var(--text-sm);padding:0 8px" id="pos"></span>
+          <button class="btn btn-secondary btn-sm" id="next" aria-label="Next draft">&rsaquo;</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="rev-split">
+      <div class="src-panel">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">What it came from</h3>
+            <span id="kindBadge"></span>
+          </div>
+          <div id="src"></div>
+        </div>
+      </div>
+      <div id="draft"></div>
+    </div>
+
+    <div class="decide-bar">
+      <button class="btn btn-danger">Discard</button>
+      <span class="spacer"></span>
+      <span class="decide-hint">⌘↵ accept · ⌘⌫ discard</span>
+      <button class="btn btn-secondary">Skip for now</button>
+      <button class="btn btn-primary" id="acceptBtn">Accept &amp; next</button>
+    </div>
+
+    <div class="card mock-notes" style="margin-top:var(--space-6)">
+      <div class="card-header"><h3 class="card-title">Direction A — notes</h3></div>
+      <ul>
+        <li><strong>The premise:</strong> review means checking a draft against what it came from. The source sits
+          pinned on the left — the cookbook photo, the raw dictation, the source page — while you edit on the right.
+          It is the only direction where you can catch the agent misreading something.</li>
+        <li><strong>One flag per draft, not per field</strong> (your call, 2026-09-11): "clean parse" or "needs a
+          look", nothing finer. Per-field provenance was judged more build than it was worth — so the source panel
+          is the only thing telling you where to look, which is precisely why this direction won.</li>
+        <li><strong>Macros are left blank when the source doesn't state them</strong> (drafts 2 and 3) rather than
+          estimated — your call from the quality-bar question. Draft 1 has them because the blog published them.</li>
+        <li><strong>Costs:</strong> heaviest page of the three, and at 375px the source stacks above the draft so you
+          scroll past it to get to the fields. One draft at a time, and drafts never expire — a month away means
+          clicking through whatever accumulated.</li>
+        <li><strong>A photographed source becomes the recipe's image</strong> (your call) — so a cookbook page ends
+          up on the recipe card. A dictated recipe has no image at all and falls back to the tag-label square.</li>
+        <li><strong>Would move into the design system:</strong> the sticky <code>.decide-bar</code> — generic enough
+          that budgeter's uncategorized queue wants the same thing.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<script>
+M.mount('recipes');
+let i = 0;
+function render() {
+  const d = M.drafts[i];
+  document.getElementById('sub').textContent = M.drafts.length + ' drafts from last night’s run · 02:04, 3 min';
+  document.getElementById('pos').textContent = (i + 1) + ' / ' + M.drafts.length;
+  document.getElementById('kindBadge').innerHTML =
+    '<span class="badge badge--slate">' + M.kindLabel(d.kind) + '</span> ' + M.confBadge(d);
+  document.getElementById('src').innerHTML = M.renderSource(d);
+  document.getElementById('draft').innerHTML = M.renderDraftBody(d);
+  if (window.renderNavIcons) renderNavIcons();
+}
+document.getElementById('prev').onclick = () => { i = (i + M.drafts.length - 1) % M.drafts.length; render(); };
+document.getElementById('next').onclick = () => { i = (i + 1) % M.drafts.length; render(); };
+document.getElementById('acceptBtn').onclick = () => { i = (i + 1) % M.drafts.length; render(); };
+render();
+installNavHotkeys({ allowCtrl: true, allowComma: true });
+</script>
+</body>
+</html>

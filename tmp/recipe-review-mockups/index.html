@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-app="mealplanner" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>recipe builder mockups · sep 2026</title>
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script src="/shared-core.js"></script>
+<script src="mock.js"></script>
+<style>
+  .wrap { max-width: 940px; margin: 0 auto; padding: var(--space-8) var(--space-6) var(--space-16); }
+  .dir-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-3); }
+  .dir {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-card);
+    padding: var(--space-4); transition: border-color var(--motion-fast);
+  }
+  .dir:hover { border-color: var(--card-border-hover); }
+  .dir .d-key {
+    font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--text-faint); margin-bottom: 6px;
+  }
+  .dir .d-name { font-size: var(--text-md); font-weight: var(--weight-semibold); margin-bottom: 4px; }
+  .dir .d-desc { font-size: var(--text-sm); color: var(--text-muted); line-height: var(--lh-body); }
+  .sec + .sec { margin-top: var(--space-8); }
+  .sec > h2 { font-size: var(--text-md); font-weight: var(--weight-semibold); margin: 0 0 var(--space-1); }
+  .sec > p.lead { font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 var(--space-4); line-height: var(--lh-body); }
+  .q-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border); }
+  .q-item:last-child { border-bottom: none; }
+  .q-num {
+    flex: 0 0 22px; height: 22px; border-radius: var(--radius-full);
+    background: var(--accent-soft); color: var(--accent-text);
+    font-size: 11px; font-weight: var(--weight-semibold);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .q-body { font-size: var(--text-sm); line-height: var(--lh-body); }
+  .q-body strong { display: block; margin-bottom: 2px; }
+  .q-body span { color: var(--text-muted); }
+  .locked { display: grid; grid-template-columns: 190px 1fr; gap: var(--space-2) var(--space-4); font-size: var(--text-sm); }
+  .locked dt { color: var(--text-muted); }
+  .locked dd { margin: 0; }
+</style>
+</head>
+<body style="background: var(--bg)">
+<div class="wrap">
+
+  <header style="margin-bottom: var(--space-8)">
+    <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)">
+      <span class="brand-logo" style="width:28px;height:28px"><img src="icon.svg" alt="" style="width:100%"></span>
+      <h1 style="font-size:var(--text-xl);font-weight:var(--weight-semibold);margin:0">Recipe builder — review surface</h1>
+    </div>
+    <p style="font-size:var(--text-sm);color:var(--text-muted);line-height:var(--lh-body);max-width:72ch;margin:0">
+      Three directions for the page where you accept what the night job drafted, plus the capture panel that feeds it.
+      All four run on the live design system with the same three-draft fixture — one clean blog parse, one cookbook
+      page read from a photo, one dictated dump — so they're directly comparable. Each page ends with a dashed notes
+      card: what the direction assumes, and what it costs.
+    </p>
+    <div class="d-flex gap-2" style="margin-top:var(--space-4)">
+      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()">Toggle theme</button>
+      <a class="btn btn-secondary btn-sm" href="capture.html">See the capture end</a>
+    </div>
+  </header>
+
+  <div class="sec">
+    <h2>The three directions</h2>
+    <p class="lead">They differ on one axis: how much the source material stays in front of you while you edit.</p>
+    <div class="dir-grid">
+      <a class="dir" href="review-a.html">
+        <div class="d-key">direction a</div>
+        <div class="d-name">Source beside draft</div>
+        <div class="d-desc">One draft at a time. The cookbook photo or raw dictation is pinned on the left while you
+          edit on the right. The only direction where you can actually catch a misread.</div>
+      </a>
+      <a class="dir" href="review-b.html">
+        <div class="d-key">direction b</div>
+        <div class="d-name">The whole batch at once</div>
+        <div class="d-desc">Every draft a summary row you can judge without opening; expand to edit in place. Tick the
+          clean one and accept it blind. Fastest, and the only one with bulk accept.</div>
+      </a>
+      <a class="dir" href="review-c.html">
+        <div class="d-key">direction c</div>
+        <div class="d-name">Inbox</div>
+        <div class="d-desc">Rail of drafts, editable pane, j/k and ⌘↵. Scales to twenty photos on a Sunday; mostly
+          empty space at three.</div>
+      </a>
+      <a class="dir" href="capture.html">
+        <div class="d-key">shared</div>
+        <div class="d-name">Capture panel</div>
+        <div class="d-desc">The /recipes end — link / photo / paste tabs, the queue, and the badge card that tells you
+          drafts are waiting. Identical in all three directions.</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>What's already settled</h2>
+    <p class="lead">From the planning questions — these aren't up for re-litigation in this round, they're the frame.</p>
+    <div class="card">
+      <dl class="locked">
+        <dt>What it is</dt><dd>A nightly job on the mini that drafts recipes. Sibling of the postings sweep.</dd>
+        <dt>Intake</dt><dd>URLs, photos, free text — plus an MCP tool so you can queue from a Claude chat.</dd>
+        <dt>Autonomy</dt><dd>Drafts only. The job never creates a recipe; you accept.</dd>
+        <dt>Editing</dt><dd>Inline-editable before accepting — not accept-then-fix.</dd>
+        <dt>Failures</dt><dd>Always draft something, flagged, rather than leaving an error line.</dd>
+        <dt>Cadence</dt><dd>02:00 nightly, with a run-now button on base /jobs.</dd>
+        <dt>Rotation</dt><dd>Accepted recipes join at biweekly, unchanged. Review is the gate.</dd>
+        <dt>Macros</dt><dd>Passed through when the source states them; never estimated.</dd>
+        <dt>Where it lives</dt><dd>/recipes/review, reached from a badge. Nav stays at six slots.</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>What I still need from you</h2>
+    <p class="lead">Beyond picking a direction.</p>
+    <div class="card">
+      <div class="q-item"><span class="q-num">1</span><div class="q-body">
+        <strong>Field-level uncertainty — keep it?</strong>
+        <span>All three directions tint the fields the agent guessed at and say why underneath, instead of stamping
+          the whole draft "low confidence". It's the single biggest idea in this round and it's more build than a
+          badge. Draft 2 and 3 show it; draft 1 has none because it parsed cleanly.</span>
+      </div></div>
+      <div class="q-item"><span class="q-num">2</span><div class="q-body">
+        <strong>Should the drafts-waiting badge also appear on <em>today</em>?</strong>
+        <span>You chose a /recipes sub-page over a seventh nav slot, which means you only learn drafts exist by
+          visiting /recipes — and <em>today</em> is the page you actually open.</span>
+      </div></div>
+      <div class="q-item"><span class="q-num">3</span><div class="q-body">
+        <strong>Bulk accept — want it at all?</strong>
+        <span>Only direction B has it. It's the fastest path through a morning batch and also the easiest way to put
+          something unreviewed into the catalog, which is what staging was meant to prevent.</span>
+      </div></div>
+      <div class="q-item"><span class="q-num">4</span><div class="q-body">
+        <strong>How long does a draft live?</strong>
+        <span>Nothing here expires. If you don't review for three weeks, twenty drafts accumulate — fine in C,
+          unpleasant in A. Auto-discard after N days, or let them pile up?</span>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Checked at 375px and 1500px, light and dark</h2>
+    <p class="lead">
+      All four pages, both themes, no horizontal scroll. Direction A stacks source above draft on mobile; C drops the
+      rail above the pane; B's ingredient table hides the section column below 560px.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

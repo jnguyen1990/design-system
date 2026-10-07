@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" data-app="budgeter" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dashboard · direction b · budgeter mockup</title>
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="mock.js"></script>
+<script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+<style>
+  .hero-num {
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    font-size: 40px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .hero-figs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+  }
+  .hero-fig .f-label {
+    font-size: 11px; font-weight: var(--weight-medium);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-faint); margin-bottom: 4px;
+  }
+  .hero-fig .f-value {
+    font-family: var(--font-sans); font-variant-numeric: tabular-nums;
+    font-size: var(--text-md); font-weight: var(--weight-semibold);
+  }
+  .hero-fig .f-sub { font-size: var(--text-xs); color: var(--text-faint); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-title"><span class="brand-logo"><img src="icon.svg" alt=""></span>Budgeter</div>
+  </div>
+  <div class="nav-section">
+    <ul class="nav-menu">
+      <li><a href="dashboard-b.html" class="nav-link active"><span class="nav-ico" data-ico="grid"></span>dashboard<kbd class="kbd nav-kbd">⌘1</kbd></a></li>
+      <li><a href="budget-b.html" class="nav-link"><span class="nav-ico" data-ico="pie-chart"></span>budget<kbd class="kbd nav-kbd">⌘2</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="list"></span>all<kbd class="kbd nav-kbd">⌘3</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="inbox"></span>uncategorized<kbd class="kbd nav-kbd">⌘4</kbd></a></li>
+      <li><a href="settings-b.html" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>settings<kbd class="kbd nav-kbd">⌘5</kbd></a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer"></div>
+</nav>
+
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">budgeter mockups</a> / dashboard · direction b — two-column brief</span>
+    <div>
+      <div>
+        <h1 class="page-title">dashboard</h1>
+        <p class="page-subtitle">september 2026 · 96 transactions · 7 uncategorized</p>
+      </div>
+      <div class="header-actions">
+        <div class="month-nav">
+          <button class="btn btn-secondary btn-sm" aria-label="Previous month">&lsaquo;</button>
+          <span class="month-label">September 2026</span>
+          <button class="btn btn-secondary btn-sm" aria-label="Next month">&rsaquo;</button>
+        </div>
+        <button class="btn btn-secondary btn-sm">Import CSV</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="brief">
+
+      <!-- ── main column: how am I doing ── -->
+      <div class="brief-main">
+
+        <div class="card">
+          <div class="card-header" style="margin-bottom: var(--space-2)">
+            <div>
+              <h2 class="card-title">Left to spend</h2>
+              <p class="card-subtitle">Across every category, for the rest of September.</p>
+            </div>
+            <span class="badge badge--green">On pace</span>
+          </div>
+          <div class="hero-num text-amount-positive" id="heroNum"></div>
+          <div style="margin-top: var(--space-4)" id="heroPace"></div>
+          <div class="hero-figs" id="heroFigs"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Categories</h2>
+              <p class="card-subtitle">Spent against allocation, biggest first.</p>
+            </div>
+            <a href="budget-b.html" class="btn btn-secondary btn-sm">Open budget</a>
+          </div>
+          <div id="catRows"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Six-month trend</h2>
+          <p class="card-subtitle">Total spending against your monthly goal.</p>
+          <div class="chart-box"><canvas id="trend"></canvas></div>
+        </div>
+
+      </div>
+
+      <!-- ── rail: what do I need to do ── -->
+      <div class="brief-rail">
+
+        <div class="card">
+          <div class="card-header" style="margin-bottom: var(--space-3)">
+            <h2 class="card-title">Needs attention</h2>
+            <span class="badge badge--amber" id="attCount"></span>
+          </div>
+          <div id="attention"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header" style="margin-bottom: var(--space-3)">
+            <h2 class="card-title">Still to come</h2>
+            <span class="font-mono" style="font-size:var(--text-sm);color:var(--text-muted)" id="upcomingTotal"></span>
+          </div>
+          <div id="upcoming"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title" style="margin-bottom: var(--space-3)">Versus august</h2>
+          <div id="movers"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title" style="margin-bottom: var(--space-3)">Where it went</h2>
+          <div class="chart-box" style="height: 180px"><canvas id="donut"></canvas></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── mockup chrome, would not ship ── -->
+    <div class="card mock-notes" style="margin-top: var(--space-4)">
+      <h2 class="card-title" style="margin-bottom: var(--space-3)">Notes on direction b</h2>
+      <ul>
+        <li><span class="mock-tag">layout</span><strong>Two columns with a fixed rail.</strong> The main column answers "how am I doing"; the 330px rail holds everything that is actually a to-do. That is the structural answer to "one big single column" — the page stops being a scroll.</li>
+        <li><span class="mock-tag">layout</span><strong>The rail is where uncategorized finally becomes actionable.</strong> Today the count is a dead number on a tile; here each item is a row with a button next to it.</li>
+        <li><span class="mock-tag">new</span><strong>"Still to come" card.</strong> Recurring data already exists, so known bills that have not landed yet can be listed. Without it "left to spend" is optimistic by about $110–220 every month.</li>
+        <li><span class="mock-tag">new</span><strong>"Versus august" replaces the 3-month grouped bar chart</strong> — same question, far less ink, and it names the categories that moved instead of making you compare bar heights.</li>
+        <li><span class="mock-tag">density</span><strong>One hero number instead of twelve tiles.</strong> Everything else is subordinate to "left to spend", which is the number you actually open the app for. Supporting figures sit under a rule inside the same card.</li>
+        <li><span class="mock-tag">keep</span>The doughnut survives here but shrunk into the rail, where it works as a proportion glance rather than a primary chart.</li>
+        <li><span class="mock-tag">risk</span><strong>Trade-off versus direction a:</strong> more layout machinery, and the rail collapses under the main column below 1180px, so on an iPad or phone the to-dos end up at the bottom of a long scroll. Direction a stays identical at every width.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const under = M.goal - M.projected;
+
+  document.getElementById('heroNum').textContent = money(M.available);
+
+  document.getElementById('heroPace').innerHTML = `
+    <div class="pace-wrap">
+      <div class="pace">
+        <div class="pace-seg pace-fixed"    style="width:${(M.fixedSpent / M.allocated) * 100}%"></div>
+        <div class="pace-seg pace-variable" style="width:${(M.variableSpent / M.allocated) * 100}%"></div>
+      </div>
+      <div class="pace-tick" style="left:${M.monthPct * 100}%"></div>
+    </div>
+    <div class="pace-legend">
+      <span><span class="swatch swatch-fixed"></span>Fixed bills ${money(M.fixedSpent, {round:true})}</span>
+      <span><span class="swatch swatch-variable"></span>Day-to-day ${money(M.variableSpent, {round:true})}</span>
+      <span><span class="swatch swatch-left"></span>Unspent ${money(M.available, {round:true})}</span>
+      <span style="margin-left:auto">marker = ${pct(M.monthPct)} of month elapsed</span>
+    </div>`;
+
+  document.getElementById('heroFigs').innerHTML = `
+    <div class="hero-fig">
+      <div class="f-label">Daily pace</div>
+      <div class="f-value">${money(M.variableDaily)}</div>
+      <div class="f-sub">day-to-day, ${M.daysLeft} days left</div>
+    </div>
+    <div class="hero-fig">
+      <div class="f-label">Projected</div>
+      <div class="f-value ${under >= 0 ? 'text-amount-positive' : 'text-amount-negative'}">${money(M.projected)}</div>
+      <div class="f-sub">${money(Math.abs(under), {round:true})} ${under >= 0 ? 'under' : 'over'} goal</div>
+    </div>
+    <div class="hero-fig">
+      <div class="f-label">Spent</div>
+      <div class="f-value">${money(M.spent)}</div>
+      <div class="f-sub">${pct(M.spent / M.allocated)} of allocation</div>
+    </div>
+    <div class="hero-fig">
+      <div class="f-label">Net</div>
+      <div class="f-value text-amount-positive">${money(M.income - M.spent, {sign:'always'})}</div>
+      <div class="f-sub">${money(M.income, {round:true})} income in</div>
+    </div>`;
+
+  // ── Rail: needs attention ───────────────────────────────────
+  const over = M.allCats.filter(c => c.spent > c.alloc);
+  const att = [
+    { t: `${M.uncategorized} uncategorized`, s: 'oldest is 9 days old', amt: '', btn: 'Review' },
+    ...over.map(c => ({ t: `${c.name} is over`, s: `${money(c.spent)} of ${money(c.alloc)}`, amt: money(c.spent - c.alloc), cls: 'text-amount-negative', btn: 'Adjust' })),
+    { t: 'Groceries pacing high', s: `projects to ${money(851.40)} vs ${money(800)}`, amt: '', btn: 'Open' }
+  ];
+  document.getElementById('attCount').textContent = att.length;
+  document.getElementById('attention').innerHTML = att.map(a => `
+    <div class="att-row">
+      <div>
+        <div class="att-title">${a.t}</div>
+        <div class="att-sub">${a.s}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--space-3)">
+        ${a.amt ? `<span class="att-amount ${a.cls || ''}">${a.amt}</span>` : ''}
+        <button class="btn btn-ghost btn-sm">${a.btn}</button>
+      </div>
+    </div>`).join('');
+
+  // ── Rail: upcoming ──────────────────────────────────────────
+  const upTotal = M.upcoming.reduce((s, u) => s + u.amount, 0);
+  document.getElementById('upcomingTotal').textContent = money(upTotal);
+  document.getElementById('upcoming').innerHTML = M.upcoming.map(u => `
+    <div class="att-row">
+      <div>
+        <div class="att-title" style="display:flex;align-items:center;gap:8px">
+          <span class="color-dot color-dot--${u.dot}"></span>${u.name}
+        </div>
+        <div class="att-sub">${u.when}${u.est ? ' · estimated' : ''}</div>
+      </div>
+      <span class="att-amount">${money(u.amount)}</span>
+    </div>`).join('');
+
+  // ── Rail: movers ────────────────────────────────────────────
+  const movers = M.allCats
+    .map(c => ({ ...c, d: c.spent - c.prev }))
+    .filter(c => Math.abs(c.d) > 20)
+    .sort((a, b) => Math.abs(b.d) - Math.abs(a.d))
+    .slice(0, 5);
+  document.getElementById('movers').innerHTML = movers.map(c => `
+    <div class="att-row">
+      <div>
+        <div class="att-title" style="display:flex;align-items:center;gap:8px">
+          <span class="color-dot color-dot--${c.dot}"></span>${c.name}
+        </div>
+        <div class="att-sub">${money(c.spent)} vs ${money(c.prev)}</div>
+      </div>
+      <span class="att-amount ${c.d > 0 ? 'text-amount-negative' : 'text-amount-positive'}">${money(c.d, {sign:'always', round:true})}</span>
+    </div>`).join('') + `<p class="stat-subtext" style="margin-top:var(--space-3)">September is 11 days in, so month-to-date comparisons still favour august.</p>`;
+
+  // ── Category rows ───────────────────────────────────────────
+  document.getElementById('catRows').innerHTML = M.allCats
+    .filter(c => c.spent > 0)
+    .sort((a, b) => b.spent - a.spent)
+    .map(c => `
+      <div class="cat-bar-row">
+        <div class="c-name"><span class="color-dot color-dot--${c.dot}"></span><span>${c.name}</span></div>
+        <div class="c-amt">${money(c.spent)}</div>
+        <div class="c-delta">of ${money(c.alloc, {round:true})}</div>
+        <div class="c-track"><div class="meter meter-sm ${meterClass(c)}"><div class="meter-fill" style="width:${meterWidth(c)}%"></div></div></div>
+      </div>`).join('');
+
+  renderTrendLine('trend');
+  renderDonut('donut', 6);
+});
+</script>
+</body>
+</html>

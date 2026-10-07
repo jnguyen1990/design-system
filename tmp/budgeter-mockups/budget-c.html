@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-app="budgeter" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>budget · direction c · budgeter mockup</title>
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+<script src="mock.js"></script>
+<script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+</head>
+<body>
+
+<button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-title"><span class="brand-logo"><img src="icon.svg" alt=""></span>Budgeter</div>
+  </div>
+  <div class="nav-section">
+    <ul class="nav-menu">
+      <li><a href="dashboard-c.html" class="nav-link"><span class="nav-ico" data-ico="grid"></span>dashboard<kbd class="kbd nav-kbd">⌘1</kbd></a></li>
+      <li><a href="budget-c.html" class="nav-link active"><span class="nav-ico" data-ico="pie-chart"></span>budget<kbd class="kbd nav-kbd">⌘2</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="list"></span>all<kbd class="kbd nav-kbd">⌘3</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="inbox"></span>uncategorized<kbd class="kbd nav-kbd">⌘4</kbd></a></li>
+      <li><a href="settings-a.html" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>settings<kbd class="kbd nav-kbd">⌘5</kbd></a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer"></div>
+</nav>
+
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">budgeter mockups</a> / budget · direction c — envelopes</span>
+    <div>
+      <div>
+        <h1 class="page-title">budget</h1>
+        <p class="page-subtitle" id="sub"></p>
+      </div>
+      <div class="header-actions">
+        <div class="month-nav">
+          <button class="btn btn-secondary btn-sm" aria-label="Previous month">&lsaquo;</button>
+          <span class="month-label">September 2026</span>
+          <button class="btn btn-secondary btn-sm" aria-label="Next month">&rsaquo;</button>
+        </div>
+        <button class="btn btn-primary btn-sm">Auto-allocate</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="card-stack">
+
+      <!-- Allocation banner: the one thing to act on at the start of a month -->
+      <div class="card" id="allocBanner"></div>
+
+      <div class="toolbar" style="margin:0">
+        <div class="toolbar-start">
+          <span class="filter-chip active">all</span>
+          <span class="filter-chip">over budget</span>
+          <span class="filter-chip">untouched</span>
+          <span class="filter-chip">bills</span>
+        </div>
+        <div class="toolbar-end">
+          <button class="btn btn-secondary btn-sm">Copy from august</button>
+          <button class="btn btn-ghost btn-sm" aria-label="More">&#8942;</button>
+        </div>
+      </div>
+
+      <div id="envelopes"></div>
+
+      <!-- ── mockup chrome, would not ship ── -->
+      <div class="card mock-notes">
+        <h2 class="card-title" style="margin-bottom: var(--space-3)">Notes on direction c</h2>
+        <ul>
+          <li><span class="mock-tag">structure</span><strong>No tables at all.</strong> Each category is an envelope tile showing the one number that matters day to day — what is left — with the meter and the "spent of allocated" line as support. Groups become light section labels rather than cards.</li>
+          <li><span class="mock-tag">density</span><strong>17 categories fit on roughly one screen</strong> instead of four stacked tables, because a tile is about 100px tall and they flow four or five across.</li>
+          <li><span class="mock-tag">new</span><strong>Reads as "how much room do I have in X"</strong>, which is the question you ask standing in a store. The ledger directions read as "what does my plan look like", which is the question you ask once a month.</li>
+          <li><span class="mock-tag">new</span><strong>Allocation banner.</strong> When a month has money still unallocated, the page opens with that and offers the two ways to fix it. On a fully allocated month the banner collapses to a single confirming line.</li>
+          <li><span class="mock-tag">risk</span><strong>Trade-off:</strong> you lose column alignment entirely, so comparing allocated across categories means reading tiles, not scanning a column. Precise monthly planning is worse here; in-month checking is better. Worth considering as a <em>second view</em> on the budget page — a chips toggle between ledger and envelopes — rather than a replacement.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('sub').textContent =
+    `september 2026 · ${M.allCats.length} categories · ${money(M.allocated)} of ${money(M.goal)} allocated`;
+
+  document.getElementById('allocBanner').innerHTML = `
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--space-6);align-items:center">
+      <div>
+        <h2 class="card-title">${money(M.unallocated)} still unallocated</h2>
+        <p class="card-subtitle">You have assigned ${money(M.allocated)} of your ${money(M.goal, {round:true})} goal. Spent so far: ${money(M.spent)}, leaving ${money(M.available)} across every envelope.</p>
+        <div style="margin-top:var(--space-4)">
+          <div class="meter" style="height:10px">
+            <div class="meter-fill" style="width:${(M.spent / M.goal) * 100}%;background:var(--accent-500)"></div>
+          </div>
+          <div class="pace-legend">
+            <span><span class="swatch swatch-fixed"></span>Spent ${money(M.spent, {round:true})}</span>
+            <span><span class="swatch swatch-left"></span>Allocated, unspent ${money(M.available, {round:true})}</span>
+            <span>Unallocated ${money(M.unallocated)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 flex-col">
+        <button class="btn btn-primary btn-sm">Allocate from 3-month average</button>
+        <button class="btn btn-secondary btn-sm">Split evenly</button>
+      </div>
+    </div>`;
+
+  document.getElementById('envelopes').innerHTML = M.groups.map(g => {
+    const t = groupTotals(g);
+    const gLeft = t.alloc - t.spent;
+    return `
+    <div class="env-section">
+      <p class="env-group-label">
+        ${g.name}
+        <span style="font-weight:400;text-transform:none;letter-spacing:0;font-family:var(--font-mono);margin-left:8px">
+          ${money(t.spent)} of ${money(t.alloc)} · ${money(gLeft)} left
+        </span>
+      </p>
+      <div class="env-grid">
+        ${g.cats.map(c => {
+          const left = c.alloc - c.spent;
+          const cls = meterClass(c);
+          const leftCls = left < 0 ? 'text-amount-negative' : (left === 0 ? 'text-amount-neutral' : 'text-amount-positive');
+          return `
+          <div class="env">
+            <div class="env-top"><span class="color-dot color-dot--${c.dot}"></span>${c.name}</div>
+            <div class="env-left ${leftCls}">${money(left)}</div>
+            <div class="env-of">${money(c.spent)} of ${money(c.alloc)}${c.note ? ' · ' + c.note : ''}</div>
+            <div class="meter ${cls}"><div class="meter-fill" style="width:${meterWidth(c)}%"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+});
+</script>
+</body>
+</html>

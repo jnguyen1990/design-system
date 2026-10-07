@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" data-app="budgeter" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dashboard · direction a · budgeter mockup</title>
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="mock.js"></script>
+<script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+</head>
+<body>
+
+<button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-title"><span class="brand-logo"><img src="icon.svg" alt=""></span>Budgeter</div>
+  </div>
+  <div class="nav-section">
+    <ul class="nav-menu">
+      <li><a href="dashboard-a.html" class="nav-link active"><span class="nav-ico" data-ico="grid"></span>dashboard<kbd class="kbd nav-kbd">⌘1</kbd></a></li>
+      <li><a href="budget-a.html" class="nav-link"><span class="nav-ico" data-ico="pie-chart"></span>budget<kbd class="kbd nav-kbd">⌘2</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="list"></span>all<kbd class="kbd nav-kbd">⌘3</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="inbox"></span>uncategorized<kbd class="kbd nav-kbd">⌘4</kbd></a></li>
+      <li><a href="settings-a.html" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>settings<kbd class="kbd nav-kbd">⌘5</kbd></a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer"></div>
+</nav>
+
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">budgeter mockups</a> / dashboard · direction a — instrument panel</span>
+    <div>
+      <div>
+        <h1 class="page-title">dashboard</h1>
+        <p class="page-subtitle">september 2026 · 96 transactions · 7 uncategorized</p>
+      </div>
+      <div class="header-actions">
+        <div class="month-nav">
+          <button class="btn btn-secondary btn-sm" aria-label="Previous month">&lsaquo;</button>
+          <span class="month-label">September 2026</span>
+          <button class="btn btn-secondary btn-sm" aria-label="Next month">&rsaquo;</button>
+        </div>
+        <button class="btn btn-secondary btn-sm">Import CSV</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="card-stack">
+
+      <!-- ONE stat row — replaces the three overlapping bands -->
+      <div class="stats-grid" id="statRow"></div>
+
+      <!-- Hero: budget pace, fixed vs variable -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Budget pace</h2>
+            <p class="card-subtitle">Fixed bills are separated from day-to-day spending, so the pace line means something.</p>
+          </div>
+          <span class="badge badge--green" id="paceBadge">On pace</span>
+        </div>
+        <div id="paceBody"></div>
+      </div>
+
+      <!-- Insights -->
+      <div class="card">
+        <h2 class="card-title" style="margin-bottom: var(--space-4)">Worth knowing</h2>
+        <div id="insights"></div>
+      </div>
+
+      <!-- Charts, 2-up -->
+      <div class="chart-2up">
+        <div class="card">
+          <h2 class="card-title">Where it went</h2>
+          <p class="card-subtitle">Top categories this month.</p>
+          <div class="chart-box"><canvas id="catBar"></canvas></div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Six-month trend</h2>
+          <p class="card-subtitle">Total spending against your monthly goal.</p>
+          <div class="chart-box"><canvas id="trend"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Category detail — replaces the busy 3-month grouped bar chart -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Categories</h2>
+            <p class="card-subtitle">Spent against allocation, and the change from August.</p>
+          </div>
+          <a href="budget-a.html" class="btn btn-secondary btn-sm">Open budget</a>
+        </div>
+        <div id="catRows"></div>
+      </div>
+
+      <!-- ── mockup chrome, would not ship ── -->
+      <div class="card mock-notes">
+        <h2 class="card-title" style="margin-bottom: var(--space-3)">Notes on direction a</h2>
+        <ul>
+          <li><span class="mock-tag">density</span><strong>Three stat bands collapsed into one.</strong> "Budget overview", "Monthly insights" and "Spending forecast" repeated each other — total spending and current spending were literally the same number. Now: one row of five tiles, with <code>.stat-subtext</code> carrying the second-order read instead of its own card.</li>
+          <li><span class="mock-tag">chrome</span><strong>Month stepper moved into the page header.</strong> That deletes a full-width card that held two arrows, and makes the month read as page state rather than content. Same move on the budget page.</li>
+          <li><span class="mock-tag">fix</span><strong>Card descriptions no longer use <code>.stat-label</code>.</strong> In production those render ALL-CAPS (v4 uppercases that class), so every subtitle and empty state is shouting today. They use <code>.card-subtitle</code> here.</li>
+          <li><span class="mock-tag">new</span><strong>Fixed vs variable split.</strong> Rent, insurance, childcare and internet all land on the 1st, so a naive "64% spent, 37% of the month gone" reads as alarming when it is normal. Splitting them makes the pace bar honest — variable spending is at 36% with 37% of the month elapsed.</li>
+          <li><span class="mock-tag">new</span><strong>Projection uses that split too:</strong> spent to date + bills still to land + variable daily rate × days left. The current naive daily-average × 30 would project $8,161 on Sep 11 purely because rent was paid.</li>
+          <li><span class="mock-tag">new</span><strong>Income and net tile.</strong> Inflows are already in the schema but the dashboard is spend-only today.</li>
+          <li><span class="mock-tag">swap</span><strong>Doughnut → horizontal bars.</strong> Rank and magnitude are readable at a glance and the legend disappears. The 3-month grouped bar chart (up to 24 bars) is replaced by the category table's "vs aug" column.</li>
+          <li><span class="mock-tag">color</span><strong>Spending is no longer red by default.</strong> Red is reserved for over-allocation, so it means something when you see it.</li>
+          <li><span class="mock-tag">cut</span>The hidden "Top categories" card is deleted rather than left in the markup with <code>display:none</code>.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ── Stat row ────────────────────────────────────────────────
+  const under = M.goal - M.projected;
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat-card card-dense">
+      <div class="stat-label">Spent</div>
+      <div class="stat-value">${money(M.spent)}</div>
+      <div class="stat-subtext">${pct(M.spent / M.allocated)} of ${money(M.allocated, {round:true})} allocated</div>
+    </div>
+    <div class="stat-card card-dense">
+      <div class="stat-label">Left to spend</div>
+      <div class="stat-value text-amount-positive">${money(M.available)}</div>
+      <div class="stat-subtext">${money(M.available / M.daysLeft)}/day for ${M.daysLeft} days</div>
+    </div>
+    <div class="stat-card card-dense">
+      <div class="stat-label">Projected month end</div>
+      <div class="stat-value ${under >= 0 ? 'text-amount-positive' : 'text-amount-negative'}">${money(M.projected)}</div>
+      <div class="stat-subtext">${money(Math.abs(under))} ${under >= 0 ? 'under' : 'over'} your ${money(M.goal, {round:true})} goal</div>
+    </div>
+    <div class="stat-card card-dense">
+      <div class="stat-label">Net this month</div>
+      <div class="stat-value text-amount-positive">${money(M.income - M.spent, {sign:'always'})}</div>
+      <div class="stat-subtext">${money(M.income, {round:true})} in · ${money(M.spent, {round:true})} out</div>
+    </div>
+    <div class="stat-card card-dense">
+      <div class="stat-label">Uncategorized</div>
+      <div class="stat-value">${M.uncategorized}</div>
+      <div class="stat-subtext">of ${M.transactions} transactions</div>
+    </div>`;
+
+  // ── Pace ────────────────────────────────────────────────────
+  const billsAlloc = groupTotals(M.groups.find(g => g.name === 'Bills')).alloc;
+  const fixedPct   = M.fixedSpent / billsAlloc;
+  const varHot     = M.variablePct > M.monthPct + 0.05;
+  document.getElementById('paceBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-6)">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-size:var(--text-sm);font-weight:var(--weight-medium)">Fixed bills</span>
+          <span class="font-mono" style="font-size:var(--text-sm);color:var(--text-muted)">${money(M.fixedSpent)} / ${money(billsAlloc)}</span>
+        </div>
+        <div class="meter"><div class="meter-fill" style="width:${fixedPct * 100}%;background:var(--accent-500)"></div></div>
+        <p class="stat-subtext">${pct(fixedPct)} committed · phone (${money(110)}) still to land on the 18th</p>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-size:var(--text-sm);font-weight:var(--weight-medium)">Day-to-day spending</span>
+          <span class="font-mono" style="font-size:var(--text-sm);color:var(--text-muted)">${money(M.variableSpent)} / ${money(M.variableAllocated)}</span>
+        </div>
+        <div class="pace-wrap" style="padding:0">
+          <div class="meter" style="height:14px">
+            <div class="meter-fill" style="width:${M.variablePct * 100}%;background:var(${varHot ? '--color-pending' : '--color-success'})"></div>
+          </div>
+          <div class="pace-tick" style="left:${M.monthPct * 100}%;top:-4px;bottom:-4px"></div>
+        </div>
+        <p class="stat-subtext">${pct(M.variablePct)} spent · marker shows ${pct(M.monthPct)} of the month elapsed</p>
+      </div>
+    </div>
+    <div class="pace-legend" style="border-top:1px solid var(--border);padding-top:var(--space-3);margin-top:var(--space-4)">
+      <span><span class="swatch swatch-fixed"></span>Fixed ${money(M.fixedSpent, {round:true})}</span>
+      <span><span class="swatch swatch-variable"></span>Variable ${money(M.variableSpent, {round:true})}</span>
+      <span><span class="swatch swatch-left"></span>Unspent ${money(M.available, {round:true})}</span>
+      <span style="margin-left:auto;color:var(--text)">Running ${money(M.variableDaily)}/day on day-to-day</span>
+    </div>`;
+
+  // ── Insights ────────────────────────────────────────────────
+  const over = M.allCats.filter(c => c.spent > c.alloc);
+  document.getElementById('insights').innerHTML = [
+    { sev: 'warning', t: `${over.length} categories are over allocation`,
+      m: over.map(c => `${c.name} by ${money(c.spent - c.alloc)}`).join(' · ') + ` — with ${M.daysLeft} days left.` },
+    { sev: 'info', t: 'Groceries is pacing above its allocation',
+      m: `${money(312.18)} in 11 days projects to ${money(851.40)} against ${money(800)} allocated.` },
+    { sev: 'success', t: 'Day-to-day spending is on pace',
+      m: `${pct(M.variablePct)} of the variable budget spent with ${pct(M.monthPct)} of the month gone.` },
+    { sev: 'info', t: 'Restaurants is well under last month',
+      m: `${money(108.65)} so far versus ${money(152.30)} for all of August.` }
+  ].map(i => `
+    <div class="insight-card insight-${i.sev}">
+      <div>
+        <div class="insight-title">${i.t}</div>
+        <div class="insight-text">${i.m}</div>
+      </div>
+    </div>`).join('');
+
+  // ── Category rows ───────────────────────────────────────────
+  document.getElementById('catRows').innerHTML = M.allCats
+    .filter(c => c.spent > 0)
+    .sort((a, b) => b.spent - a.spent)
+    .map(c => {
+      const d = c.spent - c.prev;
+      const dCls = Math.abs(d) < 1 ? 'text-amount-neutral' : (d > 0 ? 'text-amount-negative' : 'text-amount-positive');
+      return `
+      <div class="cat-bar-row">
+        <div class="c-name"><span class="color-dot color-dot--${c.dot}"></span><span>${c.name}</span></div>
+        <div class="c-amt">${money(c.spent)}</div>
+        <div class="c-delta ${dCls}">${Math.abs(d) < 1 ? '—' : money(d, {sign:'always', round:true})}</div>
+        <div class="c-track"><div class="meter meter-sm ${meterClass(c)}"><div class="meter-fill" style="width:${meterWidth(c)}%"></div></div></div>
+      </div>`;
+    }).join('');
+
+  renderTopCategoriesBar('catBar');
+  renderTrendLine('trend');
+});
+</script>
+</body>
+</html>

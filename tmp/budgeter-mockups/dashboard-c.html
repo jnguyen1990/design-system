@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" data-app="budgeter" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dashboard · direction c · budgeter mockup</title>
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="mock.js"></script>
+<script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+<style>
+  .verdict { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: var(--space-6); align-items: center; }
+  .verdict-line {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.01em;
+    line-height: var(--leading-snug);
+  }
+  .verdict-sub { font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-2); line-height: var(--lh-body); }
+  .verdict-num {
+    font-family: var(--font-sans); font-variant-numeric: tabular-nums;
+    font-size: 44px; font-weight: var(--weight-semibold);
+    letter-spacing: -0.02em; line-height: 1; text-align: right;
+  }
+  .verdict-num-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-faint); text-align: right; margin-bottom: var(--space-2);
+  }
+  @media (max-width: 760px) {
+    .verdict { grid-template-columns: 1fr; }
+    .verdict-num, .verdict-num-label { text-align: left; }
+  }
+  .mini-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+  }
+  .mini .m-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); margin-bottom: 4px; }
+  .mini .m-value { font-family: var(--font-sans); font-variant-numeric: tabular-nums; font-size: var(--text-md); font-weight: var(--weight-semibold); }
+  .mini .m-sub { font-size: var(--text-xs); color: var(--text-faint); margin-top: 2px; }
+
+  .todo-strip { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .todo-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: border-color var(--motion-fast), background var(--motion-fast);
+  }
+  .todo-chip:hover { border-color: var(--border-hover); background: var(--panel); }
+  .todo-chip .t-count {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: var(--text-xs); color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-title"><span class="brand-logo"><img src="icon.svg" alt=""></span>Budgeter</div>
+  </div>
+  <div class="nav-section">
+    <ul class="nav-menu">
+      <li><a href="dashboard-c.html" class="nav-link active"><span class="nav-ico" data-ico="grid"></span>dashboard<kbd class="kbd nav-kbd">⌘1</kbd></a></li>
+      <li><a href="budget-c.html" class="nav-link"><span class="nav-ico" data-ico="pie-chart"></span>budget<kbd class="kbd nav-kbd">⌘2</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="list"></span>all<kbd class="kbd nav-kbd">⌘3</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="inbox"></span>uncategorized<kbd class="kbd nav-kbd">⌘4</kbd></a></li>
+      <li><a href="settings-a.html" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>settings<kbd class="kbd nav-kbd">⌘5</kbd></a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer"></div>
+</nav>
+
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">budgeter mockups</a> / dashboard · direction c — one screen</span>
+    <div>
+      <div>
+        <h1 class="page-title">dashboard</h1>
+        <p class="page-subtitle">september 2026 · 96 transactions · 7 uncategorized</p>
+      </div>
+      <div class="header-actions">
+        <div class="month-nav">
+          <button class="btn btn-secondary btn-sm" aria-label="Previous month">&lsaquo;</button>
+          <span class="month-label">September 2026</span>
+          <button class="btn btn-secondary btn-sm" aria-label="Next month">&rsaquo;</button>
+        </div>
+        <button class="btn btn-secondary btn-sm">Import CSV</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="card-stack">
+
+      <!-- The whole answer, in one card -->
+      <div class="card">
+        <div class="verdict">
+          <div>
+            <div class="verdict-line" id="verdictLine"></div>
+            <div class="verdict-sub" id="verdictSub"></div>
+          </div>
+          <div>
+            <div class="verdict-num-label">Left to spend</div>
+            <div class="verdict-num text-amount-positive" id="verdictNum"></div>
+          </div>
+        </div>
+        <div style="margin-top: var(--space-5)" id="paceBar"></div>
+        <div class="mini-row" id="miniRow"></div>
+      </div>
+
+      <!-- To-dos as chips, not cards -->
+      <div class="card">
+        <h2 class="card-title" style="margin-bottom: var(--space-3)">Needs a look</h2>
+        <div class="todo-strip" id="todos"></div>
+      </div>
+
+      <!-- One chart card, switchable — instead of three chart cards -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Breakdown</h2>
+          <div class="d-flex gap-2">
+            <span class="filter-chip active" data-view="bar">by category</span>
+            <span class="filter-chip" data-view="line">6-month trend</span>
+            <span class="filter-chip" data-view="donut">proportions</span>
+          </div>
+        </div>
+        <div class="chart-box"><canvas id="flex"></canvas></div>
+      </div>
+
+      <!-- Top categories, collapsed by default -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Categories</h2>
+            <p class="card-subtitle">Biggest six this month.</p>
+          </div>
+          <a href="budget-c.html" class="btn btn-secondary btn-sm">Open budget</a>
+        </div>
+        <div id="catRows"></div>
+        <button class="btn btn-ghost btn-sm" id="showAll" style="margin-top: var(--space-3)">Show all 14</button>
+      </div>
+
+      <!-- ── mockup chrome, would not ship ── -->
+      <div class="card mock-notes">
+        <h2 class="card-title" style="margin-bottom: var(--space-3)">Notes on direction c</h2>
+        <ul>
+          <li><span class="mock-tag">density</span><strong>Most aggressive cut: the page fits one screen.</strong> Four cards total versus today's eight. The premise is that a dashboard you check daily should answer one question — am I okay — and make everything else a click.</li>
+          <li><span class="mock-tag">new</span><strong>A sentence, not just numbers.</strong> The verdict line states the conclusion in words and the figures back it up. Nothing on the current dashboard tells you whether the numbers are good.</li>
+          <li><span class="mock-tag">density</span><strong>Three chart cards become one switchable card.</strong> Chips pick the view, so the charts cost one card's height instead of three. This is the DS <code>.filter-chip</code> already used in mealplanner.</li>
+          <li><span class="mock-tag">density</span><strong>To-dos are chips, not a card each.</strong> They collapse to nothing on a clean month, which is the point — an empty state should take zero height, not show "No insights yet".</li>
+          <li><span class="mock-tag">risk</span><strong>Trade-off:</strong> this hides the most information. If you like scanning all categories and both charts without clicking, direction a suits you better. It also leans hardest on the verdict logic being right — a wrong headline is worse than no headline.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const under = M.goal - M.projected;
+  const over  = M.allCats.filter(c => c.spent > c.alloc);
+
+  document.getElementById('verdictLine').textContent =
+    under >= 0 ? 'On pace to come in under your goal.' : 'On pace to go over your goal.';
+  document.getElementById('verdictSub').innerHTML =
+    `Day-to-day spending is at <strong>${pct(M.variablePct)}</strong> of its budget with <strong>${pct(M.monthPct)}</strong> of the month gone. ` +
+    `At ${money(M.variableDaily)}/day plus ${money(M.billsRemaining)} of bills still to land, September finishes near ` +
+    `<strong>${money(M.projected)}</strong> against a ${money(M.goal, {round:true})} goal. ` +
+    `${over.length} ${over.length === 1 ? 'category is' : 'categories are'} over allocation.`;
+  document.getElementById('verdictNum').textContent = money(M.available);
+
+  document.getElementById('paceBar').innerHTML = `
+    <div class="pace-wrap">
+      <div class="pace">
+        <div class="pace-seg pace-fixed"    style="width:${(M.fixedSpent / M.allocated) * 100}%"></div>
+        <div class="pace-seg pace-variable" style="width:${(M.variableSpent / M.allocated) * 100}%"></div>
+      </div>
+      <div class="pace-tick" style="left:${M.monthPct * 100}%"></div>
+    </div>
+    <div class="pace-legend">
+      <span><span class="swatch swatch-fixed"></span>Fixed bills ${money(M.fixedSpent, {round:true})}</span>
+      <span><span class="swatch swatch-variable"></span>Day-to-day ${money(M.variableSpent, {round:true})}</span>
+      <span><span class="swatch swatch-left"></span>Unspent ${money(M.available, {round:true})}</span>
+      <span style="margin-left:auto">marker = ${pct(M.monthPct)} of month elapsed</span>
+    </div>`;
+
+  document.getElementById('miniRow').innerHTML = `
+    <div class="mini"><div class="m-label">Spent</div><div class="m-value">${money(M.spent)}</div><div class="m-sub">${pct(M.spent / M.allocated)} of allocation</div></div>
+    <div class="mini"><div class="m-label">Projected</div><div class="m-value ${under >= 0 ? 'text-amount-positive' : 'text-amount-negative'}">${money(M.projected)}</div><div class="m-sub">${money(Math.abs(under), {round:true})} ${under >= 0 ? 'under' : 'over'} goal</div></div>
+    <div class="mini"><div class="m-label">Daily pace</div><div class="m-value">${money(M.variableDaily)}</div><div class="m-sub">${M.daysLeft} days left</div></div>
+    <div class="mini"><div class="m-label">Net</div><div class="m-value text-amount-positive">${money(M.income - M.spent, {sign:'always'})}</div><div class="m-sub">${money(M.income, {round:true})} income in</div></div>`;
+
+  document.getElementById('todos').innerHTML = [
+    `<div class="todo-chip">Uncategorized <span class="t-count">${M.uncategorized}</span></div>`,
+    ...over.map(c => `<div class="todo-chip"><span class="color-dot color-dot--${c.dot}"></span>${c.name} over <span class="t-count text-amount-negative">${money(c.spent - c.alloc)}</span></div>`),
+    `<div class="todo-chip">Groceries pacing high <span class="t-count">${money(851.40)}/mo</span></div>`,
+    `<div class="todo-chip">Phone not yet posted <span class="t-count">${money(110)}</span></div>`,
+    `<div class="todo-chip">Unallocated <span class="t-count">${money(M.unallocated)}</span></div>`
+  ].join('');
+
+  // Chart switcher
+  const draw = v => {
+    if (v === 'bar') renderTopCategoriesBar('flex');
+    else if (v === 'line') renderTrendLine('flex');
+    else renderDonut('flex');
+  };
+  draw('bar');
+  document.querySelectorAll('.filter-chip[data-view]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip[data-view]').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      draw(chip.dataset.view);
+    });
+  });
+
+  // Categories, six then all
+  const sorted = M.allCats.filter(c => c.spent > 0).sort((a, b) => b.spent - a.spent);
+  const row = c => `
+    <div class="cat-bar-row">
+      <div class="c-name"><span class="color-dot color-dot--${c.dot}"></span><span>${c.name}</span></div>
+      <div class="c-amt">${money(c.spent)}</div>
+      <div class="c-delta">of ${money(c.alloc, {round:true})}</div>
+      <div class="c-track"><div class="meter meter-sm ${meterClass(c)}"><div class="meter-fill" style="width:${meterWidth(c)}%"></div></div></div>
+    </div>`;
+  let expanded = false;
+  const paint = () => {
+    document.getElementById('catRows').innerHTML = (expanded ? sorted : sorted.slice(0, 6)).map(row).join('');
+    document.getElementById('showAll').textContent = expanded ? 'Show less' : `Show all ${sorted.length}`;
+  };
+  paint();
+  document.getElementById('showAll').addEventListener('click', () => { expanded = !expanded; paint(); });
+});
+</script>
+</body>
+</html>

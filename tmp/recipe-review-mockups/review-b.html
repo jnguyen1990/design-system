@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" data-app="mealplanner" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>review · direction b · recipe builder mockup</title>
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script src="/shared-core.js"></script>
+<script src="mock.js"></script>
+<script src="/apps-launcher.js" defer></script>
+</head>
+<body>
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">recipe builder mockups</a> / direction b — the whole batch at once</span>
+    <div>
+      <div>
+        <h1 class="page-title">review</h1>
+        <p class="page-subtitle">3 drafts from last night’s run · 02:04, 3 min</p>
+      </div>
+      <div class="header-actions">
+        <span class="filter-chip active">all 3</span>
+        <span class="filter-chip">needs a look 2</span>
+        <button class="btn btn-secondary btn-sm">Run builder now</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="card-stack" id="stack"></div>
+
+    <div class="batch-bar">
+      <input type="checkbox" id="all">
+      <label for="all" style="font-size:var(--text-sm);color:var(--text-muted)">Select all</label>
+      <span style="margin-left:auto;font-size:var(--text-sm);color:var(--text-muted)" id="selCount">1 selected</span>
+      <button class="btn btn-secondary">Discard selected</button>
+      <button class="btn btn-primary">Accept selected</button>
+    </div>
+
+    <div class="card mock-notes" style="margin-top:var(--space-6)">
+      <div class="card-header"><h3 class="card-title">Direction B — notes</h3></div>
+      <ul>
+        <li><strong>The premise:</strong> a morning batch is usually one clean import and a couple that need work.
+          Every draft is a summary row you can judge without opening — thumbnail, name, confidence, and the line
+          that matters (<em>9 ingredients · 35 min · protein + veg · 4 servings</em>). Tick the clean one, accept it,
+          never open it.</li>
+        <li><strong>Expanding edits in place</strong> — no page load, no losing your spot, and you can compare two
+          drafts side by side by opening both.</li>
+        <li><strong>Bulk accept is the whole point</strong>, and it's the one thing the other two directions can't do.
+          The risk is that it makes accepting-without-looking the path of least resistance, which is how junk gets
+          into the catalog — the thing staging was supposed to prevent.</li>
+        <li><strong>Costs:</strong> the source evidence has nowhere to live — there's a "view source" link but the
+          cookbook photo is no longer beside the fields it produced. Editing inside an expanded card is cramped at
+          any width below about 1100px.</li>
+        <li><strong>Would move into the design system:</strong> the expandable <code>.stack-row</code> / bulk-select
+          bar pair. Nothing else here is new.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<script>
+M.mount('recipes');
+const open = { 42: true };
+function rowHTML(d) {
+  const isOpen = !!open[d.id];
+  return '<div class="card' + (isOpen ? ' stack-open' : '') + '" style="padding:0;overflow:hidden">' +
+    '<div class="stack-row" data-id="' + d.id + '">' +
+      '<input type="checkbox"' + (d.confidence === 'high' ? ' checked' : '') + ' onclick="event.stopPropagation()">' +
+      M.thumb(d, 'sm') +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="stack-title">' + M.esc(d.name) + '</div>' +
+        '<div class="stack-sub"><span class="badge badge--slate">' + M.kindLabel(d.kind) + '</span>' +
+          M.confBadge(d) + '<span>' + M.summaryLine(d) + '</span></div>' +
+      '</div>' +
+      '<div class="row-actions" onclick="event.stopPropagation()">' +
+        '<button class="btn btn-ghost btn-sm">Discard</button>' +
+        '<button class="btn btn-primary btn-sm">Accept</button>' +
+      '</div>' +
+      '<span class="stack-caret">&rsaquo;</span>' +
+    '</div>' +
+    (isOpen ? '<div class="stack-body">' +
+        '<p class="card-subtitle" style="margin:0 0 var(--space-3)">' + M.esc(d.source.note) +
+        ' <a href="#">View source</a></p>' + M.renderDraftBody(d) + '</div>' : '') +
+    '</div>';
+}
+function render() {
+  document.getElementById('stack').innerHTML = M.drafts.map(rowHTML).join('');
+  document.querySelectorAll('.stack-row').forEach(r => r.onclick = () => {
+    const id = r.dataset.id; open[id] = !open[id]; render();
+  });
+  if (window.renderNavIcons) renderNavIcons();
+}
+render();
+installNavHotkeys({ allowCtrl: true, allowComma: true });
+</script>
+</body>
+</html>

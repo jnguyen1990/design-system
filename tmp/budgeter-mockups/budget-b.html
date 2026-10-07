@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-app="budgeter" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>budget · direction b · budgeter mockup</title>
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+<script src="mock.js"></script>
+<script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+</head>
+<body>
+
+<button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-title"><span class="brand-logo"><img src="icon.svg" alt=""></span>Budgeter</div>
+  </div>
+  <div class="nav-section">
+    <ul class="nav-menu">
+      <li><a href="dashboard-b.html" class="nav-link"><span class="nav-ico" data-ico="grid"></span>dashboard<kbd class="kbd nav-kbd">⌘1</kbd></a></li>
+      <li><a href="budget-b.html" class="nav-link active"><span class="nav-ico" data-ico="pie-chart"></span>budget<kbd class="kbd nav-kbd">⌘2</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="list"></span>all<kbd class="kbd nav-kbd">⌘3</kbd></a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="inbox"></span>uncategorized<kbd class="kbd nav-kbd">⌘4</kbd></a></li>
+      <li><a href="settings-b.html" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>settings<kbd class="kbd nav-kbd">⌘5</kbd></a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer"></div>
+</nav>
+
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">budgeter mockups</a> / budget · direction b — group cards that collapse</span>
+    <div>
+      <div>
+        <h1 class="page-title">budget</h1>
+        <p class="page-subtitle" id="sub"></p>
+      </div>
+      <div class="header-actions">
+        <div class="month-nav">
+          <button class="btn btn-secondary btn-sm" aria-label="Previous month">&lsaquo;</button>
+          <span class="month-label">September 2026</span>
+          <button class="btn btn-secondary btn-sm" aria-label="Next month">&rsaquo;</button>
+        </div>
+        <button class="btn btn-primary btn-sm">Auto-allocate</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="card-stack">
+
+      <div class="stats-grid" id="statRow"></div>
+
+      <div class="toolbar" style="margin:0">
+        <div class="toolbar-start">
+          <span class="filter-chip active">all</span>
+          <span class="filter-chip">over budget</span>
+          <span class="filter-chip">unallocated</span>
+        </div>
+        <div class="toolbar-end">
+          <button class="btn btn-ghost btn-sm" id="collapseAll">Collapse all</button>
+          <button class="btn btn-secondary btn-sm">Copy from august</button>
+          <button class="btn btn-ghost btn-sm" aria-label="More">&#8942;</button>
+        </div>
+      </div>
+
+      <div id="groups" class="card-stack"></div>
+
+      <!-- ── mockup chrome, would not ship ── -->
+      <div class="card mock-notes">
+        <h2 class="card-title" style="margin-bottom: var(--space-3)">Notes on direction b</h2>
+        <ul>
+          <li><span class="mock-tag">structure</span><strong>Keeps one card per group, but makes the card header do work.</strong> Today a group card header is just the group name; here it carries the group's allocated / spent / left and a group meter, so a collapsed card is still informative.</li>
+          <li><span class="mock-tag">new</span><strong>Groups collapse.</strong> Bills is six rows you rarely touch — collapse it and the page is half as tall, while the header still tells you bills are 92% committed. Click any group header to try it.</li>
+          <li><span class="mock-tag">new</span><strong>Per-row meters and inline editing</strong> are the same as direction a — those two changes are independent of the group layout, so they carry across whichever structure you pick.</li>
+          <li><span class="mock-tag">keep</span><strong>Closest to what you have.</strong> If the card-per-group split is something you actually like — separate bills from everyday visually — this keeps it and fixes the density and the missing subtotals, rather than throwing it out.</li>
+          <li><span class="mock-tag">risk</span><strong>Trade-off versus direction a:</strong> columns still do not align across cards, because each card lays out its own table. Direction a's single table is strictly better for scanning one column top to bottom; this is better for working inside one group at a time.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('sub').textContent =
+    `september 2026 · ${M.allCats.length} categories · ${money(M.allocated)} of ${money(M.goal)} allocated`;
+
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat-card card-dense">
+      <div class="stat-label">Monthly goal</div>
+      <div class="stat-value"><span class="alloc-edit" contenteditable="true" style="min-width:0">${money(M.goal, {round:true})}</span></div>
+      <div class="stat-subtext">click to change</div>
+    </div>
+    <div class="stat-card card-dense">
+      <div class="stat-label">Allocated</div>
+      <div class="stat-value">${money(M.allocated)}</div>
+      <div class="stat-subtext">${money(M.unallocated)} still unallocated</div>
+    </div>
+    <div class="stat-card card-dense">
+      <div class="stat-label">Spent</div>
+      <div class="stat-value">${money(M.spent)}</div>
+      <div class="stat-subtext">${pct(M.spent / M.allocated)} of allocation</div>
+    </div>
+    <div class="stat-card card-dense">
+      <div class="stat-label">Left</div>
+      <div class="stat-value text-amount-positive">${money(M.available)}</div>
+      <div class="stat-subtext">${M.daysLeft} days remaining</div>
+    </div>`;
+
+  const leftCls = n => n < 0 ? 'text-amount-negative' : (n === 0 ? 'text-amount-neutral' : 'text-amount-positive');
+
+  document.getElementById('groups').innerHTML = M.groups.map((g, i) => {
+    const t = groupTotals(g);
+    const gLeft = t.alloc - t.spent;
+    const overCount = g.cats.filter(c => c.spent > c.alloc).length;
+    return `
+    <div class="card ${g.name === 'Bills' ? 'grp-collapsed' : ''}" data-group="${i}">
+      <div class="grp-card-head">
+        <div class="grp-title">
+          <span class="grp-caret">&#9660;</span>${g.name}
+          <span class="text-faint" style="font-size:var(--text-xs);font-weight:400">${g.cats.length} categories</span>
+          ${overCount ? `<span class="badge badge--red">${overCount} over</span>` : ''}
+        </div>
+        <div class="grp-figs">
+          ${money(t.spent)} of ${money(t.alloc)} ·
+          <span class="${leftCls(gLeft)}">${money(gLeft)} left</span>
+        </div>
+        <div class="grp-track">
+          <div class="meter ${t.spent > t.alloc ? 'over' : ''}"><div class="meter-fill" style="width:${Math.min(100, (t.spent / t.alloc) * 100)}%"></div></div>
+        </div>
+      </div>
+      <div class="grp-body">
+        <div class="table-responsive">
+          <table class="ledger">
+            <colgroup><col class="c-cat"><col class="c-num"><col class="c-num"><col class="c-num"><col class="c-bar"><col class="c-act"></colgroup>
+            <thead>
+              <tr><th>Category</th><th class="num">Allocated</th><th class="num">Spent</th><th class="num">Left</th><th>Pace</th><th></th></tr>
+            </thead>
+            <tbody>
+              ${g.cats.map(c => {
+                const left = c.alloc - c.spent;
+                return `
+                <tr class="led-row">
+                  <td>
+                    <div class="cat-cell">
+                      <span class="color-dot color-dot--${c.dot}"></span>
+                      <span>${c.name}</span>
+                      ${c.note ? `<span class="text-faint" style="font-size:var(--text-xs);font-family:var(--font-mono)">${c.note}</span>` : ''}
+                    </div>
+                  </td>
+                  <td class="num"><span class="alloc-edit" contenteditable="true">${money(c.alloc)}</span></td>
+                  <td class="num">${c.spent ? money(c.spent) : '<span class="text-amount-neutral">—</span>'}</td>
+                  <td class="num ${leftCls(left)}">${money(left)}</td>
+                  <td><div class="meter meter-sm ${meterClass(c)}"><div class="meter-fill" style="width:${meterWidth(c)}%"></div></div></td>
+                  <td class="td-actions"><button class="btn btn-ghost btn-sm" aria-label="More">&#8942;</button></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.grp-card-head').forEach(head => {
+    head.addEventListener('click', e => {
+      if (e.target.closest('.alloc-edit')) return;
+      head.closest('.card').classList.toggle('grp-collapsed');
+    });
+  });
+  document.getElementById('collapseAll').addEventListener('click', function () {
+    const cards = document.querySelectorAll('#groups > .card');
+    const anyOpen = [...cards].some(c => !c.classList.contains('grp-collapsed'));
+    cards.forEach(c => c.classList.toggle('grp-collapsed', anyOpen));
+    this.textContent = anyOpen ? 'Expand all' : 'Collapse all';
+  });
+  document.querySelectorAll('.alloc-edit').forEach(el => {
+    let before = el.textContent;
+    el.addEventListener('focus', () => { before = el.textContent; });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+      if (e.key === 'Escape') { el.textContent = before; el.blur(); }
+    });
+  });
+});
+</script>
+</body>
+</html>

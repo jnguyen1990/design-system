@@ -3910,13 +3910,12 @@ tr.product-row {
 .progress-wrap { margin-top: var(--space-4); max-width: 520px; }
 .progress-track { height: 8px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 99px; overflow: hidden; }
 .progress-cap { display: flex; justify-content: space-between; margin-top: 6px; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
-.menu-wrap { position: relative; }
+/* Square icon trigger for a .dropdown (fitness block header). The menu it
+   opens is the shared .dropdown-menu — the .menu-wrap/.menu-pop/.menu-item
+   /.menu-sep duplicate that used to live here was retired 2026-10-07: it was
+   absolute-positioned with its own z-index and 33px items, so it missed both
+   the overflow-clipping fix and the 36px density floor. One menu component. */
 .menu-btn { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; }
-.menu-pop { position: absolute; right: 0; top: 40px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-floating); min-width: 220px; padding: 6px; z-index: 30; }
-.menu-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); font-size: var(--text-sm); color: var(--text); cursor: pointer; background: none; border: none; width: 100%; text-align: left; }
-.menu-item:hover { background: var(--panel-hover); }
-.menu-item.danger { color: var(--text-amount-negative); }
-.menu-sep { height: 1px; background: var(--border); margin: 6px 4px; }
 .week-head { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px; gap: 8px; }
 .week-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .week-title h3 { margin: 0; font-size: var(--text-md); }
@@ -4353,6 +4352,11 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
     transform: translateY(4px);
     transform-origin: bottom right;
 }
+
+/* Left-aligned to its trigger (a trigger on the left half of the screen
+   grows its menu rightward) — scale from the matching corner. */
+.dropdown-menu[data-dropdown-align="left"] { transform-origin: top left; }
+.dropdown-menu[data-dropdown-align="left"][data-dropdown-placement="up"] { transform-origin: bottom left; }
 
 .dropdown-menu.open {
     opacity: 1;

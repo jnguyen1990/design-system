@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-app="mealplanner" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>recipes · capture panel · recipe builder mockup</title>
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script src="/shared-core.js"></script>
+<script src="mock.js"></script>
+<script src="/apps-launcher.js" defer></script>
+</head>
+<body>
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">recipe builder mockups</a> / capture — the /recipes end of it</span>
+    <div>
+      <div>
+        <h1 class="page-title">recipes</h1>
+        <p class="page-subtitle">34 recipes · 26 in rotation</p>
+      </div>
+      <div class="header-actions">
+        <a class="btn btn-secondary btn-sm" href="review-a.html">Review 3 drafts</a>
+        <button class="btn btn-primary btn-sm">+ recipe</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="card-stack">
+
+      <!-- The badge: how you find out drafts exist without a 7th nav slot -->
+      <div class="card" style="border-color:color-mix(in srgb, var(--accent-500) 30%, var(--card-border))">
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <span class="nav-ico" data-ico="inbox" style="color:var(--accent-text)"></span>
+          <div style="flex:1">
+            <div style="font-weight:var(--weight-medium)">3 drafts are waiting for you</div>
+            <div class="card-subtitle">Built at 02:04 this morning — 1 clean parse, 2 that need a look.</div>
+          </div>
+          <a class="btn btn-primary btn-sm" href="review-a.html">Review</a>
+        </div>
+      </div>
+
+      <!-- Capture: URL box grows a photo and a paste tab -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Add a recipe</h3>
+          <span class="card-subtitle">Queued now, built overnight</span>
+        </div>
+        <div class="cap-tabs">
+          <span class="filter-chip active" data-tab="link">link</span>
+          <span class="filter-chip" data-tab="photo">photo</span>
+          <span class="filter-chip" data-tab="paste">paste</span>
+        </div>
+
+        <div id="tab-link">
+          <div class="row-actions" style="display:flex;gap:var(--space-2)">
+            <input class="form-control" style="flex:1" placeholder="https://… — a blog, or an Instagram post or reel">
+            <button class="btn btn-primary">Queue it</button>
+          </div>
+          <p class="card-subtitle" style="margin-top:var(--space-2)">Paste several at once, one per line.</p>
+        </div>
+
+        <div id="tab-photo" hidden>
+          <div class="dropzone">
+            <strong>Drop a photo, or tap to use the camera</strong>
+            A cookbook page, a recipe card, a screenshot. Several at once is fine.
+          </div>
+        </div>
+
+        <div id="tab-paste" hidden>
+          <textarea class="form-control" rows="5" placeholder="Type or dictate it however it comes out — &quot;beef shank, daikon, ginger, star anise, brown then simmer 2 hrs…&quot;. It gets shaped into a real recipe overnight."></textarea>
+          <div class="row-actions" style="margin-top:var(--space-2)"><button class="btn btn-primary">Queue it</button></div>
+        </div>
+
+        <div class="d-field" style="margin-top:var(--space-4)">
+          <label>Note (optional)</label>
+          <input class="form-control" placeholder="“from mom” · “scale to 6” · “swap pork for chicken”">
+          <p class="card-subtitle" style="margin-top:4px">Read as an import hint, then saved onto the recipe.</p>
+        </div>
+      </div>
+
+      <!-- The queue itself -->
+      <div class="card" style="padding:4px 0 0">
+        <div class="toolbar" style="padding:16px 20px 12px;margin:0">
+          <div class="toolbar-start"><h3 class="card-title" style="margin:0">Queue</h3></div>
+          <div class="toolbar-end"><span class="card-subtitle">last built 02:04 · next 02:00</span></div>
+        </div>
+        <table class="table table-compact">
+          <thead><tr><th>Item</th><th>Kind</th><th>State</th><th></th></tr></thead>
+          <tbody id="qrows"></tbody>
+        </table>
+        <div style="padding:var(--space-3) var(--space-5)">
+          <details><summary style="cursor:pointer;font-size:var(--text-sm);color:var(--text-muted)">31 imported — show history</summary></details>
+        </div>
+      </div>
+
+      <div class="card mock-notes">
+        <div class="card-header"><h3 class="card-title">Capture — notes</h3></div>
+        <ul>
+          <li><strong>This page is the same in all three directions</strong> — it's the intake half, shown once.
+            Only the Review button's destination changes.</li>
+          <li><strong>Three tabs on one card</strong> rather than three separate controls, because the note field
+            applies to all of them and the queue below is shared.</li>
+          <li><strong>The badge card at the top is how you learn drafts exist</strong> — your answer to the nav
+            question was a sub-page with a badge, not a seventh nav slot. It only appears when something is waiting.
+            Worth deciding: should it also appear on <em>today</em>, which is the page you actually open?</li>
+          <li><strong>The photo tab works from your phone</strong> — mealplanner is on a public domain behind CF
+            Access, so Safari's camera-roll picker is all this needs. No app, no share sheet.</li>
+          <li><strong>A queued row shows what it will become, not just that it exists</strong> — a row that's already
+            been drafted says so and links straight into review.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+M.mount('recipes');
+const rows = [
+  { what: 'Gochujang-glazed salmon sheet pan', sub: 'seriouseats.com', kind: 'link', state: 'drafted', tone: 'green' },
+  { what: 'Braised white beans with fennel and lemon', sub: 'IMG_4471.HEIC', kind: 'photo', state: 'drafted', tone: 'green' },
+  { what: "Mom's beef and daikon soup", sub: 'pasted this morning', kind: 'paste', state: 'drafted', tone: 'green' },
+  { what: 'smittenkitchen.com/2026/09/leek-gratin', sub: 'queued 20 min ago', kind: 'link', state: 'waiting for tonight', tone: 'slate' },
+  { what: 'instagram.com/p/C8xk2LpN/', sub: 'blocked — retried 2 nights', kind: 'link', state: 'couldn’t fetch', tone: 'amber' }
+];
+document.getElementById('qrows').innerHTML = rows.map(r =>
+  '<tr><td><div style="font-weight:var(--weight-medium)">' + M.esc(r.what) + '</div>' +
+  '<div class="card-subtitle">' + M.esc(r.sub) + '</div></td>' +
+  '<td><span class="badge badge--slate">' + r.kind + '</span></td>' +
+  '<td><span class="badge badge--' + r.tone + '">' + r.state + '</span></td>' +
+  '<td style="text-align:right"><div class="row-actions">' +
+    (r.state === 'drafted' ? '<a class="btn btn-secondary btn-sm" href="review-a.html">Review</a>' : '') +
+    '<button class="btn btn-ghost btn-sm">&times;</button></div></td></tr>').join('');
+document.querySelectorAll('.cap-tabs .filter-chip').forEach(chip => chip.onclick = () => {
+  document.querySelectorAll('.cap-tabs .filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  ['link', 'photo', 'paste'].forEach(t =>
+    document.getElementById('tab-' + t).hidden = (t !== chip.dataset.tab));
+});
+if (window.renderNavIcons) renderNavIcons();
+installNavHotkeys({ allowCtrl: true, allowComma: true });
+</script>
+</body>
+</html>

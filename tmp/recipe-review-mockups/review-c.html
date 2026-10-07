@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" data-app="mealplanner" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>review · direction c · recipe builder mockup</title>
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script src="/shared-core.js"></script>
+<script src="mock.js"></script>
+<script src="/apps-launcher.js" defer></script>
+</head>
+<body>
+<main class="main-content">
+  <header class="page-header">
+    <span class="page-crumb"><a href="index.html">recipe builder mockups</a> / direction c — inbox</span>
+    <div>
+      <div>
+        <h1 class="page-title">review</h1>
+        <p class="page-subtitle">3 drafts from last night’s run · 02:04, 3 min</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm">Run builder now</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="inbox">
+      <div class="card inbox-rail" id="rail"></div>
+      <div>
+        <div class="card" style="margin-bottom:var(--space-4)">
+          <div class="card-header">
+            <h3 class="card-title">What it came from</h3>
+            <span id="kindBadge"></span>
+          </div>
+          <details id="srcDetails">
+            <summary style="cursor:pointer;font-size:var(--text-sm);color:var(--text-muted)">Show the source</summary>
+            <div style="margin-top:var(--space-3)" id="src"></div>
+          </details>
+        </div>
+        <div id="draft"></div>
+        <div class="decide-bar">
+          <button class="btn btn-danger">Discard</button>
+          <span class="spacer"></span>
+          <span class="decide-hint">j / k to move · ⌘↵ accept</span>
+          <button class="btn btn-secondary">Skip</button>
+          <button class="btn btn-primary" id="acceptBtn">Accept</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mock-notes" style="margin-top:var(--space-6)">
+      <div class="card-header"><h3 class="card-title">Direction C — notes</h3></div>
+      <ul>
+        <li><strong>The premise:</strong> a mail client. The rail keeps the batch visible and your position stable,
+          the pane holds one editable draft, and <kbd class="kbd">j</kbd>/<kbd class="kbd">k</kbd> plus
+          <kbd class="kbd">⌘↵</kbd> mean a clean batch is cleared without touching the mouse.</li>
+        <li><strong>Scales past three.</strong> If you ever queue a stack of twenty photos on a Sunday, this is the
+          only one of the three that still works — A becomes twenty page-loads and B becomes an endless scroll.</li>
+        <li><strong>Source is collapsed by default</strong> behind a disclosure, so it's available but not competing
+          for width. That's the compromise: you can check it, but you won't by default — the opposite of A.</li>
+        <li><strong>Costs:</strong> a 288px rail holding three items is mostly empty space, and the edit column is
+          narrower than in A or B, which the ingredient table feels. It's the right shape for a volume you don't
+          have yet.</li>
+        <li><strong>Would move into the design system:</strong> the rail/pane split is close to the
+          <code>.settings-pane</code> shape already shipped — likely a variant of it rather than a new component.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<script>
+M.mount('recipes');
+let i = 0;
+function render() {
+  const d = M.drafts[i];
+  document.getElementById('rail').innerHTML = M.drafts.map((x, n) =>
+    '<div class="ib-item' + (n === i ? ' on' : '') + '" data-n="' + n + '">' +
+      M.thumb(x, 'sm') +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="ib-name">' + M.esc(x.name) + '</div>' +
+        '<div class="ib-sub"><span class="ib-kind">' + M.kindLabel(x.kind) + '</span>' +
+          (x.confidence === 'high'
+            ? '<span class="color-dot color-dot--green"></span>clean'
+            : '<span class="color-dot color-dot--amber"></span>' + x.guesses.length + ' guessed') +
+        '</div>' +
+      '</div></div>').join('');
+  document.getElementById('kindBadge').innerHTML =
+    '<span class="badge badge--slate">' + M.kindLabel(d.kind) + '</span> ' + M.confBadge(d);
+  document.getElementById('src').innerHTML = M.renderSource(d);
+  document.getElementById('draft').innerHTML = M.renderDraftBody(d);
+  document.querySelectorAll('.ib-item').forEach(el => el.onclick = () => { i = +el.dataset.n; render(); });
+  if (window.renderNavIcons) renderNavIcons();
+}
+document.getElementById('acceptBtn').onclick = () => { i = (i + 1) % M.drafts.length; render(); };
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) return;
+  if (e.key === 'j') { i = (i + 1) % M.drafts.length; render(); }
+  if (e.key === 'k') { i = (i + M.drafts.length - 1) % M.drafts.length; render(); }
+});
+render();
+installNavHotkeys({ allowCtrl: true, allowComma: true });
+</script>
+</body>
+</html>

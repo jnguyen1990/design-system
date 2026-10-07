@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-app="budgeter" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>budgeter mockups · sep 2026</title>
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+<link rel="stylesheet" href="mock.css">
+<script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+<style>
+  .wrap { max-width: 940px; margin: 0 auto; padding: var(--space-8) var(--space-6) var(--space-16); }
+  .dir-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-3); }
+  .dir {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-card);
+    padding: var(--space-4); transition: border-color var(--motion-fast);
+  }
+  .dir:hover { border-color: var(--card-border-hover); }
+  .dir .d-key {
+    font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--text-faint); margin-bottom: 6px;
+  }
+  .dir .d-name { font-size: var(--text-md); font-weight: var(--weight-semibold); margin-bottom: 4px; }
+  .dir .d-desc { font-size: var(--text-sm); color: var(--text-muted); line-height: var(--lh-body); }
+  .sec + .sec { margin-top: var(--space-8); }
+  .sec > h2 {
+    font-size: var(--text-md); font-weight: var(--weight-semibold);
+    margin: 0 0 var(--space-1);
+  }
+  .sec > p.lead { font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 var(--space-4); line-height: var(--lh-body); }
+  .q-list { counter-reset: q; }
+  .q-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border); }
+  .q-item:last-child { border-bottom: none; }
+  .q-num {
+    flex: 0 0 22px; height: 22px; border-radius: var(--radius-full);
+    background: var(--accent-soft); color: var(--accent-text);
+    font-size: 11px; font-weight: var(--weight-semibold);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .q-body { font-size: var(--text-sm); line-height: var(--lh-body); }
+  .q-body strong { display: block; margin-bottom: 2px; }
+  .q-body span { color: var(--text-muted); }
+</style>
+</head>
+<body style="background: var(--bg)">
+<div class="wrap">
+
+  <header style="margin-bottom: var(--space-8)">
+    <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)">
+      <span class="brand-logo" style="width:28px;height:28px"><img src="icon.svg" alt="" style="width:100%"></span>
+      <h1 style="font-size:var(--text-xl);font-weight:var(--weight-semibold);margin:0">Budgeter mockups</h1>
+    </div>
+    <p style="font-size:var(--text-sm);color:var(--text-muted);line-height:var(--lh-body);max-width:70ch;margin:0">
+      Eight static pages against the live design system, covering the three pages you flagged: the dashboard's stacked
+      stat bands, the budget page's wall of tables, and settings drifting off-system. Every direction uses the same
+      September 2026 fixture data, so numbers are comparable across pages. Each page ends with a dashed
+      "notes" card explaining what changed and what it costs.
+    </p>
+    <div class="d-flex gap-2" style="margin-top:var(--space-4)">
+      <button class="btn btn-secondary btn-sm" onclick="toggleTheme()">Toggle light / dark</button>
+      <span class="text-faint" style="font-size:var(--text-xs);align-self:center">check both — the meters and chart tints are token-driven</span>
+    </div>
+  </header>
+
+  <div class="sec">
+    <h2>Dashboard</h2>
+    <p class="lead">The problem: three stat bands that repeat each other, every card full-width, and descriptions that render ALL-CAPS because they use <code>.stat-label</code>.</p>
+    <div class="dir-grid">
+      <a class="dir" href="dashboard-a.html">
+        <div class="d-key">direction a</div>
+        <div class="d-name">Instrument panel</div>
+        <div class="d-desc">Conservative. One stat row instead of three, month stepper into the header, charts 2-up, a category table with "vs august" replacing the grouped bar chart.</div>
+      </a>
+      <a class="dir" href="dashboard-b.html">
+        <div class="d-key">direction b</div>
+        <div class="d-name">Two-column brief</div>
+        <div class="d-desc">Main column answers "how am I doing", a 330px rail holds everything that is a to-do: uncategorized, over-budget categories, bills still to land.</div>
+      </a>
+      <a class="dir" href="dashboard-c.html">
+        <div class="d-key">direction c</div>
+        <div class="d-name">One screen</div>
+        <div class="d-desc">Most aggressive. A verdict in words, one switchable chart card, to-dos as chips. Four cards total, fits without scrolling.</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Budget</h2>
+    <p class="lead">The problem: a card per group means columns never align, there are no group subtotals, and allocated-versus-spent is three mono columns of mental arithmetic.</p>
+    <div class="dir-grid">
+      <a class="dir" href="budget-a.html">
+        <div class="d-key">direction a</div>
+        <div class="d-name">Single ledger</div>
+        <div class="d-desc">One table, groups as section rows with subtotals, a pace meter per row, allocated edited in place. Best for scanning a column top to bottom.</div>
+      </a>
+      <a class="dir" href="budget-b.html">
+        <div class="d-key">direction b</div>
+        <div class="d-name">Group cards that collapse</div>
+        <div class="d-desc">Keeps the card-per-group split but the header carries subtotals and a group meter, and groups collapse. Closest to what you have.</div>
+      </a>
+      <a class="dir" href="budget-c.html">
+        <div class="d-key">direction c</div>
+        <div class="d-name">Envelopes</div>
+        <div class="d-desc">No tables. Each category is a tile showing what is left. Reads as "how much room do I have", not "what does my plan look like".</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Settings</h2>
+    <p class="lead">The problem: inline-styled <code>&lt;details&gt;</code>, bare inputs instead of DS form classes, mixed casing — and an MCP card that is factually out of date.</p>
+    <div class="dir-grid">
+      <a class="dir" href="settings-a.html">
+        <div class="d-key">direction a</div>
+        <div class="d-name">Conformed single column</div>
+        <div class="d-desc">Same shape as today, brought onto the system. Corrected connector card, merged and collapsed file editors, hover row actions.</div>
+      </a>
+      <a class="dir" href="settings-b.html">
+        <div class="d-key">direction b</div>
+        <div class="d-name">Panes</div>
+        <div class="d-desc">A section list on the left, one pane at a time. The page is never longer than its tallest section, and the danger zone is somewhere you choose to go.</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Carried across every direction</h2>
+    <p class="lead">These are not choices — they are fixes or corrections that apply whichever direction wins.</p>
+    <div class="card">
+      <ul style="margin:0;padding-left:18px;font-size:var(--text-sm);color:var(--text-muted);line-height:var(--lh-body)">
+        <li style="margin-bottom:8px"><strong style="color:var(--text)">Stop using <code>.stat-label</code> for body copy.</strong> v4 uppercases it, so every card description and empty state on the dashboard and settings is currently shouting.</li>
+        <li style="margin-bottom:8px"><strong style="color:var(--text)">Fix the UTC month bug.</strong> <code>toISOString().slice(0,7)</code> on both dashboard and budget converts to UTC, so an evening near month-end fetches the wrong month's data while the label still shows the right one.</li>
+        <li style="margin-bottom:8px"><strong style="color:var(--text)">Correct the MCP card.</strong> It claims no tools are registered and documents X-API-Key setup; there have been six tools behind OAuth since June.</li>
+        <li style="margin-bottom:8px"><strong style="color:var(--text)">Month state in the page header</strong>, shared between dashboard and budget so switching pages keeps the month.</li>
+        <li style="margin-bottom:8px"><strong style="color:var(--text)">Separate fixed bills from day-to-day spending</strong> in every pace and projection figure. Rent, insurance, childcare and internet all land on the 1st; a naive daily-average projection is wrong by thousands mid-month.</li>
+        <li style="margin-bottom:8px"><strong style="color:var(--text)">Red only means over-allocation.</strong> Today every spending figure is red, so nothing stands out.</li>
+        <li><strong style="color:var(--text)">Replace <code>alert()</code> with <code>showStatus</code> / <code>dsConfirm</code></strong>, and sentence-case the JS-set button labels ('saving', '✓ saved').</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>What I need from you</h2>
+    <p class="lead">Pick per page — mixing is fine and expected, the pieces are deliberately independent.</p>
+    <div class="card q-list">
+      <div class="q-item">
+        <span class="q-num">1</span>
+        <span class="q-body"><strong>Dashboard: a, b or c?</strong>
+        <span>Or a blend — for example a's stat row with b's rail. The rail is the biggest structural bet.</span></span>
+      </div>
+      <div class="q-item">
+        <span class="q-num">2</span>
+        <span class="q-body"><strong>Budget: single ledger, collapsing group cards, or envelopes?</strong>
+        <span>Envelopes could also live alongside a ledger as a second view toggled by chips, rather than replacing it.</span></span>
+      </div>
+      <div class="q-item">
+        <span class="q-num">3</span>
+        <span class="q-body"><strong>Inline allocation editing — yes or keep the modal?</strong>
+        <span>Try clicking an allocated figure on either budget page. It is what frees the width for the pace meter.</span></span>
+      </div>
+      <div class="q-item">
+        <span class="q-num">4</span>
+        <span class="q-body"><strong>Settings: single column or panes?</strong>
+        <span>Panes are nicer to use; single column keeps budgeter consistent with base and fitness settings.</span></span>
+      </div>
+      <div class="q-item">
+        <span class="q-num">5</span>
+        <span class="q-body"><strong>Which features are in scope now?</strong>
+        <span>Income and net figures, auto-allocate from a 3-month average, the upcoming-bills card, and an uncategorized count badge in the nav are all shown in these mocks. Say which ones you actually want built.</span></span>
+      </div>
+      <div class="q-item">
+        <span class="q-num">6</span>
+        <span class="q-body"><strong>Does the meter belong in the design system?</strong>
+        <span>If budget keeps per-row meters, <code>.meter</code> should move into design-system.css so fitness and upkeep can use it too, rather than living in budgeter.css.</span></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,467 @@
+/* ═══════════════════════════════════════════════════════════════
+   Budgeter mockup round — shared page-local styles
+   (2026-09-11). Everything here is either (a) mockup chrome that
+   would NOT ship, marked .mock-*, or (b) a candidate pattern that
+   would move into design-system.css if Joe picks the direction.
+
+   Token discipline: semantic tokens only (--color-success/-pending/
+   -error, --accent-500, --panel, --border…). No raw Radix steps.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Mockup chrome (never ships) ──────────────────────────────── */
+.mock-notes {
+    border: 1px dashed var(--border-hover);
+    background: transparent;
+    box-shadow: none;
+}
+.mock-notes .card-title { color: var(--text-muted); }
+.mock-notes ul { margin: 0; padding-left: 18px; }
+.mock-notes li {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    line-height: var(--lh-body);
+    margin-bottom: var(--space-2);
+}
+.mock-notes li:last-child { margin-bottom: 0; }
+.mock-notes li strong { color: var(--text); font-weight: var(--weight-semibold); }
+.mock-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    color: var(--text-faint);
+    margin-right: 6px;
+    vertical-align: 1px;
+}
+.mock-switch {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+}
+
+/* ── Month stepper (page-header) ──────────────────────────────── */
+.month-nav { display: flex; align-items: center; gap: 2px; }
+.month-nav .month-label {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    min-width: 124px;
+    text-align: center;
+}
+
+/* ── Meter — the core proposed component ──────────────────────── */
+.meter {
+    position: relative;
+    height: 6px;
+    background: var(--panel);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+.meter-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--color-success);
+    transition: width var(--motion-base);
+}
+.meter.warn  .meter-fill { background: var(--color-pending); }
+.meter.over  .meter-fill { background: var(--color-error); }
+.meter.idle  .meter-fill { background: var(--text-faint); }
+.meter-sm { height: 4px; }
+
+/* Stacked pace bar: fixed bills + variable spend + today marker */
+.pace {
+    position: relative;
+    height: 14px;
+    background: var(--panel);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    display: flex;
+}
+.pace-seg { height: 100%; }
+.pace-fixed    { background: var(--accent-500); }
+.pace-variable { background: var(--color-success); }
+.pace-variable.hot { background: var(--color-pending); }
+.pace-tick {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    background: var(--text);
+    border-radius: 1px;
+    opacity: 0.7;
+}
+.pace-wrap { position: relative; padding: 6px 0 4px; }
+.pace-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-top: var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+.pace-legend .swatch {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: 0;
+}
+.swatch-fixed    { background: var(--accent-500); }
+.swatch-variable { background: var(--color-success); }
+.swatch-left     { background: var(--panel); border: 1px solid var(--border); }
+
+/* ── Two-column brief layout (dashboard B) ────────────────────── */
+.brief {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: var(--space-4);
+    align-items: start;
+}
+.brief > .brief-main,
+.brief > .brief-rail { min-width: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+@media (max-width: 1180px) { .brief { grid-template-columns: 1fr; } }
+
+/* ── Attention list (rail) ────────────────────────────────────── */
+.att-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-2);
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+.att-row:last-child { border-bottom: none; }
+.att-row:first-child { padding-top: 0; }
+.att-title { font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.att-sub {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+.att-amount {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-sm);
+}
+
+/* ── Category breakdown rows (dashboard A/B) ──────────────────── */
+.cat-bar-row {
+    display: grid;
+    grid-template-columns: 1fr 96px 76px;
+    gap: 4px var(--space-3);
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+.cat-bar-row:last-child { border-bottom: none; }
+.cat-bar-row:first-child { padding-top: 0; }
+.cat-bar-row .c-name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.cat-bar-row .c-name span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-bar-row .c-amt {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-sm);
+    text-align: right;
+}
+.cat-bar-row .c-delta {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-align: right;
+    color: var(--text-faint);
+}
+.cat-bar-row .c-track { grid-column: 1 / -1; margin-top: 2px; }
+
+/* ── Budget ledger (budget A) ─────────────────────────────────── */
+.ledger { width: 100%; table-layout: fixed; }
+.ledger col.c-cat  { width: auto; }
+.ledger col.c-num  { width: 118px; }
+.ledger col.c-bar  { width: 150px; }
+.ledger col.c-act  { width: 44px; }
+.ledger th, .ledger td { padding: 0 12px; }
+.ledger td { height: 40px; }
+.ledger .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    font-size: var(--text-sm);
+}
+.ledger th.num { text-align: right; }
+/* NOTE: deliberately NOT .cat-row — that class is the settings category row
+   further down this file, and it sets display:grid. Applied to a <tr> it
+   silently reflows every cell into a two-column grid. */
+.ledger tbody tr.led-row { cursor: pointer; }
+.ledger tbody tr.led-row:hover { background: var(--panel); }
+.ledger .cat-cell { display: flex; align-items: center; gap: 8px; }
+
+/* Group header row inside the single ledger */
+.ledger tr.grp-row td {
+    background: var(--bg-subtle);
+    height: 34px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+.ledger tr.grp-row .grp-name {
+    font-size: 11px;
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+.ledger tr.grp-row .num { color: var(--text-muted); font-size: var(--text-xs); }
+.ledger tr.total-row td {
+    height: 44px;
+    border-top: 2px solid var(--border);
+    font-weight: var(--weight-semibold);
+    background: var(--bg-subtle);
+}
+
+/* Inline-editable allocation cell */
+.alloc-edit {
+    display: inline-block;
+    min-width: 82px;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: text;
+}
+.led-row:hover .alloc-edit { border-color: var(--border); background: var(--card); }
+.alloc-edit:focus {
+    outline: none;
+    border-color: var(--accent-500);
+    box-shadow: 0 0 0 3px var(--focus-ring);
+    background: var(--card);
+}
+
+/* ── Collapsible group cards (budget B) ───────────────────────── */
+.grp-card-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-3) var(--space-4);
+    align-items: center;
+    cursor: pointer;
+}
+.grp-card-head .grp-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+.grp-card-head .grp-figs {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.grp-card-head .grp-track { grid-column: 1 / -1; }
+.grp-caret {
+    display: inline-block;
+    color: var(--text-faint);
+    font-size: 11px;
+    transition: transform var(--motion-fast);
+}
+.grp-collapsed .grp-caret { transform: rotate(-90deg); }
+.grp-collapsed .grp-body  { display: none; }
+.grp-body { margin-top: var(--space-4); }
+
+/* ── Envelope grid (budget C) ─────────────────────────────────── */
+.env-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+    gap: var(--space-3);
+}
+.env {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-4);
+    cursor: pointer;
+    transition: border-color var(--motion-fast);
+}
+.env:hover { border-color: var(--card-border-hover); }
+.env-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    margin-bottom: var(--space-3);
+}
+.env-left {
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.01em;
+}
+.env-of {
+    font-size: var(--text-xs);
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    margin-top: 2px;
+    margin-bottom: var(--space-3);
+}
+.env-group-label {
+    font-size: 11px;
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
+    margin: 0 0 var(--space-3);
+}
+.env-section + .env-section { margin-top: var(--space-6); }
+
+/* ── Settings: two-pane (settings B) ──────────────────────────── */
+.set-pane {
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+}
+.set-nav { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 2px; }
+.set-nav a {
+    display: block;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: background var(--motion-fast), color var(--motion-fast);
+}
+.set-nav a:hover { background: var(--panel); color: var(--text); }
+.set-nav a.active { background: var(--accent-soft); color: var(--text); font-weight: var(--weight-semibold); }
+.set-nav .set-nav-sep {
+    margin: var(--space-3) 0 var(--space-1);
+    padding: 0 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
+    font-weight: var(--weight-medium);
+}
+@media (max-width: 900px) {
+    .set-pane { grid-template-columns: 1fr; }
+    .set-nav { position: static; flex-direction: row; flex-wrap: wrap; }
+}
+
+/* ── Settings: category rows ──────────────────────────────────── */
+.cat-group + .cat-group {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+}
+.cat-group-title {
+    font-size: 11px;
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
+    margin: 0 0 var(--space-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.cat-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-3);
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+}
+.cat-row:last-child { border-bottom: none; }
+.cat-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: var(--weight-medium);
+    font-size: var(--text-sm);
+}
+.cat-keywords {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    margin-top: 3px;
+    font-family: var(--font-mono);
+    overflow-wrap: anywhere;
+}
+.cat-row .row-actions { opacity: 0; transition: opacity var(--motion-fast); }
+.cat-row:hover .row-actions,
+.cat-row:focus-within .row-actions { opacity: 1; }
+
+/* Key/value rows (MCP card, about card) */
+.kv {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: var(--space-2) var(--space-4);
+    align-items: center;
+}
+.kv dt {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+.kv dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    overflow-wrap: anywhere;
+}
+@media (max-width: 640px) { .kv { grid-template-columns: 1fr; gap: 2px var(--space-4); } }
+
+/* Tool list for the MCP card */
+.tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: var(--space-2);
+}
+.tool-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+}
+.tool-item code {
+    font-size: var(--text-xs);
+    background: none;
+    padding: 0;
+    color: var(--text);
+}
+.tool-item span { font-size: 11px; color: var(--text-muted); }
+
+/* Backup rows */
+.bk-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-3);
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+}
+.bk-row:last-child { border-bottom: none; }
+.bk-name { font-family: var(--font-mono); font-size: var(--text-xs); }
+.bk-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* Charts */
+.chart-2up {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: var(--space-4);
+}
+.chart-box { position: relative; height: 260px; margin-top: var(--space-3); }
+.chart-box canvas { max-height: 260px; }

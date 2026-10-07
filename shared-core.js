@@ -430,10 +430,16 @@
         var dropdown = menu.closest('.dropdown');
         if (!dropdown) return;
 
+        // Anchor to the trigger button, not the .dropdown wrapper. A wrapper
+        // that stretches (a block-level .dropdown in a full-width header, say)
+        // would otherwise right-align the menu to the far edge of the page,
+        // leaving it floating away from the control that opened it.
+        var trigger = dropdown.querySelector(':scope > button, :scope > .btn') || dropdown;
+
         // Measure unstyled by the previous placement, and untransformed —
         // offsetWidth/Height ignore the open/close translate.
         menu.style.maxHeight = '';
-        var anchorRect = dropdown.getBoundingClientRect();
+        var anchorRect = trigger.getBoundingClientRect();
         var width = menu.offsetWidth;
         var height = menu.offsetHeight;
         var below = window.innerHeight - anchorRect.bottom - GAP - MARGIN;
@@ -448,15 +454,30 @@
         // toggle, which turns that into an unbounded microtask loop.
         menu.dataset.dropdownPlacement = up ? 'up' : 'down';
 
-        var room = up ? above : below;
-        if (height > room) menu.style.maxHeight = Math.max(room, 120) + 'px';
+        // 120px floor so a menu squeezed against an edge is still a usable,
+        // scrollable sliver rather than a 2px line.
+        var room = Math.max(up ? above : below, 120);
+        if (height > room) menu.style.maxHeight = room + 'px';
+        var used = Math.min(height, room);
 
-        var top = up ? anchorRect.top - Math.min(height, room) - GAP : anchorRect.bottom + GAP;
-        var left = anchorRect.right - width;
+        var top = up ? anchorRect.top - used - GAP : anchorRect.bottom + GAP;
+        // Final guard: whatever the anchor did, the menu body sits inside the
+        // viewport. Matters when the trigger itself is at the very edge, where
+        // neither side has room and the 120px floor overflows the side we picked.
+        top = Math.min(Math.max(top, MARGIN), Math.max(window.innerHeight - used - MARGIN, MARGIN));
+
+        // Open toward the free space: a trigger on the left half of the screen
+        // grows its menu rightward, one on the right grows leftward. Always
+        // right-aligning would send a left-hand trigger's menu back under the
+        // fixed sidebar, which the viewport clamp alone cannot catch — the
+        // sidebar is not the viewport edge.
+        var alignLeft = anchorRect.left + anchorRect.width / 2 < window.innerWidth / 2;
+        var left = alignLeft ? anchorRect.left : anchorRect.right - width;
         left = Math.min(Math.max(left, MARGIN), Math.max(window.innerWidth - width - MARGIN, MARGIN));
 
+        menu.dataset.dropdownAlign = alignLeft ? 'left' : 'right';
         menu.style.position = 'fixed';
-        menu.style.top = Math.max(top, MARGIN) + 'px';
+        menu.style.top = top + 'px';
         menu.style.left = left + 'px';
         menu.style.right = 'auto';
         menu.style.bottom = 'auto';
@@ -464,6 +485,7 @@
 
     function clearDropdownMenu(menu) {
         delete menu.dataset.dropdownPlacement;
+        delete menu.dataset.dropdownAlign;
         menu.style.position = '';
         menu.style.top = '';
         menu.style.left = '';
@@ -496,7 +518,7 @@
             document.querySelectorAll('.dropdown-menu.open').forEach(function (menu) {
                 var dropdown = menu.closest('.dropdown');
                 if (!dropdown) return;
-                var rect = dropdown.getBoundingClientRect();
+                var rect = (dropdown.querySelector(':scope > button, :scope > .btn') || dropdown).getBoundingClientRect();
                 if (rect.bottom < 0 || rect.top > window.innerHeight) menu.classList.remove('open');
                 else placeDropdownMenu(menu);
             });
