@@ -1,14 +1,36 @@
-/* Shared layout helpers for Joe's personal apps (base, fitness, mealplanner,
-   budgeter). Loaded synchronously by each app layout right after
-   design-system.css: <script src="…/shared-core.js"></script>
+/* Shared layout helpers for Joe's personal apps (base, budgeter, fitness,
+   mealplanner, upkeep, postings). Loaded synchronously by each app layout
+   right after design-system.css: <script src="…/shared-core.js"></script>
 
    Exposes globals (classic script — an app can override any of these by
    redeclaring the function in a later inline script):
-     - apiRequest(url, options)         JSON fetch wrapper; throws on !response.ok
-                                        (fitness overrides: parses error body)
-     - formatDate(dateString)           "Monday, July 6, 2026"
-                                        (fitness + budgeter override: short format)
+     - apiRequest(url, options)         JSON fetch wrapper; resolves with the parsed
+                                        body, throws Error("HTTP error! status: N")
+                                        on !response.ok. Sends X-CSRF-Token (from the
+                                        csrf-token meta) on same-origin non-GET
+                                        requests; a FormData body goes out without a
+                                        JSON Content-Type. The thrown error carries
+                                        .status, .data and .serverMessage. options:
+                                        accept ('json'), csrf (false to skip),
+                                        serverErrorMessage (true → error.message is
+                                        the server's message). Per-app default:
+                                        apiRequest.defaults.serverErrorMessage.
+                                        (fitness + upkeep still override in their
+                                        layouts until they adopt this.)
+     - formatDate(dateString, opts)     "Monday, July 6, 2026"; opts {short:true} or
+                                        'short' → "Jul 6, 2026". Per-app default:
+                                        formatDate.defaults.short.
+                                        (fitness + budgeter still override: short)
      - shortDate(dateString)            "Jul 6"
+     - escapeHtml(value)                &<>"' escaped; null/undefined → ''. Defined
+                                        only if nothing else has claimed the name.
+     - todayKey()                       today as "YYYY-MM-DD" in the LOCAL zone —
+                                        never build this from toISOString() (UTC).
+     - dateKey(date) / monthKey(date)   "YYYY-MM-DD" / "YYYY-MM" for a Date, local.
+     - localDateTimeValue(date)         "YYYY-MM-DDTHH:MM" for datetime-local inputs.
+     - cssToken(name, fallback)         a :root custom property as a trimmed string
+                                        (Chart.js colours); fallback when empty.
+                                        cssToken('green-9') or cssToken('--green-9').
      - toggleTheme()                    flips data-theme, persists to localStorage
      - updateThemeIcon(theme)           sets #theme-icon glyph ☀️/🌙
                                         (mealplanner + budgeter override: other glyphs)
@@ -20,6 +42,15 @@
                                         renders btn-danger; false → btn-primary).
                                         Handles data-turbo-confirm forms with or
                                         without Turbo (delegated submit fallback).
+     - dsPrompt(message, opts)          styled Promise<string|null> replacement for
+                                        window.prompt(): the text on OK, null on
+                                        cancel. opts: title, value, placeholder,
+                                        confirmLabel, cancelLabel, danger (default
+                                        false), multiline.
+     - dsToast(message, type, ms)       a toast that needs no pre-placed div. type:
+                                        success (default) | error | info | warning;
+                                        all but error clear after ms (default 3000).
+     - dsCopy(text)                     copy to the clipboard → Promise<boolean>.
      - initSettingsPanes(opts)          wires a .settings-pane section list: shows one
                                         .pane at a time, syncs the #hash for deep links
                                         and reload, marks the active .settings-nav link,
@@ -67,6 +98,10 @@
        checkbox opts in with data-row-select (delegated; clicks on the row's
        own links/buttons/inputs are left alone)
      - click-to-dismiss for any .status-message toast (delegated document listener)
+     - flash auto-dismiss: a .status-message.status-success that is visible when
+       the page loads hides itself after 3s (errors stay)
+     - copy buttons: clicking [data-copy-text="…"] or [data-copy-target="<selector>"]
+       copies and confirms with a toast (data-copy-label overrides "Copied")
      - renderNavIcons(): fills <span class="nav-ico" data-ico="name"> with the
        shared outline icon set on DOMContentLoaded + turbo:load (v4.2 nav)
 
@@ -83,24 +118,151 @@
         h.classList.add(savedTheme);
     })();
 
+    // ── Small pure helpers ─────────────────────────────────────────────────
+    // escapeHtml was written privately 15 times across base, budgeter and
+    // fitness in two null-handling variants. Defined only when nothing has
+    // claimed the name, and a page's own `function escapeHtml` declaration in
+    // a later script still replaces it, so pages keep their copy until cleaned.
+    if (typeof global.escapeHtml !== 'function') {
+        global.escapeHtml = function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        };
+    }
+
+    // Local-date keys. NEVER derive "today" from toISOString(): it converts to
+    // UTC, so any evening west of Greenwich reads as tomorrow (and the last
+    // evening of a month as next month). Lifted from budgeter's layout.
+    const pad2 = n => String(n).padStart(2, '0');
+    const asDate = d => (d instanceof Date ? d : (d === undefined || d === null ? new Date() : new Date(d)));
+    global.monthKey = function monthKey(date) {
+        date = asDate(date);
+        return date.getFullYear() + '-' + pad2(date.getMonth() + 1);
+    };
+    global.dateKey = function dateKey(date) {
+        date = asDate(date);
+        return global.monthKey(date) + '-' + pad2(date.getDate());
+    };
+    global.todayKey = function todayKey() {
+        return global.dateKey(new Date());
+    };
+    // Value for <input type="datetime-local">: local wall time, to the minute.
+    global.localDateTimeValue = function localDateTimeValue(date) {
+        date = asDate(date);
+        return global.dateKey(date) + 'T' + pad2(date.getHours()) + ':' + pad2(date.getMinutes());
+    };
+
+    // Read a design token off :root for code that needs a colour STRING
+    // (Chart.js, Leaflet). The stylesheet can lose a load race against the
+    // first chart, so an empty read falls back. `name` takes or omits the
+    // leading "--": cssToken('green-9', '#30A46C').
+    global.cssToken = function cssToken(name, fallback) {
+        const prop = String(name).indexOf('--') === 0 ? String(name) : '--' + name;
+        const v = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+        return v || (fallback === undefined ? '' : fallback);
+    };
+
+    // JSON fetch wrapper. What every caller has always seen is unchanged:
+    // resolves with the parsed JSON body, rejects with
+    // Error("HTTP error! status: <code>") on a non-2xx, and a caller's own
+    // `headers` REPLACE the default Content-Type rather than merging with it.
+    //
+    // Added 2026-11-05 (none of it alters an existing call):
+    //   - X-CSRF-Token from <meta name="csrf-token"> on same-origin non-GET
+    //     requests, unless the caller set one or passes csrf:false.
+    //   - a FormData body goes out with no Content-Type, so the browser can
+    //     write the multipart boundary (when the caller supplied no headers).
+    //   - the thrown error carries .status, .data (parsed JSON error body, or
+    //     null) and .serverMessage (data.error | data.message | data.errors).
+    //   - options.accept: 'json' (or a MIME string) adds an Accept header, for
+    //     endpoints that pick their response with respond_to.
+    //   - options.serverErrorMessage: true makes error.message the server's
+    //     message when there is one. Off by default because existing callers
+    //     show or compare the "HTTP error!" text; an app that wants it on
+    //     everywhere sets apiRequest.defaults.serverErrorMessage = true once
+    //     in its layout (this is what fitness's override does today).
+    const apiDefaults = { serverErrorMessage: false };
     global.apiRequest = async function apiRequest(url, options = {}) {
-        const defaults = { headers: { 'Content-Type': 'application/json' } };
-        const config = { ...defaults, ...options };
+        const { serverErrorMessage, accept, csrf, ...fetchOptions } = options || {};
+        const isForm = typeof FormData !== 'undefined' && fetchOptions.body instanceof FormData;
+        const defaults = { headers: isForm ? {} : { 'Content-Type': 'application/json' } };
+        const config = { ...defaults, ...fetchOptions };
+
+        const extra = {};
+        if (accept) extra['Accept'] = accept === true || accept === 'json' ? 'application/json' : accept;
+        const method = String(config.method || 'GET').toUpperCase();
+        if (csrf !== false && method !== 'GET' && method !== 'HEAD') {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            const token = meta && meta.getAttribute('content');
+            let sameOrigin = false;
+            try { sameOrigin = new URL(url, global.location.href).origin === global.location.origin; } catch (_) { /* opaque URL */ }
+            if (token && sameOrigin) extra['X-CSRF-Token'] = token;
+        }
+        const extraKeys = Object.keys(extra);
+        if (extraKeys.length) {
+            // Never overwrite a header the caller set themselves.
+            const h = config.headers;
+            if (typeof Headers !== 'undefined' && (h instanceof Headers || Array.isArray(h))) {
+                const merged = new Headers(h);
+                extraKeys.forEach(k => { if (!merged.has(k)) merged.set(k, extra[k]); });
+                config.headers = merged;
+            } else {
+                const merged = { ...(h || {}) };
+                const have = Object.keys(merged).map(k => k.toLowerCase());
+                extraKeys.forEach(k => { if (have.indexOf(k.toLowerCase()) === -1) merged[k] = extra[k]; });
+                config.headers = merged;
+            }
+        }
+
         try {
             const response = await fetch(url, config);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) {
+                const error = new Error(`HTTP error! status: ${response.status}`);
+                error.status = response.status;
+                error.data = null;
+                error.serverMessage = null;
+                try {
+                    const body = await response.json();
+                    error.data = body;
+                    if (body && typeof body === 'object') {
+                        const m = body.error || body.message ||
+                            (Array.isArray(body.errors) ? body.errors.join(', ') : body.errors);
+                        if (m && typeof m === 'string') error.serverMessage = m;
+                    }
+                } catch (_) { /* not JSON — status is all we have */ }
+                const useServer = serverErrorMessage === undefined
+                    ? apiDefaults.serverErrorMessage
+                    : serverErrorMessage;
+                if (useServer && error.serverMessage) error.message = error.serverMessage;
+                throw error;
+            }
             return await response.json();
         } catch (error) {
             console.error('API request failed:', error);
             throw error;
         }
     };
+    global.apiRequest.defaults = apiDefaults;
 
-    global.formatDate = function formatDate(dateString) {
+    // formatDate('2026-07-06')                  "Monday, July 6, 2026"
+    // formatDate('2026-07-06', { short: true }) "Jul 6, 2026"  (also 'short')
+    // An app whose every date is short sets formatDate.defaults.short = true
+    // once in its layout — the override budgeter and fitness each carry.
+    const formatDateDefaults = { short: false };
+    global.formatDate = function formatDate(dateString, opts) {
         if (!dateString) return '';
         const date = new Date(dateString + 'T00:00:00');
-        return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        // opts is only honoured as an object or the string 'short', so
+        // list.map(formatDate) — which passes an index — keeps the default.
+        const asked = opts === 'short' ? true
+            : (opts && typeof opts === 'object' && typeof opts.short === 'boolean') ? opts.short
+            : undefined;
+        const short = asked === undefined ? formatDateDefaults.short : asked;
+        return short
+            ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     };
+    global.formatDate.defaults = formatDateDefaults;
 
     global.shortDate = function shortDate(dateString) {
         if (!dateString) return '';
@@ -181,6 +343,80 @@
         });
     };
 
+    // Styled prompt — dsConfirm's sibling for the one-line "why?" question.
+    // Resolves with the typed string ('' if left blank) on OK and null on
+    // cancel / Esc / backdrop, the same contract as window.prompt().
+    // opts: title, value (initial text), placeholder, confirmLabel,
+    // cancelLabel, danger (default false — a prompt is rarely destructive),
+    // multiline (textarea; Enter then inserts a newline instead of submitting).
+    global.dsPrompt = function dsPrompt(message, opts = {}) {
+        let modal = document.getElementById('ds-prompt-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'ds-prompt-modal';
+            modal.innerHTML =
+                '<div class="modal-box" style="max-width:480px">' +
+                '<div class="modal-header"><h3 id="ds-prompt-title"></h3>' +
+                '<button class="modal-close btn-ghost" data-ds-prompt="cancel" aria-label="Close">&times;</button></div>' +
+                '<div class="modal-body"><label id="ds-prompt-message" for="ds-prompt-input" style="display:block;margin:0 0 8px"></label>' +
+                '<span id="ds-prompt-field"></span></div>' +
+                '<div class="modal-footer">' +
+                '<button class="btn btn-secondary" data-ds-prompt="cancel"></button>' +
+                '<button class="btn" data-ds-prompt="ok"></button></div></div>';
+            document.body.appendChild(modal);
+        }
+        // Rebuilt per call so single-line and multiline prompts can alternate.
+        const field = modal.querySelector('#ds-prompt-field');
+        field.innerHTML = '';
+        const input = document.createElement(opts.multiline ? 'textarea' : 'input');
+        if (opts.multiline) input.rows = 3; else input.type = 'text';
+        input.id = 'ds-prompt-input';
+        input.className = 'form-control';
+        input.style.width = '100%';
+        input.value = opts.value === undefined || opts.value === null ? '' : String(opts.value);
+        input.placeholder = opts.placeholder || '';
+        field.appendChild(input);
+
+        modal.querySelector('#ds-prompt-title').textContent = opts.title || 'Enter a value';
+        modal.querySelector('#ds-prompt-message').textContent = message === undefined || message === null ? '' : message;
+        modal.querySelector('.modal-footer [data-ds-prompt="cancel"]').textContent = opts.cancelLabel || 'Cancel';
+        const okBtn = modal.querySelector('[data-ds-prompt="ok"]');
+        okBtn.textContent = opts.confirmLabel || 'OK';
+        okBtn.className = 'btn ' + (opts.danger ? 'btn-danger' : 'btn-primary');
+        modal.classList.add('modal-open');
+        input.focus();
+        input.select();
+        return new Promise(resolve => {
+            let settled = false;
+            function done(ok) {
+                // modal-keys' Enter-to-primary and the input's own Enter can
+                // both land here for one keypress; only the first counts.
+                if (settled) return;
+                settled = true;
+                modal.classList.remove('modal-open');
+                modal.removeEventListener('click', onClick);
+                document.removeEventListener('keydown', onKey, true);
+                resolve(ok ? input.value : null);
+            }
+            function onClick(e) {
+                const act = e.target.closest('[data-ds-prompt]');
+                if (act) return done(act.getAttribute('data-ds-prompt') === 'ok');
+                if (e.target === modal) done(false);  // backdrop click
+            }
+            function onKey(e) {
+                if (e.key === 'Escape') { e.preventDefault(); done(false); }
+                else if (e.key === 'Enter' && e.target === input && !opts.multiline &&
+                         !e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                    e.preventDefault();
+                    done(true);
+                }
+            }
+            modal.addEventListener('click', onClick);
+            document.addEventListener('keydown', onKey, true);
+        });
+    };
+
     // Route Rails/Turbo data-turbo-confirm through the styled dialog. Turbo
     // (an importmap module) is loaded by DOMContentLoaded when present.
     document.addEventListener('DOMContentLoaded', () => {
@@ -235,6 +471,93 @@
     document.addEventListener('click', e => {
         const toast = e.target.closest && e.target.closest('.status-message');
         if (toast) toast.style.display = 'none';
+    });
+
+    // A toast with no markup to pre-place: showStatus() needs a div the page
+    // already rendered, this one makes its own (#ds-toast, reused). type is
+    // success | error | info | warning; everything but error clears itself
+    // after `ms` (default 3000), error waits for a click.
+    let toastTimer = null;
+    global.dsToast = function dsToast(message, type, ms) {
+        if (!document.body) return null;
+        let el = document.getElementById('ds-toast');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'ds-toast';
+            el.setAttribute('role', 'status');
+            el.setAttribute('aria-live', 'polite');
+            document.body.appendChild(el);
+        }
+        type = type || 'success';
+        el.textContent = message;
+        el.className = 'status-message status-' + type;
+        el.style.display = 'block';
+        clearTimeout(toastTimer);
+        if (type !== 'error') toastTimer = setTimeout(() => { el.style.display = 'none'; }, ms || 3000);
+        return el;
+    };
+
+    // Server-rendered flash: a success toast present when the page loads
+    // clears itself after 3s; errors stay until clicked or the next
+    // navigation. mealplanner, postings and upkeep each carried this as a
+    // layout one-liner — running both is harmless, each just hides the same
+    // element at the same moment.
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.status-message.status-success').forEach(el => {
+            // Only a toast that is actually showing. A hidden one is a page's
+            // own showStatus()/copy-status target and keeps its own timer.
+            if (el.id === 'ds-toast' || getComputedStyle(el).display === 'none') return;
+            setTimeout(() => { el.style.display = 'none'; }, 3000);
+        });
+    });
+
+    // ── Copy to clipboard ──────────────────────────────────────────────────
+    //   <button data-copy-text="the literal text">Copy</button>
+    //   <button data-copy-target="#mcp-url">Copy</button>
+    // data-copy-target takes a selector: a form field copies its value,
+    // anything else its trimmed text. Confirms with a toast ("Copied", or
+    // data-copy-label). The attribute is data-copy-text, not data-copy —
+    // mealplanner's settings page already uses data-copy="<element id>" with
+    // its own handler, and answering to that name would copy the id string.
+    function dsCopy(text) {
+        text = text === undefined || text === null ? '' : String(text);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text).then(() => true, () => legacyCopy(text));
+        }
+        return Promise.resolve(legacyCopy(text));
+    }
+    // dsCopy(text) → Promise<boolean>, for pages that copy from script.
+    global.dsCopy = dsCopy;
+    // navigator.clipboard needs a secure context; fall back so a copy button
+    // on plain http (local dev, LAN) is never a dead end.
+    function legacyCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+        ta.remove();
+        return ok;
+    }
+    document.addEventListener('click', e => {
+        const el = e.target.closest && e.target.closest('[data-copy-text], [data-copy-target]');
+        if (!el) return;
+        let text;
+        if (el.hasAttribute('data-copy-text')) {
+            text = el.getAttribute('data-copy-text');
+        } else {
+            let src = null;
+            try { src = document.querySelector(el.getAttribute('data-copy-target')); } catch (_) { /* bad selector */ }
+            if (!src) return;
+            text = 'value' in src && typeof src.value === 'string' ? src.value : (src.textContent || '').trim();
+        }
+        dsCopy(text).then(ok => {
+            global.dsToast(ok ? (el.getAttribute('data-copy-label') || 'Copied') : 'Copy failed', ok ? 'success' : 'error');
+        });
     });
 
     // v4.2 nav icons — Feather-style 24×24 outline set. Layouts write
