@@ -136,12 +136,15 @@ Always paired with `font-family: var(--font-mono); font-variant-numeric: tabular
 
 The app UI stays neutral. Each app picks **one** Radix accent for branding moments only:
 
-| App | Accent |
-|---|---|
-| Hub | `slate` (system default — neutral) |
-| Budgeter | `green` |
-| Fitness | `orange` |
-| Future apps | one Radix accent each, no repeats |
+| App | `data-app` | Accent |
+|---|---|---|
+| Base | `base` | `slate` (system default — neutral) |
+| Budgeter | `budgeter` | `green` |
+| Fitness | `fitness` | `orange` |
+| Meal Planner | `mealplanner` | `purple` |
+| Upkeep | `upkeep` | `blue` |
+| Postings | `postings` | `crimson` |
+| Future apps | — | one Radix accent each, no repeats |
 
 The brand color appears in: logo, favicon, empty-state illustration tint, onboarding pages, loading states — **and, since v4, in five chrome moments**: the primary button (`.btn-primary` → `--accent-500`), the active nav item (`--accent-soft` tinted bg; label stays `--text` since v4.2), the focus ring, text selection (`::selection`), and checked checkboxes/radios. Everything else in chrome stays neutral slate. The alpha tokens (`--accent-soft` = accent `a3`, `--accent-soft-hover` = `a4`) composite correctly on any surface and remap per app.
 
@@ -581,7 +584,7 @@ A page is a vertical list of `<div class="card">` sections. Each card has `style
 ```html
 <div class="card" style="margin-bottom:16px">
     <h3>Sentence case heading</h3>
-    <p class="stat-label">One-line description of what this section does.</p>
+    <p class="card-subtitle">One-line description of what this section does.</p>
     <!-- form fields, table, list, chart, etc. -->
     <div class="d-flex gap-2" style="margin-top:12px">
         <button class="btn btn-primary btn-sm">Primary action</button>
@@ -592,7 +595,7 @@ A page is a vertical list of `<div class="card">` sections. Each card has `style
 
 - **`<h3>`** for section titles (no `<h2>` inside cards — `<h2 class="page-title">` is reserved for the page header rendered by the layout).
 - **Sentence case** for headings, labels, and button text. "Backup & restore", not "Backup & Restore". Acronyms keep their case (CSV, ID, MCP, HRV).
-- **`<p class="stat-label">` description** below the heading. Explains what the section is for in one short sentence.
+- **`<p class="card-subtitle">` description** below the heading. Explains what the section is for in one short sentence. Never `.stat-label` here — that is the UPPERCASE micro-label for stat tiles and renders a sentence in caps.
 - **`.d-flex gap-2`** for action button rows; or `.toolbar` if there's a left/right split.
 
 ### Page subtitle (mono, dynamic)
@@ -673,6 +676,57 @@ if (!(await dsConfirm('Delete this goal?'))) return;
 ```
 
 Typed-confirmation flows (type RESTORE/DELETE to proceed) keep their bespoke modals.
+
+### Prompts — `dsPrompt()`, not `window.prompt()`
+
+`dsPrompt(message, opts) → Promise<string|null>` is the same dialog with one text field: the typed string on OK (`''` if left blank), `null` on cancel, Esc or a backdrop click — `window.prompt()`'s contract. `opts`: `title`, `value`, `placeholder`, `confirmLabel`, `cancelLabel`, `danger` (default **false**), `multiline`.
+
+```js
+const reason = await dsPrompt('Archive this session — why?', { title: 'Archive session', placeholder: 'e.g. accidental watch start', confirmLabel: 'Archive' });
+if (reason === null) return;
+```
+
+### Opening and closing modals
+
+A modal is open while it carries `modal-open`. `modal-keys.js` provides the verbs so pages stop writing `classList.add('modal-open')` by hand:
+
+```html
+<button class="btn btn-primary" onclick="openModal('goal-modal')">Add goal</button>
+
+<div id="goal-modal" class="modal" data-backdrop-close>
+  <div class="modal-box">
+    <div class="modal-header"><h3>Add goal</h3><button class="modal-close" data-modal-close>&times;</button></div>
+    …
+    <div class="modal-footer"><button class="btn btn-secondary" data-modal-close>Cancel</button><button class="btn btn-primary">Save</button></div>
+  </div>
+</div>
+```
+
+- `openModal(id)` / `closeModal(id)` take an id or the element, and fire a bubbling `modal:open` / `modal:close` event on the modal — hang form resets and chart teardown on `modal:close` rather than on each close button.
+- `data-modal-close` on any element closes the modal it sits in (or the one it names: `data-modal-close="other-modal"`).
+- `data-backdrop-close` on the `.modal` lets a click on the scrim close it. **Opt-in**: leave it off a form the user could lose work in.
+- Esc closes the topmost modal and Enter fires its `.btn-primary` — unchanged.
+
+### Shared helpers — use these, don't re-write them
+
+All globals from `shared-core.js`, loaded by every layout. Each of these existed as several private copies before 2026-11-05.
+
+| Need | Use | Not |
+|---|---|---|
+| Put a string into `innerHTML` | `escapeHtml(value)` — `null`/`undefined` → `''` | a page-local `escapeHtml` / `esc` |
+| Today, for a date input or an API param | `todayKey()` → `2026-11-05` | `new Date().toISOString().slice(0, 10)` — that is **UTC** and reads as tomorrow every evening |
+| A `Date` as a key | `dateKey(date)`, `monthKey(date)` | `toISOString().split('T')[0]` |
+| Prefill `<input type="datetime-local">` | `localDateTimeValue(date)` | `toISOString().slice(0, 16)` |
+| A token as a colour string (Chart.js, Leaflet) | `cssToken('green-9', '#30A46C')` | `getComputedStyle(…).getPropertyValue(…)` inline |
+| Call the app's JSON API | `apiRequest(url, options)` — sends the CSRF token on writes, passes `FormData` through, and the thrown error has `.status`, `.data`, `.serverMessage` | a hand-rolled `fetch` with an `X-CSRF-Token` header |
+| A date for display | `formatDate(d)` long, `formatDate(d, { short: true })` → `Jul 6, 2026`, `shortDate(d)` → `Jul 6` | a layout-level `formatDate` override |
+| A copy button | `data-copy-text="…"` or `data-copy-target="#field"` on the button (toast confirms; `data-copy-label` to change it). From script: `dsCopy(text)` | a per-page `navigator.clipboard` handler |
+| A toast with no pre-placed div | `dsToast('saved')`, `dsToast('sync failed', 'error')` | — (`showStatus(id, …)` is still right when the page owns a status div) |
+| A flash from the server | render `.status-message.status-success` / `.status-error`; success hides itself after 3s | a `setTimeout` one-liner in the layout |
+
+Two helpers take a per-app default, set once in the layout, for apps that want the other behaviour everywhere: `formatDate.defaults.short = true` (budgeter, fitness) and `apiRequest.defaults.serverErrorMessage = true` (fitness — `error.message` becomes the server's `error` text instead of `HTTP error! status: 422`).
+
+`goal-render.js` (base + fitness, beside `session-render.js`) exports `GoalRender.shortMonthDay`, `.parseGoalValue`, `.formatMinutes`, `.togglePlan`, `.toggleNotes` for the goal-detail screen the two apps share; its CSS is the **Goal pages** section of `design-system.css`.
 
 ### Card stacks — `.card-stack`
 
@@ -916,7 +970,7 @@ Drop this into your app's stylesheet to inherit the system. Pull Radix from `@ra
   --panel-active: var(--slate-5);
   --border:       var(--slate-6);
   --border-hover: var(--slate-7);
-  --focus-ring:   var(--accent-300);  /* per-app: indigo-7 default, green-7 budgeter, orange-7 fitness, slate-7 base */
+  --focus-ring:   var(--accent-300);  /* per-app: indigo-7 default, slate-7 base, green-7 budgeter, orange-7 fitness, purple-7 mealplanner, blue-7 upkeep, crimson-7 postings */
   --text:         var(--slate-12);
   --text-muted:   var(--slate-11);
   --text-faint:   var(--slate-10);

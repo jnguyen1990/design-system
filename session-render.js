@@ -1,6 +1,7 @@
 /* Universal session-card / vitals-chip renderer.
    Paired with the "Sessions, vitals & day-cards" section in design-system.css.
-   Loaded via CDN: https://cdn.jsdelivr.net/gh/jnguyen1990/design-system@<rev>/session-render.js
+   Loaded via CDN: https://design-system.joenguyen.ca/session-render.js
+   (base and fitness load it; the other apps have no session views.)
 
    Exposes a global `SessionRender` object with:
      - sessionCard({ id, type, title, meta, onClick, opacity, titleLen, done })

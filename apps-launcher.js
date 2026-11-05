@@ -172,7 +172,9 @@
   } else {
     init();
   }
-  // Turbo swaps <body> on navigation (mealplanner, postings), which discards
-  // the rendered dock — re-render on every Turbo visit. init() is idempotent.
+  // No app runs Turbo any more (all six are server-rendered with vanilla JS
+  // since 2026-09-10), so this never fires today. Kept because it costs
+  // nothing and a Turbo body swap would otherwise discard the rendered dock;
+  // init() is idempotent.
   document.addEventListener("turbo:load", init);
 })();
