@@ -4068,6 +4068,203 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
 .workout-title-cell:hover { color: var(--color-link); }
 
 /* ============================================================
+   Goal pages — the goal-detail screen base and fitness share
+   (paired with goal-render.js)
+   Lifted 2026-11-05 from the inline <style> blocks at the top of
+   base/app/views/pages/goal_detail.html.erb and
+   fitness/app/views/pages/goal_detail.html.erb, which carried
+   the same ~40 rules verbatim. Declarations are copied exactly,
+   so a page that still has its inline copy renders the same
+   with or without it.
+
+   Shared rules are unscoped (the class names exist nowhere else
+   in the six apps). Where the two apps differ, the difference is
+   scoped by [data-app]: base owns habits, fitness owns this
+   week's sessions and the details list. base's goal LIST rules
+   sit here too, scoped, beside the [data-app="fitness"] copies
+   in "Fitness components" — the two lists differ in column
+   count, hover surface and bar fill.
+
+   The older goal-detail CSS under "from pages/goal_detail.html.erb"
+   in Fitness components belongs to the previous stepper design.
+   Dead (no app references them): .stepper, .block-card, .bc-*,
+   .step-arrow, .blocks-head, .goal-meta, .recap / .rc-*,
+   .adh-row, .adh-label, .muted-dash. Left in place for a later
+   removal pass. Still live from that block: .adh-track,
+   .adh-fill and .adh-count (the plan rows below), and .gm-* /
+   .progress-* (fitness block_detail).
+   ============================================================ */
+
+/* Target band: goal progress left, rollup stats as segments right */
+.target-band { display: flex; gap: 24px; align-items: stretch; margin-bottom: 20px; flex-wrap: wrap; }
+.tb-goal { flex: 1.4; min-width: 300px; }
+.tb-goal .vals { display: flex; align-items: baseline; gap: 8px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; margin: 4px 0 10px; }
+.tb-goal .cur { color: var(--text-muted); font-size: 14px; }
+.tb-goal .tgt { font-size: 20px; font-weight: 600; }
+.tb-goal .arrow { color: var(--text-faint); }
+.tb-stat { flex: 1; min-width: 130px; padding-left: 24px; border-left: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+@media (max-width: 768px) { .tb-stat { border-left: none; padding-left: 0; } }
+
+/* Plan: vertical block list, rows expand in place */
+.plan-row { display: grid; grid-template-columns: 30px minmax(0,1.4fr) auto minmax(110px, 1fr) auto 16px; gap: 14px; align-items: center; padding: 13px 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.plan-item:last-child .plan-row { border-bottom: none; }
+.plan-row:hover { background: var(--panel-hover); }
+.plan-item.current .plan-row { box-shadow: inset 2px 0 0 var(--accent-500); }
+.plan-seq { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+.plan-name { font-weight: 500; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-item.done .plan-name { color: var(--text-muted); }
+.plan-chevron { color: var(--text-faint); transition: transform 160ms cubic-bezier(0.2, 0, 0, 1); }
+.plan-item.open .plan-chevron { transform: rotate(90deg); }
+.plan-expand { display: none; padding: 4px 16px 16px 60px; border-bottom: 1px solid var(--border); background: var(--panel); }
+.plan-item.open .plan-expand { display: block; }
+.plan-item:last-child .plan-expand { border-bottom: none; }
+.pe-grid { display: grid; grid-template-columns: minmax(0,1fr) 200px; gap: 20px; align-items: start; padding-top: 10px; }
+.pe-notes { font-size: 13px; line-height: 1.6; color: var(--text-muted); margin: 0 0 10px; }
+.pe-stat { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.pe-stat:last-of-type { border-bottom: none; }
+.pe-k { color: var(--text-muted); }
+.pe-v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; }
+.pe-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+/* Goal notes: clamped to five lines behind a "Show more" toggle
+   (GoalRender.toggleNotes). */
+.notes-text { margin: 0; line-height: 1.6; font-size: 13px; color: var(--text-muted); white-space: pre-line; }
+.notes-text.clamped { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.notes-toggle { background: none; border: none; padding: 0; margin-top: 4px; font-size: 12px; color: var(--text-faint); cursor: pointer; }
+.notes-toggle:hover { color: var(--text-muted); }
+
+.sess-day { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); text-transform: lowercase; }
+
+@media (max-width: 768px) {
+    .pe-grid { grid-template-columns: 1fr; }
+    .plan-row { grid-template-columns: 30px minmax(0,1fr) auto 16px; }
+    .plan-row .plan-adh-count, .plan-row .adh-track { display: none; }
+}
+
+/* base only — habits card (always-on vs block-scoped) */
+[data-app="base"] .habit-row { display: grid; grid-template-columns: 18px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--border); }
+[data-app="base"] .habit-row:last-child { border-bottom: none; }
+[data-app="base"] .habit-scope { padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 500; white-space: nowrap; }
+[data-app="base"] .habit-scope.always { background: var(--green-a3); color: var(--green-11); }
+[data-app="base"] .habit-scope.block { background: var(--accent-soft, var(--panel)); color: var(--accent-700); }
+
+/* fitness only — this week's sessions and the details list */
+[data-app="fitness"] .sess-row { display: grid; grid-template-columns: 20px 44px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+[data-app="fitness"] .sess-row:last-child { border-bottom: none; }
+[data-app="fitness"] .sess-done { color: var(--green-11); }
+[data-app="fitness"] .sess-pending { color: var(--text-faint); }
+[data-app="fitness"] .sess-detail { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+[data-app="fitness"] .dl-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+[data-app="fitness"] .dl-row:last-child { border-bottom: none; }
+[data-app="fitness"] .dl-k { color: var(--text-muted); }
+[data-app="fitness"] .dl-v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; }
+
+/* base only — the goal list (pages/goals). Same family as the
+   [data-app="fitness"] rules in Fitness components; base has one column
+   fewer, hovers on --bg-subtle and fills the bar with the accent. */
+[data-app="base"] .goal-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 0; flex-wrap: wrap; }
+[data-app="base"] .goal-tab { background: transparent; border: none; cursor: pointer; padding: 8px 12px; font-size: 13px; color: var(--text-muted); border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 6px; }
+[data-app="base"] .goal-tab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--accent-500); }
+[data-app="base"] .goal-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 160px 110px 100px 90px; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; color: inherit; text-decoration: none; }
+[data-app="base"] .goal-row:hover { background: var(--bg-subtle); }
+[data-app="base"] .goal-row .arrow { color: var(--text-faint); margin: 0 6px; }
+[data-app="base"] .goal-row .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+[data-app="base"] .goal-row .actions { display: flex; gap: 4px; justify-self: end; opacity: 0; transition: opacity 0.1s; }
+[data-app="base"] .goal-row:hover .actions { opacity: 1; }
+[data-app="base"] .goal-bar { height: 4px; border-radius: 2px; background: var(--bg-subtle); overflow: hidden; margin-bottom: 4px; }
+[data-app="base"] .goal-bar-fill { height: 100%; background: var(--accent-500); }
+@media (max-width: 768px) {
+    [data-app="base"] .goal-row { grid-template-columns: 16px minmax(0, 1fr) auto; row-gap: 6px; }
+    [data-app="base"] .goal-row .target-col, [data-app="base"] .goal-row .progress-col, [data-app="base"] .goal-row .days-col { grid-column: 2; }
+    [data-app="base"] .goal-row .status-col { grid-column: 3; grid-row: 1; }
+}
+
+/* ============================================================
+   Base components
+   Lifted 2026-11-05 from the inline <style> blocks in base's
+   reminders, today, jobs and archive views so those blocks can
+   be deleted. Declarations are copied exactly; the class names
+   are used by no other app, so the rules are unscoped.
+
+   Not carried over, because a design-system class already does
+   the job: `.rem-quick .kbd` → `.kbd`, `.tile-grid` →
+   `.auto-grid`, `.wm-meta` / `.wm-desc` → `.ws-meta` /
+   `.ws-desc`, and goal_detail's `.chip` → `.meta-chip`.
+   ============================================================ */
+
+/* --- from pages/reminders.html.erb --- */
+.rem-quick { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 18px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+.rem-quick:hover { border-color: var(--border-hover); }
+.rem-quick-text { flex: 1; font-size: 14px; color: var(--text-faint); }
+.rem-chips { display: flex; gap: 2px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.rem-chips .label { font-size: 11px; color: var(--text-muted); margin-right: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+.rem-group-h { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 4px; }
+.rem-group-h strong { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+.rem-group-h .count { font-size: 11px; color: var(--text-muted); }
+.rem-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto auto auto; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--border); }
+.rem-row:last-child { border-bottom: none; }
+.rem-row .check { width: 14px; height: 14px; border: 1px solid var(--border); border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; line-height: 1; cursor: pointer; }
+.rem-row .check.done { background: var(--green-9); border-color: var(--green-9); color: white; }
+.rem-row .check.overdue { border-color: var(--red-9); }
+.rem-row .text { font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rem-row .text.overdue { color: var(--red-11); }
+.rem-row .text.paused { color: var(--text-muted); }
+.rem-row .due { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-muted); min-width: 80px; text-align: right; }
+.rem-row .row-actions { opacity: 0; transition: opacity 0.1s; }
+.rem-row:hover .row-actions { opacity: 1; }
+@media (max-width: 768px) {
+    .rem-row { grid-template-columns: 18px minmax(0, 1fr) auto; row-gap: 4px; }
+    .rem-row .badge { grid-column: 2; }
+    .rem-row .due { grid-column: 3; }
+    .rem-row .row-actions { grid-column: 1 / -1; opacity: 1; }
+}
+
+/* --- from pages/today.html.erb --- page-local hooks only; the layout
+   itself comes from .detail-columns, .list-row, .stats-grid and .meter. */
+.sched .row-lead { text-align: right; }
+#week-list .wk-done input[type="text"] { color: var(--text-muted); text-decoration: line-through; }
+.hero-count-of { font-size: 18px; color: var(--text-muted); font-weight: var(--weight-medium); }
+.sleep-fig { display: flex; align-items: baseline; gap: 10px; }
+.sleep-fig .big { font-size: 26px; font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; }
+.sleep-times { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+.sleep-times input[type="time"] { width: 100%; min-width: 0; }
+@media (max-width: 480px) { .sleep-times { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+input#sleep-disruptions { box-sizing: border-box; max-width: 100%; }
+.wm-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+
+/* --- from pages/jobs.html.erb --- */
+.job-tile { cursor: pointer; }
+.job-tile:hover { border-color: var(--card-border-hover); }
+.job-tile .tile-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.job-tile .tile-name { font-size: var(--text-sm); font-weight: 600; flex: 1; }
+.job-tile .tile-when { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 11px; color: var(--text-faint); }
+.job-tile .tile-detail { font-size: 12px; color: var(--text-muted); line-height: 1.5; overflow-wrap: anywhere; }
+.job-tile .tile-sched { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); margin-top: 6px; }
+.cadence-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); margin: var(--space-4) 0 var(--space-2); }
+.cadence-label:first-of-type { margin-top: 0; }
+.job-meta-row { display: flex; gap: var(--space-5); font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: var(--space-4); flex-wrap: wrap; }
+.job-meta-row b { color: var(--text); font-weight: 500; }
+.run-log { background: var(--panel); border: 1px solid var(--border); border-radius: 7px; padding: 12px; font-family: var(--font-mono); font-size: 11px; line-height: 1.6; color: var(--text-muted); white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 6px; }
+.run-row-log td { border-bottom: none; padding-top: 0; }
+tr[data-log-toggle] { cursor: pointer; }
+
+/* --- from pages/archive.html.erb --- */
+.arch-day-row { display: grid; grid-template-columns: 100px minmax(0, 1fr) 280px; gap: 20px; padding: 18px 0; border-bottom: 1px solid var(--border); cursor: pointer; color: inherit; text-decoration: none; }
+.arch-day-row:hover { background: var(--bg-subtle); margin: 0 -16px; padding: 18px 16px; }
+.arch-day-row .date-col { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 500; }
+.arch-day-row .day-name { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.arch-day-row .score-pips { display: flex; gap: 4px; margin-top: 6px; }
+.arch-day-row .score-pips .pip { width: 6px; height: 6px; border-radius: 1px; background: var(--bg-subtle); }
+.arch-day-row .summary { font-size: 14px; line-height: 1.55; color: var(--text-muted); min-width: 0; }
+.arch-day-row .stats { display: flex; gap: 14px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-muted); align-items: flex-start; flex-wrap: wrap; }
+.arch-day-row .stat .label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+.arch-day-row .stat .value { font-size: 13px; color: var(--text); margin-top: 2px; }
+@media (max-width: 768px) {
+    .arch-day-row { grid-template-columns: 90px minmax(0, 1fr); }
+    .arch-day-row .stats { grid-column: 1 / -1; padding-top: 8px; }
+}
+
+/* ============================================================
    Budgeter components
    Consolidated 2026-09-11 from budgeter.css and four inline
    <style> blocks. budgeter.css was dead for the same reason
