@@ -588,9 +588,8 @@ repo’s JS):
 Same pass: `.dash-side-by-side` now carries its own desktop grid (`1fr 380px`,
 one column at 768px and below) so the fitness dashboard needs no inline style, and
 the identical `.goal-tabs` / `.goal-tab` rules for fitness and base are one pair,
-still scoped to those two apps. `.theme-toggle*` is still in the stylesheet
-only because `rails-app-template` uses it; it goes when the template moves to
-the dock.
+still scoped to those two apps. `.theme-toggle*` was removed on 2026-11-06 once
+`rails-app-template` moved to the dock; the app dock renders the theme button.
 
 ---
 

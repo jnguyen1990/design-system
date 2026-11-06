@@ -3232,56 +3232,6 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     background: var(--bg);
 }
 
-/* ============================================================
-   Theme toggle — small icon button
-   ============================================================ */
-.theme-toggle {
-    position: fixed;
-    bottom: var(--space-4);
-    right: var(--space-4);
-    z-index: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-    transition: background var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast);
-}
-
-.theme-toggle:hover {
-    background: var(--panel-hover);
-    border-color: var(--border-hover);
-    color: var(--text);
-}
-
-/* Sidebar-footer docked variant — overrides the default fixed FAB. Use
-   inside .sidebar-footer alongside the apps' nav. The .theme-toggle-label
-   span renders the word "theme" next to the icon. */
-.theme-toggle.theme-toggle--inline {
-    position: static;
-    width: 100%;
-    height: 32px;
-    padding: 0 var(--space-3);
-    justify-content: flex-start;
-    gap: var(--space-2);
-    background: transparent;
-    border-color: transparent;
-}
-.theme-toggle.theme-toggle--inline:hover {
-    background: var(--panel);
-    border-color: transparent;
-    color: var(--text);
-}
-.theme-toggle.theme-toggle--inline .theme-toggle-label {
-    font-weight: var(--weight-medium);
-}
-
 /* Sidebar kbd hints — right-aligned ⌘N marker inside a .nav-link.
    Fades on rest, full opacity on hover. */
 .nav-link .nav-kbd { margin-left: auto; opacity: 0.7; }
