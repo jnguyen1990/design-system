@@ -1794,24 +1794,6 @@
     --gradient-accent-subtle: var(--slate-3);
 }
 
-/* Hub — slate fallback (legacy alias for base) */
-[data-app="hub"] {
-    --accent-soft:       var(--slate-a3);
-    --accent-soft-hover: var(--slate-a4);
-    --accent-text:       var(--slate-11);
-    --accent-50:  var(--slate-3);
-    --accent-100: var(--slate-4);
-    --accent-300: var(--slate-7);
-    --accent-400: var(--slate-8);
-    --accent-500: var(--slate-9);
-    --accent-600: var(--slate-10);
-    --accent-700: var(--slate-11);
-    --color-primary: var(--slate-9);
-    --gradient-accent:        var(--slate-9);
-    --gradient-accent-hover:  var(--slate-10);
-    --gradient-accent-subtle: var(--slate-3);
-}
-
 /* Budgeter — green */
 [data-app="budgeter"] {
     --accent-soft:       var(--green-a3);
@@ -1846,42 +1828,6 @@
     --gradient-accent:        var(--orange-9);
     --gradient-accent-hover:  var(--orange-10);
     --gradient-accent-subtle: var(--orange-3);
-}
-
-/* Health — legacy alias maps to red */
-[data-app="health"] {
-    --accent-soft:       var(--red-a3);
-    --accent-soft-hover: var(--red-a4);
-    --accent-text:       var(--red-11);
-    --accent-50:  var(--red-3);
-    --accent-100: var(--red-4);
-    --accent-300: var(--red-7);
-    --accent-400: var(--red-8);
-    --accent-500: var(--red-9);
-    --accent-600: var(--red-10);
-    --accent-700: var(--red-11);
-    --color-primary: var(--red-9);
-    --gradient-accent:        var(--red-9);
-    --gradient-accent-hover:  var(--red-10);
-    --gradient-accent-subtle: var(--red-3);
-}
-
-/* Meals — legacy alias maps to green */
-[data-app="meals"] {
-    --accent-soft:       var(--green-a3);
-    --accent-soft-hover: var(--green-a4);
-    --accent-text:       var(--green-11);
-    --accent-50:  var(--green-3);
-    --accent-100: var(--green-4);
-    --accent-300: var(--green-7);
-    --accent-400: var(--green-8);
-    --accent-500: var(--green-9);
-    --accent-600: var(--green-10);
-    --accent-700: var(--green-11);
-    --color-primary: var(--green-9);
-    --gradient-accent:        var(--green-9);
-    --gradient-accent-hover:  var(--green-10);
-    --gradient-accent-subtle: var(--green-3);
 }
 
 /* Mealplanner — purple */
