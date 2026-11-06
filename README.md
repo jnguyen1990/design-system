@@ -66,10 +66,10 @@ All six are server-rendered ERB with vanilla JS (no Turbo, no Stimulus) and load
 ## Features
 
 - Light/dark theme toggle via `data-theme` attribute (both first-class)
-- Radix Colors paired light/dark scales — semantic tokens (`--bg`, `--panel`, `--border`, `--text`, `--{color}-{1..12}`)
+- Radix Colors paired light/dark scales, inlined in the stylesheet (`@radix-ui/colors@3.0.0`, no CDN request) — semantic tokens (`--bg`, `--panel`, `--border`, `--text`, `--{color}-{1..12}`)
 - Per-app accent via `data-app` attribute
 - Responsive sidebar layout with mobile menu
-- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`, `.app-card`, `.insight-card`, `.dropdown`, `.toolbar`, `.table-responsive`, `.card-stack`, `.danger-zone`, `.row-actions`, `.filter-chip`
+- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`, `.insight-card`, `.dropdown`, `.toolbar`, `.table-responsive`, `.card-stack`, `.danger-zone`, `.row-actions`, `.filter-chip`
 - `dsConfirm(message, opts)` in shared-core.js — styled Promise-based confirm; auto-wired into `data-turbo-confirm`. New code never calls native `confirm()`; `dsPrompt(message, opts)` is its sibling for native `prompt()`
 - Session/calendar widgets: `.session-card` (with `.session-type-*` color variants), `.session-done` indicator, `.sleep-chip`, `.vitals-chip`, `.vitals-modal-grid`, `.session-done-mark` — all driven by [`session-render.js`](session-render.js)
 - Goal-detail screen (base + fitness): `.target-band`, `.plan-row` / `.plan-item` / `.plan-expand`, `.pe-*`, `.notes-text` — the **Goal pages** section of the stylesheet, driven by [`goal-render.js`](goal-render.js)
@@ -96,12 +96,14 @@ Everything below is a global from `shared-core.js` unless noted. Use these inste
 | `dsCopy(text)` | Copies to the clipboard → `Promise<boolean>`. |
 | `[data-copy-text="…"]`, `[data-copy-target="<selector>"]` | Markup-only copy button: copies the literal text, or the target's value/text, and toasts "Copied" (`data-copy-label` to change it). |
 | Flash auto-dismiss | A `.status-message.status-success` visible at page load hides after 3s; errors stay. No layout script needed. |
-| `openModal(id)`, `closeModal(id)` *(modal-keys.js)* | Add/remove `modal-open`; fire `modal:open` / `modal:close` on the modal. |
+| `openModal(id)`, `closeModal(id)` *(modal-keys.js)* | Add/remove `modal-open`; fire `modal:open` / `modal:close` on the modal. Esc closes the topmost modal through the same path, so `modal:close` fires for it too. |
 | `[data-modal-close]` *(modal-keys.js)* | Closes the modal it sits in, or the one it names. |
 | `.modal[data-backdrop-close]` *(modal-keys.js)* | Opt-in: a click on the scrim closes the modal. |
 | `GoalRender.*` *(goal-render.js)* | `shortMonthDay`, `parseGoalValue`, `formatMinutes`, `togglePlan`, `toggleNotes`. |
 | `SessionRender.*` *(session-render.js)* | Session cards, vitals chip, plan tables — see the file header. |
-| `installNavHotkeys`, `initSettingsPanes`, `installFilterTags`, `enhanceFileInputs`, `toggleTheme` | See the header of [`shared-core.js`](shared-core.js). |
+| `installFilterTags(el, opts)` | The list-page filter bar: a committed term becomes a tag. The "+ Filter" button passed as `builderButton` takes `class="btn btn-secondary btn-sm filter-tags-add"` — no inline height. A text or enum field can set `exact: true`. |
+| `filterTagsMatch(row, tags, get)` | Client-side matcher for pages that hold their own rows. Strings match as substrings, except fields declared `exact: true` (`type:running` then no longer matches `indoor_running`). |
+| `installNavHotkeys`, `initSettingsPanes`, `enhanceFileInputs`, `toggleTheme` | See the header of [`shared-core.js`](shared-core.js). |
 
 ## Page conventions
 
@@ -109,7 +111,7 @@ Apps that share this system also share a set of layout/markup/copy conventions s
 
 - Stack of `<div class="card" style="margin-bottom:16px">` sections — never `1rem`/`1.5rem`/`12px`/`20px`
 - Each section: `<h3>` (sentence case) + `<p class="card-subtitle">` description + content + `.toolbar` action row. `.card-subtitle` is the class for muted description copy; `.stat-label` is only the UPPERCASE micro-label on stat tiles
-- Buttons: only `btn-primary` / `btn-secondary` / `btn-ghost` / `btn-danger` — never `btn-success`/`btn-error`
+- Buttons: only `btn-primary` / `btn-secondary` / `btn-ghost` / `btn-danger`. `btn-success`, `btn-error` and `btn-cta` no longer exist in the stylesheet
 - Modal actions: always in `.modal-footer` (right-aligned, plain `btn`), affirmative action rightmost, cancel to its left, destructive far-left via `margin-right:auto`; in-card rows are the mirror (primary first, left, `btn-sm`)
 - Row/chip/field remove `×` inside an uncommitted form: `btn-ghost`, no confirm; `btn-danger` = persisted destruction, always confirmed
 - Numbers: mono + tabular-nums; `var(--red-11)` for outflow, `var(--green-11)` for inflow; unicode minus `−` not hyphen
@@ -162,8 +164,9 @@ document.documentElement.scrollWidth === document.documentElement.clientWidth
 
 4. **Grids must collapse on mobile.** Any `grid-template-columns` of 3+
    fixed columns needs a `@media (max-width: 768px)` rule that drops to
-   1–2 columns. The design system already handles `.stats-grid` and
-   `.app-grid`; app-specific grids are the app's responsibility.
+   1–2 columns. The design system already handles `.stats-grid`,
+   `.auto-grid` and `.dash-side-by-side`; app-specific grids are the
+   app's responsibility.
 
 5. **Calendar / month-grid views → switch to a week list on mobile.**
    A 7-column grid squeezed into 375px produces unreadable cells. Fitness

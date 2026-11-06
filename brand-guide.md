@@ -1,6 +1,6 @@
 # Joe's Personal Apps — Brand & Design System
 
-A unified design language for personal self-hosted apps (Hub, Budgeter, Fitness, and future projects). Optimized for the Linear-meets-Things-3 aesthetic: sharp and precise, with breathing room.
+A unified design language for personal self-hosted apps (Base, Budgeter, Fitness, Meal Planner, Upkeep, Postings, and future projects). Optimized for the Linear-meets-Things-3 aesthetic: sharp and precise, with breathing room.
 
 ---
 
@@ -59,6 +59,8 @@ Apps feel like considered tools with product polish. Linear's edge, Things 3's s
 ### Foundation: Radix Colors
 
 Use **Radix Colors** as the source of truth. 12-step scales, paired light + dark, accessible by step.
+
+The scales are **inlined at the top of `design-system.css`** — the verbatim contents of `@radix-ui/colors@3.0.0`, one commented block per source file — so the stylesheet makes no colour requests to a CDN. To upgrade, replace each block with the same file from the new version. The dark scales gate on the `.dark` class alone, which is why a static page that does not load `shared-core.js` needs `class="dark"` as well as `data-theme="dark"` on `<html>`.
 
 Step intent (memorize):
 ```
@@ -145,6 +147,8 @@ The app UI stays neutral. Each app picks **one** Radix accent for branding momen
 | Upkeep | `upkeep` | `blue` |
 | Postings | `postings` | `crimson` |
 | Future apps | — | one Radix accent each, no repeats |
+
+Those six are the only `data-app` values the stylesheet defines. The legacy aliases `hub`, `health` and `meals` were removed 2026-11-05.
 
 The brand color appears in: logo, favicon, empty-state illustration tint, onboarding pages, loading states — **and, since v4, in five chrome moments**: the primary button (`.btn-primary` → `--accent-500`), the active nav item (`--accent-soft` tinted bg; label stays `--text` since v4.2), the focus ring, text selection (`::selection`), and checked checkboxes/radios. Everything else in chrome stays neutral slate. The alpha tokens (`--accent-soft` = accent `a3`, `--accent-soft-hover` = `a4`) composite correctly on any surface and remap per app.
 
@@ -460,6 +464,7 @@ Use `.status-message` plus a variant (`.status-success`, `.status-error`, `.stat
 - **Don't toast on every save.** Silent success is fine for the common path; toast only when the action isn't otherwise visible (e.g. a save with no inline state change). Errors always toast.
 - Copy: name the outcome, not the reaction. `saved`, `deleted`, `sync failed`, `amount required`. Never `Successfully saved!` or `Oops!`.
 - One toast at a time per page — reuse a single `<div class="status-message">` element and update its text/class.
+- **Toasts sit above modals** (`z-index: 300` over `.modal`'s 200), so a validation message raised while a modal is open reads at full strength over the scrim and can be clicked away. This holds over the `dsConfirm` / `dsPrompt` dialogs too: the toast is pinned to the bottom edge, the dialog box is centred.
 
 ```html
 <!-- canonical markup; lives once per page, toggled by showStatus() -->
@@ -563,6 +568,30 @@ Mealplanner's domain components (`.r-card`, `.nutri-grid`/`.n-day`,
 verbatim into a **Mealplanner components** section, beside the app-scoped
 families this file already owned (`.cal-*`, `.meter`, `.session-type-*`).
 
+#### Removed 2026-11-05 — do not reintroduce
+
+A second pass, after the apps were swept onto the shared helpers, deleted what
+nothing referenced any more (checked by grep over all six `app/` trees and this
+repo’s JS):
+
+| Removed | Use instead |
+|---|---|
+| `updateThemeIcon()` and the `#theme-icon` sync in `shared-core.js` | nothing — the apps dock draws the theme glyph; `toggleTheme()` is unchanged |
+| `[data-app="hub"]`, `[data-app="health"]`, `[data-app="meals"]` | `base`, and the six real `data-app` values |
+| `.btn-success`, `.btn-error`, `.btn-cta` | `.btn-primary`, `.btn-danger`, `.btn-primary` |
+| `.app-grid`, `.app-card*`, `[data-app-color]` | the apps dock; `.auto-grid` + `.card.card-link` for a grid of linked cards |
+| `.category-group-card`, `.category-list`, `.category-item`, `.category-*` | `.card`, `.list-rows` / `.list-row`, `.color-dot` |
+| `.nav-submenu` | `.submenu` inside the nav `<li>` (the wrapper class did nothing a plain `<li>` does not) |
+| `.copy-btn.ok` | the "Copied" toast from `data-copy-text` / `data-copy-target` |
+| Fitness’s stepper-era goal detail: `.stepper`, `.block-card*`, `.step-arrow`, `.bc-*`, `.blocks-head`, `.goal-meta`, `.goal-notes`, `.recap` / `.rc-*`, `.adh-row`, `.adh-label`, `.muted-dash` | the **Goal pages** section (`.target-band`, `.plan-*`); `.adh-track` / `.adh-fill` / `.adh-count`, `.gm-label` / `.gm-val` and `.progress-*` are still live |
+
+Same pass: `.dash-side-by-side` now carries its own desktop grid (`1fr 380px`,
+one column at 768px and below) so the fitness dashboard needs no inline style, and
+the identical `.goal-tabs` / `.goal-tab` rules for fitness and base are one pair,
+still scoped to those two apps. `.theme-toggle*` is still in the stylesheet
+only because `rails-app-template` uses it; it goes when the template moves to
+the dock.
+
 ---
 
 ## 12. Light ↔ dark parity
@@ -637,7 +666,7 @@ Only these:
 | `btn-ghost` | Icon-only or text-only affordances inside dense rows (⋮, ×). |
 | `btn-danger` | Destructive (delete, wipe, remove). Always paired with a confirm dialog. |
 
-**Forbidden:** `btn-success`, `btn-error`, `btn-warning`, `btn-info`. Color a button by intent (`btn-primary` for "go", `btn-danger` for destructive), not by mood.
+**Forbidden:** `btn-success`, `btn-error`, `btn-warning`, `btn-info`, `btn-cta` — none of them exist in the stylesheet (the last three legacy rules were removed 2026-11-05). Color a button by intent (`btn-primary` for "go", `btn-danger` for destructive), not by mood.
 
 **Sizes:** `btn-sm` for in-card and table-row actions. Plain `btn` for stand-alone primary CTAs at the page level and for modal footers. Pick one size per row and stick with it — never mix `btn` and `btn-sm` in the same action group.
 
@@ -705,7 +734,7 @@ A modal is open while it carries `modal-open`. `modal-keys.js` provides the verb
 - `openModal(id)` / `closeModal(id)` take an id or the element, and fire a bubbling `modal:open` / `modal:close` event on the modal — hang form resets and chart teardown on `modal:close` rather than on each close button.
 - `data-modal-close` on any element closes the modal it sits in (or the one it names: `data-modal-close="other-modal"`).
 - `data-backdrop-close` on the `.modal` lets a click on the scrim close it. **Opt-in**: leave it off a form the user could lose work in.
-- Esc closes the topmost modal and Enter fires its `.btn-primary` — unchanged.
+- Esc closes the topmost modal through the same path as `closeModal()`, so `modal:close` fires and close-cleanup runs however the modal was dismissed. Enter fires its `.btn-primary`.
 
 ### Shared helpers — use these, don't re-write them
 
@@ -743,6 +772,27 @@ The action cluster at the end of a table/list row is `<span class="row-actions">
 ### Filter chips — `.filter-chip`
 
 Toggle-state filters (status tabs, category filters) are `.filter-chip` elements (`<a>` or `<button>`) with `.active` on the current one — not `btn-secondary` rows. Buttons stay for one-shot actions.
+
+### Filter bar — `installFilterTags`
+
+A list page's search-and-filter field, where each committed term becomes a tag. The field is built by `installFilterTags(el, opts)`; the page writes only the mount point, the "+ Filter" button and the error line:
+
+```html
+<div class="toolbar" style="align-items: flex-start;">
+  <div id="goal-filters"></div>
+  <button type="button" id="goal-add-filter" class="btn btn-secondary btn-sm filter-tags-add">+ Filter</button>
+</div>
+<div class="filter-tags-error" id="goal-filter-error"></div>
+```
+
+- **`.filter-tags-add`** on the builder button makes it the field's height (36px) whatever `.btn` size it carries. Never `style="height:36px"`. `installFilterTags` adds the class to its `builderButton` as well, but write it in the markup so the button does not grow on load.
+- **`exact: true`** on a text or enum field makes `filterTagsMatch` compare the whole value rather than a substring — use it for enums whose values contain one another (`running` / `indoor_running`):
+
+  ```js
+  fields: { type: { type: 'enum', values: TYPES, exact: true }, keyword: { type: 'text' } }
+  ```
+
+  Fields without it match as substrings, as before. Array values (tags on a record) always match by element. Server-backed pages (`opts.navigate`) are unaffected — their controller does the matching.
 
 ### Forbidden color tokens
 
@@ -848,7 +898,7 @@ The brand says no emoji. The exceptions — characters that read as **functional
 | `×` (`&times;`) | modal close |
 | `←` `→` (`&larr;` `&rarr;`) | nav prev/next, or `‹` `›` for compact toolbars |
 | `☰` (`&#9776;`) | mobile menu toggle |
-| `☀` `☽` `🌙` | theme toggle (either moon form) |
+| `☀` `☽` | theme toggle — drawn by the apps dock (`apps-launcher.js`); pages never render their own |
 | `★` `☆` (`&#9733;` `&#9734;` `&#11088;`) | rating UI |
 | `−` (`&#8722;`) | negative-amount sign (paired with `+`) |
 | `·` `–` | typographic separators in mono meta lines |
@@ -927,7 +977,7 @@ Cross-app shared widgets — paired with `session-render.js` and the `.session-c
 
 ## Appendix: token import (CSS)
 
-Drop this into your app's stylesheet to inherit the system. Pull Radix from `@radix-ui/colors` or via CDN.
+For a project that cannot link `design-system.css`. Pull Radix from the `@radix-ui/colors` package. (`design-system.css` itself no longer `@import`s these — it inlines version 3.0.0; see §3.)
 
 ```css
 @import "@radix-ui/colors/slate.css";
