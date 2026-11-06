@@ -2369,12 +2369,6 @@ label {
     font-weight: var(--weight-semibold);
 }
 
-/* Wrapper for parent nav items with a submenu */
-.nav-submenu {
-    display: flex;
-    flex-direction: column;
-}
-
 /* ============================================================
    Cards — v4: elevated surface on the tinted page. Soft two-layer
    shadow at rest; hover still only shifts the border, no lift.
@@ -2520,25 +2514,6 @@ label {
     background: var(--panel-active);
 }
 
-.btn-success {
-    background: var(--green-9);
-    color: #fff;
-    border-color: var(--green-10);
-    box-shadow: var(--shadow-inner), var(--shadow-press);
-}
-
-.btn-success:hover:not(:disabled) {
-    background: var(--green-10);
-    border-color: var(--green-10);
-    color: #fff;
-}
-
-.btn-success:active:not(:disabled) {
-    background: var(--green-11);
-    border-color: var(--green-11);
-}
-
-.btn-error,
 .btn-danger {
     background: var(--red-9);
     color: #fff;
@@ -2546,14 +2521,12 @@ label {
     box-shadow: var(--shadow-inner), var(--shadow-press);
 }
 
-.btn-error:hover:not(:disabled),
 .btn-danger:hover:not(:disabled) {
     background: var(--red-10);
     border-color: var(--red-10);
     color: #fff;
 }
 
-.btn-error:active:not(:disabled),
 .btn-danger:active:not(:disabled) {
     background: var(--red-11);
     border-color: var(--red-11);
@@ -2569,31 +2542,6 @@ label {
     background: var(--panel);
     color: var(--text);
     border-color: transparent;
-}
-
-/* CTA = primary at lg size — no glow, no lift */
-.btn-cta {
-    height: var(--control-h-lg);
-    padding: 0 16px;
-    font-size: var(--text-base);
-    font-weight: var(--weight-semibold);
-    background: var(--accent-500);
-    color: #fff;
-    border: 1px solid var(--accent-600);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-inner), var(--shadow-press);
-    letter-spacing: -0.01em;
-}
-
-.btn-cta:hover:not(:disabled) {
-    background: var(--accent-600);
-    border-color: var(--accent-600);
-    color: #fff;
-}
-
-.btn-cta:active:not(:disabled) {
-    background: var(--accent-700);
-    border-color: var(--accent-700);
 }
 
 /* ============================================================
@@ -3424,72 +3372,6 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 }
 
 /* ============================================================
-   App cards (base hub) — flat slate, optional 2px top accent
-   ============================================================ */
-.app-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: var(--space-4);
-}
-
-.app-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-6);
-    text-decoration: none;
-    color: var(--text);
-    box-shadow: var(--shadow-card);
-    transition: border-color var(--motion-fast);
-}
-
-.app-card:hover {
-    border-color: var(--card-border-hover);
-}
-
-.app-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.app-card-icon {
-    font-size: 1.5rem;
-    line-height: 1;
-}
-
-.app-card-name {
-    font-size: var(--text-lg);
-    font-weight: var(--weight-semibold);
-    color: var(--text);
-    letter-spacing: -0.01em;
-}
-
-.app-card-desc {
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-    line-height: var(--lh-body);
-    flex: 1;
-}
-
-.app-card-footer {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-1);
-}
-
-/* Per-app accent: 2px top border in the matching Radix-9 color */
-.app-card[data-app-color="blue"]   { border-top: 2px solid var(--blue-9); }
-.app-card[data-app-color="red"]    { border-top: 2px solid var(--red-9); }
-.app-card[data-app-color="green"]  { border-top: 2px solid var(--green-9); }
-.app-card[data-app-color="orange"] { border-top: 2px solid var(--orange-9); }
-.app-card[data-app-color="purple"] { border-top: 2px solid var(--purple-9); }
-
-/* ============================================================
    Status dot — small online/offline indicator
    ============================================================ */
 .status-dot {
@@ -3584,95 +3466,6 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     border-color: var(--teal-6);
     border-left-color: var(--teal-9);
     color: var(--teal-11);
-}
-
-/* ============================================================
-   Categories (budgeter settings)
-   ============================================================ */
-.category-group-card {
-    position: relative;
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    box-shadow: var(--shadow-card);
-    transition: border-color var(--motion-fast);
-}
-
-.category-group-card:hover {
-    border-color: var(--card-border-hover);
-}
-
-.category-group-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-3);
-}
-
-.category-group-title {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    color: var(--text-muted);
-    letter-spacing: 0;
-    text-transform: none;
-}
-
-.category-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-}
-
-.category-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    height: 32px;
-    padding: 6px 12px;
-    border-radius: var(--radius-sm);
-    transition: background var(--motion-fast);
-}
-
-.category-item:hover {
-    background: var(--panel);
-}
-
-.category-color-dot,
-.category-color {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: var(--radius-full);
-    flex-shrink: 0;
-}
-
-.category-name {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    color: var(--text);
-}
-
-.category-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    flex: 1;
-    min-width: 0;
-}
-
-.category-keywords {
-    font-size: var(--text-xs);
-    color: var(--text-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.category-actions {
-    display: flex;
-    gap: var(--space-2);
-    flex-shrink: 0;
 }
 
 /* ============================================================
@@ -4281,12 +4074,6 @@ a.meta-chip:hover {
     top: 8px;
     right: 8px;
     z-index: 1;
-}
-
-.copy-btn.ok {
-    color: var(--green-11);
-    border-color: var(--green-6);
-    background: var(--green-3);
 }
 
 /* ── Prose ────────────────────────────────────────────────────
