@@ -3572,7 +3572,12 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     bottom: var(--space-6);
     left: 50%;
     transform: translateX(-50%);
-    z-index: 100;
+    /* Above .modal (200): a validation message raised while a modal is open
+       has to sit over the scrim, where it reads at full strength and can be
+       clicked away. That includes the dsConfirm / dsPrompt dialogs, which are
+       .modal too — the toast is pinned to the bottom edge and the dialog box
+       is centred, so it clears the box rather than covering it. */
+    z-index: 300;
     max-width: calc(100vw - var(--space-8));
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border);
