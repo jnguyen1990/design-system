@@ -17,7 +17,8 @@
      the backdrop (dragging a text selection) does not count.
 
    - ESC: closes the topmost open `.modal.modal-open` (most recently opened
-     wins if multiple are stacked).
+     wins if multiple are stacked) through the same path as closeModal(), so
+     it fires `modal:close` too.
    - Enter: clicks the topmost open modal's primary action (.btn-primary).
      Skipped inside <textarea>, <select>, contenteditable, or when Shift /
      Cmd / Ctrl / Alt are held — so newlines, multi-select, and OS shortcuts
@@ -77,7 +78,9 @@
         if (!modal) return;
 
         if (e.key === 'Escape') {
-            modal.classList.remove('modal-open');
+            // Same path as closeModal(), so `modal:close` fires and a page's
+            // close-cleanup listener runs however the modal was dismissed.
+            setOpen(modal, false);
             // Defensive: some opener code sets body.overflow:hidden as a scroll
             // lock and forgets to reset on close. If no modals remain open,
             // restore body scroll so the page isn't stuck.
