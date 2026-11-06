@@ -5494,9 +5494,9 @@ a.bc-name:hover { color: var(--accent-700); text-decoration: underline; }
 }
 
 /* --- from pages/goals.html.erb --- */
-[data-app="fitness"] .goal-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 0; flex-wrap: wrap; }
-[data-app="fitness"] .goal-tab { background: transparent; border: none; cursor: pointer; padding: 8px 12px; font-size: 13px; color: var(--text-muted); border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 6px; }
-[data-app="fitness"] .goal-tab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--accent-500); }
+[data-app="fitness"] .goal-tabs, [data-app="base"] .goal-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 0; flex-wrap: wrap; }
+[data-app="fitness"] .goal-tab, [data-app="base"] .goal-tab { background: transparent; border: none; cursor: pointer; padding: 8px 12px; font-size: 13px; color: var(--text-muted); border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 6px; }
+[data-app="fitness"] .goal-tab.active, [data-app="base"] .goal-tab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--accent-500); }
 [data-app="fitness"] .goal-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 160px 110px 100px 90px 56px; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; color: inherit; text-decoration: none; }
 [data-app="fitness"] .goal-row:hover { background: var(--panel-hover); }
 [data-app="fitness"] .goal-row .arrow { color: var(--text-faint); margin: 0 6px; }
@@ -5543,16 +5543,13 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
    week's sessions and the details list. base's goal LIST rules
    sit here too, scoped, beside the [data-app="fitness"] copies
    in "Fitness components" — the two lists differ in column
-   count, hover surface and bar fill.
+   count, hover surface and bar fill. Their category tabs
+   (.goal-tabs / .goal-tab) are identical and are one pair of
+   rules there, scoped to both apps.
 
-   The older goal-detail CSS under "from pages/goal_detail.html.erb"
-   in Fitness components belongs to the previous stepper design.
-   Dead (no app references them): .stepper, .block-card, .bc-*,
-   .step-arrow, .blocks-head, .goal-meta, .recap / .rc-*,
-   .adh-row, .adh-label, .muted-dash. Left in place for a later
-   removal pass. Still live from that block: .adh-track,
-   .adh-fill and .adh-count (the plan rows below), and .gm-* /
-   .progress-* (fitness block_detail).
+   .adh-track, .adh-fill and .adh-count (the plan rows below)
+   live under "from pages/goal_detail.html.erb" in Fitness
+   components, with .gm-* / .progress-* (fitness block_detail).
    ============================================================ */
 
 /* Target band: goal progress left, rollup stats as segments right */
@@ -5621,10 +5618,8 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
 
 /* base only — the goal list (pages/goals). Same family as the
    [data-app="fitness"] rules in Fitness components; base has one column
-   fewer, hovers on --bg-subtle and fills the bar with the accent. */
-[data-app="base"] .goal-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 0; flex-wrap: wrap; }
-[data-app="base"] .goal-tab { background: transparent; border: none; cursor: pointer; padding: 8px 12px; font-size: 13px; color: var(--text-muted); border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 6px; }
-[data-app="base"] .goal-tab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--accent-500); }
+   fewer, hovers on --bg-subtle and fills the bar with the accent. The
+   .goal-tabs / .goal-tab rules are shared and live with fitness's. */
 [data-app="base"] .goal-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 160px 110px 100px 90px; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; color: inherit; text-decoration: none; }
 [data-app="base"] .goal-row:hover { background: var(--bg-subtle); }
 [data-app="base"] .goal-row .arrow { color: var(--text-faint); margin: 0 6px; }
