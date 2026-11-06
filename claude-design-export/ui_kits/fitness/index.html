@@ -1,12 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" class="dark" data-app="fitness" data-theme="dark">
+<!-- No theme class or data-theme here, same as the app layouts: shared-core.js
+     sets both from localStorage before first paint (dark by default). A static
+     class="dark" would stay behind when the saved theme is light. -->
+<html lang="en" data-app="fitness">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>This week · Fitness</title>
+  <!-- Same head as the app's layout: stylesheet, then shared-core (boots the
+       saved theme before first paint), modal-keys, and the deferred apps dock. -->
   <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
   <script src="https://design-system.joenguyen.ca/shared-core.js"></script>
-    <style>
+  <script src="https://design-system.joenguyen.ca/session-render.js"></script>
+  <script src="https://design-system.joenguyen.ca/goal-render.js"></script>
+  <script src="https://design-system.joenguyen.ca/modal-keys.js"></script>
+  <script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+  <style>
     /* Page-local: weekly calendar grid */
     .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-2); }
     .day-col {
@@ -46,38 +55,74 @@
   <div class="mobile-overlay" id="mobileOverlay"></div>
 
   <nav class="sidebar">
-    <div class="sidebar-header"><h1>Fitness</h1></div>
-    <ul class="nav-menu">
-      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="grid"></span>Dashboard</a></li>
-      <li class="nav-submenu">
-        <div class="nav-link active"><span class="nav-ico" data-ico="barbell"></span>Training</div>
-        <ul class="submenu">
-          <li><a href="#" class="nav-link active">Calendar</a></li>
-          <li><a href="#" class="nav-link">Workouts</a></li>
-          <li><a href="#" class="nav-link">Programs</a></li>
-          <li><a href="#" class="nav-link">Exercises</a></li>
-        </ul>
-      </li>
-      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="target"></span>Goals</a></li>
-      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="trending-up"></span>Metrics</a></li>
-      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>Settings</a></li>
-    </ul>
+    <div class="sidebar-header">
+      <div class="brand-title"><span class="brand-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none"><defs><linearGradient id="al-bg-fit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F76B15"/><stop offset="1" stop-color="#CC4E00"/></linearGradient></defs><rect x="1" y="1" width="30" height="30" rx="7" fill="url(#al-bg-fit)"/><rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.18)" stroke-width="0.75"/><rect x="3" y="8.5" width="6.5" height="15" rx="1.4" fill="#FFFFFF"/><rect x="22.5" y="8.5" width="6.5" height="15" rx="1.4" fill="#FFFFFF"/><rect x="9.5" y="14.5" width="13" height="3" rx="0.8" fill="#FFFFFF"/><rect x="9.5" y="11.5" width="0.9" height="9" rx="0.3" fill="url(#al-bg-fit)" opacity="0.85"/><rect x="21.6" y="11.5" width="0.9" height="9" rx="0.3" fill="url(#al-bg-fit)" opacity="0.85"/></svg></span>Fitness</div>
+    </div>
+    <div class="nav-section">
+      <ul class="nav-menu">
+        <li>
+          <a href="#" class="nav-link active" data-nav-key="1">
+            <span class="nav-ico" data-ico="star"></span>today
+            <kbd class="kbd nav-kbd">⌘1</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="2">
+            <span class="nav-ico" data-ico="calendar"></span>calendar
+            <kbd class="kbd nav-kbd">⌘2</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="3">
+            <span class="nav-ico" data-ico="trending-up"></span>metrics
+            <kbd class="kbd nav-kbd">⌘3</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="4">
+            <span class="nav-ico" data-ico="target"></span>goals
+            <kbd class="kbd nav-kbd">⌘4</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="5">
+            <span class="nav-ico" data-ico="book"></span>logbook
+            <kbd class="kbd nav-kbd">⌘5</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="6">
+            <span class="nav-ico" data-ico="barbell"></span>exercises
+            <kbd class="kbd nav-kbd">⌘6</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="7">
+            <span class="nav-ico" data-ico="file-text"></span>documents
+            <kbd class="kbd nav-kbd">⌘7</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key=",">
+            <span class="nav-ico" data-ico="sliders"></span>settings
+            <kbd class="kbd nav-kbd">⌘,</kbd>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- apps-launcher.js renders the app dock + theme toggle here -->
+    <div class="sidebar-footer"></div>
   </nav>
-
-  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-    <span id="theme-icon">&#9728;&#65039;</span>
-  </button>
 
   <main class="main-content">
     <header class="page-header">
-      <div>
+      <div class="d-flex align-center gap-3">
         <h1 class="page-title">This week</h1>
-        <span class="text-muted" style="font-size: var(--text-sm); font-family: var(--font-mono);">Apr 21 — 27 · W17</span>
       </div>
+      <span class="page-subtitle">Apr 21 — 27 · W17</span>
     </header>
 
     <div class="content">
-
       <!-- Top training-load stats -->
       <div class="stats-grid mb-6" style="margin-bottom: var(--space-6);">
         <div class="stat-card">
@@ -188,7 +233,7 @@
         <div class="card">
           <div class="d-flex justify-between align-center mb-2">
             <div>
-              <h2 class="card-title" style="margin-bottom: 2px;">Tue · Lower / squat</h2>
+              <h3 class="card-title" style="margin-bottom: 2px;">Tue · Lower / squat</h3>
               <p class="text-muted" style="font-size: var(--text-xs); font-family: var(--font-mono);">5 × 5 base · week 3 / 6 · last performed 7d ago</p>
             </div>
             <button class="btn btn-secondary btn-sm">Open log</button>
@@ -251,7 +296,7 @@
 
         <div>
           <div class="card mb-4">
-            <h2 class="card-title" style="margin: 0 0 var(--space-3) 0;">Recent PRs</h2>
+            <h3 class="card-title" style="margin: 0 0 var(--space-3) 0;">Recent PRs</h3>
             <div class="pr-bar" style="grid-template-columns: 1fr 1fr;">
               <div class="pr-card">
                 <div class="pr-name">back squat 1RM</div>
@@ -300,25 +345,8 @@
     </div>
   </main>
 
-  <script>
-    function toggleTheme() {
-      const html = document.documentElement;
-      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', next);
-      html.classList.toggle('dark', next === 'dark');
-      const icon = document.getElementById('theme-icon');
-      if (icon) icon.textContent = next === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      const t = document.documentElement.getAttribute('data-theme') || 'dark';
-      const icon = document.getElementById('theme-icon');
-      if (icon) icon.textContent = t === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
-      const btn = document.getElementById('mobileMenuBtn');
-      const sb  = document.querySelector('.sidebar');
-      const ov  = document.getElementById('mobileOverlay');
-      btn?.addEventListener('click', e => { e.stopPropagation(); sb.classList.toggle('open'); ov.classList.toggle('show'); });
-      ov?.addEventListener('click', () => { sb.classList.remove('open'); ov.classList.remove('show'); });
-    });
-  </script>
+  <!-- ⌘1..⌘9 and ⌘, sidebar shortcuts. The theme toggle, mobile menu, toasts
+       and nav icons all come from shared-core.js — no page script needed. -->
+  <script>installNavHotkeys({ allowComma: true });</script>
 </body>
 </html>

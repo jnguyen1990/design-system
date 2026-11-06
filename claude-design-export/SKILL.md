@@ -1,6 +1,6 @@
 ---
 name: joes-apps-design
-description: Use whenever building, mocking, or modifying any UI for Joe's self-hosted personal apps — Base (slate), Budgeter (green), Fitness (orange), or any future personal app on the joenguyen.ca domain. TRIGGER on requests like "design a settings page for X", "build a form for Y", "mock up a Budgeter screen", "add a card showing Z", or any HTML/ERB/CSS work in the base/, budgeter/, or fitness/ Rails repos. Provides the canonical design-system.css (link via CDN), Linear-meets-Things-3 aesthetic rules, per-app accent system, and reference UI kits to copy from. SKIP for unrelated client work, generic web design, or any project outside Joe's personal-apps constellation.
+description: Use whenever building, mocking, or modifying any UI for Joe's self-hosted personal apps — Base (slate), Budgeter (green), Fitness (orange), Mealplanner (purple), Upkeep (blue), Postings (crimson), or any future personal app on the joenguyen.ca domain. TRIGGER on requests like "design a settings page for X", "build a form for Y", "mock up a Budgeter screen", "add a card showing Z", or any HTML/ERB/CSS work in the base/, budgeter/, fitness/, mealplanner/, upkeep/, or postings/ Rails repos. Provides the canonical design-system.css (link via CDN), Linear-meets-Things-3 aesthetic rules, per-app accent system, and reference UI kits to copy from. SKIP for unrelated client work, generic web design, or any project outside Joe's personal-apps constellation.
 user-invocable: true
 ---
 
@@ -29,7 +29,8 @@ Key rules to internalize:
 
 **Color & accent**
 - Chrome stays neutral (slate) except five v4 accent moments (all automatic from the CSS): primary button, active nav item (`--accent-soft` tint), focus ring, text selection, checked controls. Beyond those, per-app accent appears only in logo, favicon, empty-state tint, onboarding.
-- Set `<html data-app="{base|budgeter|fitness}" data-theme="{light|dark}">` on every page — this drives `--accent-{50..700}` and the `--focus-ring`.
+- Set `<html data-app="{base|budgeter|fitness|mealplanner|upkeep|postings}">` on every page — this drives `--accent-{50..700}` and the `--focus-ring`. The six accents: base slate, budgeter green, fitness orange, mealplanner purple, upkeep blue, postings crimson.
+- Theme: a page that loads `shared-core.js` (every app layout, every kit) sets no theme attribute — the script applies the saved theme (`data-theme` + the matching class, dark by default) before first paint. A static mock that does **not** load it needs both `class="dark"` and `data-theme="dark"` on `<html>` for dark; the Radix dark scales key on the class.
 - Categorical color comes through tinted chips: `<span class="badge badge--{red|orange|amber|green|teal|blue|indigo|purple|pink|slate}">Label</span>` (v4 — alpha-tint bg, step-11 text, no dot needed). Standalone `.color-dot--{color}` remains for legends/lists. **Never** inline `style="background: var(--X-9)"`.
 - Focus rings inherit the per-app accent via `--focus-ring` → `--accent-300`. Don't hardcode focus colors.
 
@@ -59,8 +60,8 @@ The same `design-system` repo is linked into **Claude Design** (claude.ai/design
 Folder layout:
 - `README.md` — full brand + content + visual + iconography spec
 - `preview/` — Design System tab cards (one HTML page per token group / component family)
-- `assets/` — app logos
-- `ui_kits/{base,budgeter,fitness}/` — reconciled static-HTML kits using the live `design-system.css` from CDN, modeled on real Rails ERB pages. Each kit has an `index.html` (the most-trafficked screen) plus additional pages for distinct surface patterns. **Budgeter** also has `add-transaction.html` covering form patterns (text/number/date/select/textarea inputs, radio chip group, error state, action row). When starting a new app: pick the closest existing kit, copy the folder, swap `data-app="…"`, and replace content.
+- `assets/` — the six app logos (`{app}-logo.svg`)
+- `ui_kits/{base,budgeter,fitness,mealplanner,upkeep,postings}/` — static-HTML kits, one per app, using the live `design-system.css` and JS from the CDN and modeled on real Rails ERB pages. Every kit carries the current app chrome exactly as the layouts render it: `.brand-title` with the app's `.brand-logo`, the icon nav (`.nav-ico` + `⌘` hints), an empty `.sidebar-footer` that `apps-launcher.js` fills with the apps dock and theme toggle, and a single `<h1 class="page-title">` in the page header. No kit has its own theme toggle or theme script. Each has an `index.html` (the most-trafficked screen); **Budgeter** also has `add-transaction.html` covering form patterns (text/number/date/select/textarea inputs, radio chip group, error state, action row), and the **Mealplanner** and **Postings** kits show the `installFilterTags` filter bar with its `.filter-tags-add` button. When starting a new app: pick the closest existing kit, copy the folder, swap `data-app="…"`, the logo and the nav, and replace content.
 - `../design-system.css` — canonical stylesheet (tokens + components, single source of truth)
 - `../brand-guide.md` — human-readable spec for the token layer
 

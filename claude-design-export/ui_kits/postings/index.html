@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<!-- No theme class or data-theme here, same as the app layouts: shared-core.js
+     sets both from localStorage before first paint (dark by default). A static
+     class="dark" would stay behind when the saved theme is light. -->
+<html lang="en" data-app="postings">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Postings · Postings</title>
+  <!-- Same head as the app's layout: stylesheet, then shared-core (boots the
+       saved theme before first paint), modal-keys, and the deferred apps dock. -->
+  <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+  <script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+  <script src="https://design-system.joenguyen.ca/modal-keys.js"></script>
+  <script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+</head>
+<body>
+
+  <button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title"><span class="brand-logo"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg-postings" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E93D82"/><stop offset="1" stop-color="#CB1D63"/></linearGradient></defs><rect x="1" y="1" width="30" height="30" rx="7" fill="url(#bg-postings)"/><rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.18)" stroke-width="0.75"/><!-- ledger: a stack of posting rows, top row highlighted as "new" --><rect x="7" y="7.5" width="18" height="5" rx="1.4" fill="#FFFFFF"/><rect x="7" y="14.5" width="18" height="3.4" rx="1.2" fill="rgba(255,255,255,0.62)"/><rect x="7" y="19.9" width="18" height="3.4" rx="1.2" fill="rgba(255,255,255,0.42)"/><rect x="7" y="25.3" width="12" height="3.4" rx="1.2" fill="rgba(255,255,255,0.28)"/><circle cx="9.4" cy="10" r="1.1" fill="#CB1D63"/></svg></span>Postings</div>
+    </div>
+    <div class="nav-section">
+      <ul class="nav-menu">
+        <li>
+          <a href="#" class="nav-link active" data-nav-key="1">
+            <span class="nav-ico" data-ico="briefcase"></span>postings
+            <kbd class="kbd nav-kbd">⌘1</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="2">
+            <span class="nav-ico" data-ico="users"></span>profiles
+            <kbd class="kbd nav-kbd">⌘2</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key=",">
+            <span class="nav-ico" data-ico="sliders"></span>settings
+            <kbd class="kbd nav-kbd">⌘,</kbd>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- apps-launcher.js renders the app dock + theme toggle here -->
+    <div class="sidebar-footer"></div>
+  </nav>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div class="d-flex align-center gap-3">
+        <h1 class="page-title">Postings</h1>
+        <div class="header-actions">
+          <a href="#" class="btn btn-primary btn-sm">+ Add posting</a>
+        </div>
+      </div>
+      <span class="page-subtitle">last sweep thu nov 5, 6:02 am · 14 sources · 3 new</span>
+    </header>
+
+    <div class="content">
+      <!-- The filter bar: installFilterTags builds the field; the "+ Filter"
+           button carries .filter-tags-add so it matches the field's height. -->
+      <div class="toolbar" style="align-items: flex-start; gap: 8px; margin-bottom: var(--space-3);">
+        <div id="postingFilters"></div>
+        <button type="button" id="postingAddFilter" class="btn btn-secondary btn-sm filter-tags-add">+ Filter</button>
+      </div>
+      <div class="filter-tags-error" id="postingFilterError" style="margin-bottom: var(--space-3);"></div>
+
+      <div class="card" style="padding: 0;">
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Role</th><th>Profile</th><th>Location</th><th>Source</th><th>Salary</th><th>Closes</th><th>Found</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><a href="#" class="row-link">Staff engineer, payments</a><div class="row-sub">Northwind</div></td>
+                <td><span class="badge badge--blue">engineering</span></td>
+                <td class="td-muted">Remote · Canada</td>
+                <td class="mono-meta">greenhouse</td>
+                <td class="td-amount">$185–210k</td>
+                <td class="td-date">nov 21</td>
+                <td class="td-date">nov 5</td>
+                <td><span class="badge badge--blue">new</span></td>
+                <td class="td-actions"><button class="btn btn-ghost btn-sm btn-icon" title="Mark applied">✓</button></td>
+              </tr>
+              <tr>
+                <td><a href="#" class="row-link">Engineering manager</a><div class="row-sub">Larkspur Health</div></td>
+                <td><span class="badge badge--blue">engineering</span></td>
+                <td class="td-muted">Vancouver</td>
+                <td class="mono-meta">lever</td>
+                <td class="td-amount">$170–195k</td>
+                <td class="td-date">—</td>
+                <td class="td-date">nov 5</td>
+                <td><span class="badge badge--blue">new</span></td>
+                <td class="td-actions"><button class="btn btn-ghost btn-sm btn-icon" title="Mark applied">✓</button></td>
+              </tr>
+              <tr>
+                <td><a href="#" class="row-link">Senior product manager</a><div class="row-sub">Fieldnote</div></td>
+                <td><span class="badge badge--purple">product</span></td>
+                <td class="td-muted">Remote</td>
+                <td class="mono-meta">ashby</td>
+                <td class="td-amount">—</td>
+                <td class="td-date">nov 14</td>
+                <td class="td-date">nov 4</td>
+                <td><span class="badge badge-success">applied nov 4</span></td>
+                <td class="td-actions"><button class="btn btn-ghost btn-sm btn-icon" title="Mark applied">✓</button></td>
+              </tr>
+              <tr>
+                <td><a href="#" class="row-link">Platform lead</a><div class="row-sub">Tidewater</div></td>
+                <td><span class="badge badge--blue">engineering</span></td>
+                <td class="td-muted">Victoria</td>
+                <td class="mono-meta">manual</td>
+                <td class="td-amount">$160k</td>
+                <td class="td-date">oct 31</td>
+                <td class="td-date">oct 20</td>
+                <td><span class="badge badge--amber">stale</span></td>
+                <td class="td-actions"><button class="btn btn-ghost btn-sm btn-icon" title="Mark applied">✓</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ⌘1..⌘9 and ⌘, sidebar shortcuts. The theme toggle, mobile menu, toasts
+       and nav icons all come from shared-core.js — no page script needed. -->
+  <script>installNavHotkeys({ allowComma: true });</script>
+  <script>
+    installFilterTags(document.getElementById('postingFilters'), {
+      fields: {
+        keyword: { type: 'text', label: 'Keyword', hint: 'matches title, company or description' },
+        status:  { type: 'enum', label: 'Status',  values: [ 'new', 'applied', 'stale', 'dismissed' ], exact: true },
+        profile: { type: 'enum', label: 'Profile', values: [ 'engineering', 'product' ], exact: true }
+      },
+      errorEl: document.getElementById('postingFilterError'),
+      builderButton: document.getElementById('postingAddFilter'),
+      value: 'status:new',
+      onChange() {}  // a real page re-queries here, or passes `navigate`
+    });
+  </script>
+</body>
+</html>

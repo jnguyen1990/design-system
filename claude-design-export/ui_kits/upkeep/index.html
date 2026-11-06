@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!-- No theme class or data-theme here, same as the app layouts: shared-core.js
+     sets both from localStorage before first paint (dark by default). A static
+     class="dark" would stay behind when the saved theme is light. -->
+<html lang="en" data-app="upkeep">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garage · Upkeep</title>
+  <!-- Same head as the app's layout: stylesheet, then shared-core (boots the
+       saved theme before first paint), modal-keys, and the deferred apps dock. -->
+  <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+  <script src="https://design-system.joenguyen.ca/shared-core.js"></script>
+  <script src="https://design-system.joenguyen.ca/modal-keys.js"></script>
+  <script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+</head>
+<body>
+
+  <button class="mobile-menu-toggle" id="mobileMenuBtn">&#9776;</button>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title"><span class="brand-logo"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg-upkeep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0090FF"/><stop offset="1" stop-color="#0D74CE"/></linearGradient></defs><rect x="1" y="1" width="30" height="30" rx="7" fill="url(#bg-upkeep)"/><rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.18)" stroke-width="0.75"/><g transform="rotate(45 16 16)"><circle cx="9" cy="16" r="5.2" fill="#FFFFFF"/><rect x="1.5" y="13.6" width="6.2" height="4.8" rx="0.6" fill="url(#bg-upkeep)"/><rect x="11.5" y="13.9" width="16" height="4.2" rx="2.1" fill="#FFFFFF"/></g></svg></span>Upkeep</div>
+    </div>
+    <div class="nav-section">
+      <ul class="nav-menu">
+        <li>
+          <a href="#" class="nav-link active" data-nav-key="1">
+            <span class="nav-ico" data-ico="wrench"></span>garage
+            <kbd class="kbd nav-kbd">⌘1</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="2">
+            <span class="nav-ico" data-ico="clock"></span>due
+            <kbd class="kbd nav-kbd">⌘2</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key=",">
+            <span class="nav-ico" data-ico="sliders"></span>settings
+            <kbd class="kbd nav-kbd">⌘,</kbd>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- apps-launcher.js renders the app dock + theme toggle here -->
+    <div class="sidebar-footer"></div>
+  </nav>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div class="d-flex align-center gap-3">
+        <h1 class="page-title">Garage</h1>
+        <div class="header-actions">
+          <a href="#" class="btn btn-primary btn-sm">+ Add item</a>
+        </div>
+      </div>
+      <span class="page-subtitle">4 items · 1 overdue · 3 due in the next 30 days</span>
+    </header>
+
+    <div class="content">
+      <div class="stats-grid" style="margin-bottom: var(--space-6);">
+        <div class="stat-card"><div class="stat-label">Items</div><div class="stat-value">4</div><div class="stat-subtext">None archived</div></div>
+        <div class="stat-card"><div class="stat-label">Overdue</div><div class="stat-value text-amount-negative">1</div><div class="stat-subtext">Oldest: Oct 12</div></div>
+        <div class="stat-card"><div class="stat-label">Due · 30 days</div><div class="stat-value">3</div><div class="stat-subtext">Next: Furnace · Nov 14</div></div>
+        <div class="stat-card"><div class="stat-label">Logged this year</div><div class="stat-value">17</div><div class="stat-subtext">Last: Oil change · Oct 30</div></div>
+      </div>
+
+      <div class="auto-grid auto-grid--md">
+        <a href="#" class="card card-link">
+          <div class="d-flex align-center gap-2">
+            <span class="color-dot color-dot--blue"></span>
+            <span class="row-title">CX-5</span>
+            <span style="margin-left: auto;"><span class="badge badge-error">1 overdue</span></span>
+          </div>
+          <div class="mono-meta">vehicle · 84,210 km · 5 tasks</div>
+          <div class="card-divide d-flex flex-col gap-2">
+            <div class="spec-row spec-row--tight overdue"><span>Rotate tires</span><span class="row-end">Oct 12 · 23 days ago</span></div>
+            <div class="spec-row spec-row--tight"><span>Oil change</span><span class="row-end">in 4,100 km</span></div>
+            <div class="spec-row spec-row--tight"><span>Cabin air filter</span><span class="row-end">Dec 2</span></div>
+          </div>
+        </a>
+        <a href="#" class="card card-link">
+          <div class="d-flex align-center gap-2">
+            <span class="color-dot color-dot--orange"></span>
+            <span class="row-title">Furnace</span>
+            <span style="margin-left: auto;"><span class="badge badge-warning">Due soon</span></span>
+          </div>
+          <div class="mono-meta">house · 3 tasks</div>
+          <div class="card-divide d-flex flex-col gap-2">
+            <div class="spec-row spec-row--tight"><span>Replace filter</span><span class="row-end">Nov 14</span></div>
+            <div class="spec-row spec-row--tight"><span>Annual service</span><span class="row-end">Jan 20</span></div>
+          </div>
+        </a>
+        <a href="#" class="card card-link">
+          <div class="d-flex align-center gap-2">
+            <span class="color-dot color-dot--green"></span>
+            <span class="row-title">Road bike</span>
+            <span style="margin-left: auto;"><span class="badge badge-success">On track</span></span>
+          </div>
+          <div class="mono-meta">bike · 6,480 km · 4 tasks</div>
+          <div class="card-divide d-flex flex-col gap-2">
+            <div class="spec-row spec-row--tight"><span>Wax chain</span><span class="row-end">in 220 km</span></div>
+            <div class="spec-row spec-row--tight"><span>Replace chain</span><span class="row-end">in 1,500 km</span></div>
+          </div>
+        </a>
+        <a href="#" class="card card-link">
+          <div class="d-flex align-center gap-2">
+            <span class="color-dot color-dot--purple"></span>
+            <span class="row-title">Espresso machine</span>
+            <span style="margin-left: auto;"><span class="badge badge-warning">Due soon</span></span>
+          </div>
+          <div class="mono-meta">appliance · 2 tasks</div>
+          <div class="card-divide d-flex flex-col gap-2">
+            <div class="spec-row spec-row--tight"><span>Descale</span><span class="row-end">Nov 21</span></div>
+            <div class="spec-row spec-row--tight"><span>Replace gasket</span><span class="row-end">Mar 3</span></div>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ⌘1..⌘9 and ⌘, sidebar shortcuts. The theme toggle, mobile menu, toasts
+       and nav icons all come from shared-core.js — no page script needed. -->
+  <script>installNavHotkeys({ allowComma: true });</script>
+</body>
+</html>

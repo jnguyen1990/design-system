@@ -1,12 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" class="dark" data-app="budgeter" data-theme="dark">
+<!-- No theme class or data-theme here, same as the app layouts: shared-core.js
+     sets both from localStorage before first paint (dark by default). A static
+     class="dark" would stay behind when the saved theme is light. -->
+<html lang="en" data-app="budgeter">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transactions · Budgeter</title>
+  <!-- Same head as the app's layout: stylesheet, then shared-core (boots the
+       saved theme before first paint), modal-keys, and the deferred apps dock. -->
   <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
   <script src="https://design-system.joenguyen.ca/shared-core.js"></script>
-    <style>
+  <script src="https://design-system.joenguyen.ca/modal-keys.js"></script>
+  <script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
+  <style>
     /* Page-local: budget bars only — amount colors, date cells, action cells, color dots, and account cards
        all come from the design system (text-amount-*, td-date, td-amount, td-actions, color-dot--*, .card.card-dense). */
     .budget-row { display: grid; grid-template-columns: 1fr auto; gap: 4px var(--space-3); align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border); }
@@ -26,36 +33,65 @@
   <div class="mobile-overlay" id="mobileOverlay"></div>
 
   <nav class="sidebar">
-    <div class="sidebar-header"><h1>Budgeter</h1></div>
-    <ul class="nav-menu">
-      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="grid"></span>Dashboard</a></li>
-      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="pie-chart"></span>Budget</a></li>
-      <li class="nav-submenu">
-        <div class="nav-link active"><span class="nav-ico" data-ico="list"></span>Transactions</div>
-        <ul class="submenu">
-          <li><a href="#" class="nav-link active">All transactions</a></li>
-          <li><a href="add-transaction.html" class="nav-link">Add transaction</a></li>
-          <li><a href="#" class="nav-link">Uncategorized</a></li>
-        </ul>
-      </li>
-      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>Settings</a></li>
-    </ul>
+    <div class="sidebar-header">
+      <div class="brand-title"><span class="brand-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none"><defs><linearGradient id="al-bg-bud" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#30A46C"/><stop offset="1" stop-color="#1B7A4D"/></linearGradient></defs><rect x="1" y="1" width="30" height="30" rx="7" fill="url(#al-bg-bud)"/><rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.18)" stroke-width="0.75"/><rect x="5.5" y="11" width="19" height="12" rx="5.5" fill="#FFFFFF"/><circle cx="25.5" cy="16.5" r="2.6" fill="#FFFFFF"/><circle cx="26.2" cy="16.5" r="0.55" fill="#1B7A4D"/><path d="M9 11 L11.8 8 L13 11 Z" fill="#FFFFFF"/><circle cx="20.5" cy="14.5" r="0.85" fill="#1B7A4D"/><rect x="14.5" y="9.7" width="5" height="1.6" rx="0.5" fill="#1B7A4D" opacity="0.85"/><rect x="8" y="22" width="2.6" height="3" rx="0.5" fill="#FFFFFF"/><rect x="19" y="22" width="2.6" height="3" rx="0.5" fill="#FFFFFF"/></svg></span>Budgeter</div>
+    </div>
+    <div class="nav-section">
+      <ul class="nav-menu">
+        <li>
+          <a href="#" class="nav-link" data-nav-key="1">
+            <span class="nav-ico" data-ico="grid"></span>dashboard
+            <kbd class="kbd nav-kbd">⌘1</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="2">
+            <span class="nav-ico" data-ico="pie-chart"></span>budget
+            <kbd class="kbd nav-kbd">⌘2</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link active" data-nav-key="3">
+            <span class="nav-ico" data-ico="list"></span>all transactions
+            <kbd class="kbd nav-kbd">⌘3</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="4">
+            <span class="nav-ico" data-ico="inbox"></span>uncategorized
+            <kbd class="kbd nav-kbd">⌘4</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key="5">
+            <span class="nav-ico" data-ico="trending-up"></span>reports
+            <kbd class="kbd nav-kbd">⌘5</kbd>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-nav-key=",">
+            <span class="nav-ico" data-ico="sliders"></span>settings
+            <kbd class="kbd nav-kbd">⌘,</kbd>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- apps-launcher.js renders the app dock + theme toggle here -->
+    <div class="sidebar-footer"></div>
   </nav>
-
-  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-    <span id="theme-icon">&#9728;&#65039;</span>
-  </button>
 
   <main class="main-content">
     <header class="page-header">
-      <div>
+      <div class="d-flex align-center gap-3">
         <h1 class="page-title">Transactions</h1>
-        <span class="text-muted" style="font-size: var(--text-sm); font-family: var(--font-mono);">April 2026 · 7 of 247</span>
+        <div class="header-actions">
+          <a href="add-transaction.html" class="btn btn-primary btn-sm">+ Add transaction</a>
+        </div>
       </div>
+      <span class="page-subtitle">April 2026 · 7 of 247</span>
     </header>
 
     <div class="content">
-
       <!-- Search & filter card -->
       <div class="card mb-2" style="margin-bottom: var(--space-3);">
         <div class="toolbar" style="margin-bottom: 0;">
@@ -78,7 +114,7 @@
       <div class="card" style="padding: 4px 16px;">
         <div class="toolbar" style="padding: 16px 4px 0;">
           <div class="toolbar-start">
-            <h2 class="card-title" style="margin: 0;">Transactions <span class="text-muted" style="font-weight: 400;">(7)</span></h2>
+            <h3 class="card-title" style="margin: 0;">Transactions <span class="text-muted" style="font-weight: 400;">(7)</span></h3>
           </div>
           <div class="toolbar-end">
             <button class="btn btn-secondary">Manage importers</button>
@@ -187,25 +223,8 @@
     </div>
   </main>
 
-  <script>
-    function toggleTheme() {
-      const html = document.documentElement;
-      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', next);
-      html.classList.toggle('dark', next === 'dark');
-      const icon = document.getElementById('theme-icon');
-      if (icon) icon.textContent = next === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      const t = document.documentElement.getAttribute('data-theme') || 'dark';
-      const icon = document.getElementById('theme-icon');
-      if (icon) icon.textContent = t === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
-      const btn = document.getElementById('mobileMenuBtn');
-      const sb  = document.querySelector('.sidebar');
-      const ov  = document.getElementById('mobileOverlay');
-      btn?.addEventListener('click', e => { e.stopPropagation(); sb.classList.toggle('open'); ov.classList.toggle('show'); });
-      ov?.addEventListener('click', () => { sb.classList.remove('open'); ov.classList.remove('show'); });
-    });
-  </script>
+  <!-- ⌘1..⌘9 and ⌘, sidebar shortcuts. The theme toggle, mobile menu, toasts
+       and nav icons all come from shared-core.js — no page script needed. -->
+  <script>installNavHotkeys({ allowComma: true });</script>
 </body>
 </html>

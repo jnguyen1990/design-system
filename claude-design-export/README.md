@@ -1,6 +1,6 @@
 # Joe's Personal Apps — Design System
 
-A unified design language for a constellation of self-hosted personal apps (**Base**, **Budgeter**, **Fitness**, and future projects). The aesthetic is **Linear-meets-Things-3, v4**: sharp and precise with product polish — elevated cards on a tinted page, mono numbers, accent-tinted chrome moments. Every pixel earns its place.
+A unified design language for a constellation of self-hosted personal apps (**Base**, **Budgeter**, **Fitness**, **Mealplanner**, **Upkeep**, **Postings**, and future projects). The aesthetic is **Linear-meets-Things-3, v4**: sharp and precise with product polish — elevated cards on a tinted page, mono numbers, accent-tinted chrome moments. Every pixel earns its place.
 
 ---
 
@@ -22,9 +22,12 @@ If a codebase or Figma exists, re-attach it via the Import menu so UI kits can b
 | `README.md` | This document — brand context, content, visual & icon foundations |
 | `preview/` | Design System tab cards (swatches, type specimens, components, etc) |
 | `assets/` | Logos, favicons, illustration tints |
-| `ui_kits/base/` | Base — neutral launcher / cross-app home |
-| `ui_kits/budgeter/` | Budgeter — green accent, transaction ledger |
-| `ui_kits/fitness/` | Fitness — orange accent, workout log |
+| `ui_kits/base/` | Base — slate (neutral), today view |
+| `ui_kits/budgeter/` | Budgeter — green accent, transaction ledger + add-transaction form |
+| `ui_kits/fitness/` | Fitness — orange accent, training week |
+| `ui_kits/mealplanner/` | Mealplanner — purple accent, recipe list with the filter bar |
+| `ui_kits/upkeep/` | Upkeep — blue accent, garage (stat tiles + item cards) |
+| `ui_kits/postings/` | Postings — crimson accent, postings table with the filter bar |
 | `slides/` | Sample slide deck template (cover, agenda, big quote, comparison, etc) |
 | `SKILL.md` | Agent Skill manifest (works in Claude Code) |
 | `../design-system.css` | **Canonical stylesheet** — token layer + component layer, single source of truth. Link from each HTML page via the CDN URL below. |
@@ -36,9 +39,12 @@ If a codebase or Figma exists, re-attach it via the Import menu so UI kits can b
 
 | App | Accent | Purpose |
 |---|---|---|
-| **Base** | `slate` (system default) | Launcher / cross-app home. Neutral. |
+| **Base** | `slate` (system default) | Today, goals, reminders. Neutral. |
 | **Budgeter** | `green` | Transactions, accounts, budgets. |
 | **Fitness** | `orange` | Workout log, lifts, sessions. |
+| **Mealplanner** | `purple` | Recipes, week plan, grocery list. |
+| **Upkeep** | `blue` | Maintenance for vehicles, house, gear. |
+| **Postings** | `crimson` | Job postings found by a nightly sweep. |
 | Future apps | one Radix accent each, no repeats | TBD |
 
 The shared **chrome** stays neutral across all apps. The brand accent appears in the logo, favicon, empty-state tint, onboarding, loading states — and (v4) in five chrome moments: primary button, active nav item, focus ring, text selection, checked controls. Nowhere else in chrome.
@@ -220,7 +226,7 @@ Each app has a **single-glyph logo** rendered as inline SVG using its accent col
    ```html
    <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
    ```
-   Set `<html data-app="budgeter" data-theme="dark">` to choose accent + theme.
+   Set `<html data-app="budgeter">` to choose the accent (`base`, `budgeter`, `fitness`, `mealplanner`, `upkeep`, `postings`). Load `shared-core.js` after the stylesheet and it applies the saved theme; a page without it sets `class="dark" data-theme="dark"` itself.
 2. **Reach for tokens, not raw Radix:** use `var(--text)` / `var(--panel)` / `var(--border)` / `var(--focus-ring)` — not `var(--slate-12)` directly. The semantic layer is what makes light/dark parity and per-app accent automatic.
 3. **One accent per app.** Don't mix per-app accents into shared chrome.
 4. **Categorical color comes from chips/dots, not surfaces.** A red row background is wrong; a red dot in a row is right.
