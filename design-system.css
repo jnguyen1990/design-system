@@ -5488,6 +5488,8 @@ tr.product-row {
 .week-summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: var(--text-sm); }
 .week-summary-row:last-child { border-bottom: none; }
 .week-summary-row .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+/* Main column + a fixed 380px rail; one column on mobile (below). */
+.dash-side-by-side { display: grid; grid-template-columns: 1fr 380px; gap: var(--space-6); align-items: start; }
 @media (max-width: 768px) {
     .week-grid { grid-template-columns: 1fr; }
     .day-col { min-height: auto; }
