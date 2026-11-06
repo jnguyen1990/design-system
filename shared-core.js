@@ -67,7 +67,10 @@
                                         a tag and the box clears. opts: fields (the
                                         per-page spec — the menu, builder and parser
                                         are all generated from it), value, onChange,
-                                        errorEl, builderButton, textField. Returns
+                                        errorEl, builderButton (the "+ Filter" button;
+                                        class it .filter-tags-add), textField. A text
+                                        or enum field may set exact: true so its terms
+                                        match the whole value, not a substring. Returns
                                         {tags, query, set, add, clear, focus, parse}.
                                         opts.navigate {path, map, keep, tagsParam,
                                         textParam} wires a server-rendered page: tags
@@ -75,8 +78,9 @@
                                         accepts and the page navigates.
      - filterTagsMatch(row, tags, get)  client-side matcher for pages that already
                                         hold their rows; `get(field, row)` returns the
-                                        value to test. Server-backed pages translate
-                                        tags into query params instead.
+                                        value to test. Strings match as substrings
+                                        unless the field is exact: true. Server-backed
+                                        pages translate tags into query params instead.
      - placeDropdownMenu(menu)          anchors an open .dropdown-menu to its
                                         .dropdown trigger as position: fixed, so a
                                         card's overflow context cannot clip it;
@@ -812,8 +816,9 @@
                 }
             }
             // Text and enum. An array value (tags on a record) matches if any
-            // element does; a string matches as a substring for free text and
-            // exactly for everything else.
+            // element equals the term. A string matches as a substring, unless
+            // the field was declared `exact: true` in installFilterTags' spec
+            // (the term then carries loose: false) — then it must equal it.
             const hay = Array.isArray(got) ? got.map(v => String(v).toLowerCase()) : String(got).toLowerCase();
             const want = String(t.raw).toLowerCase();
             const hit = Array.isArray(hay) ? hay.includes(want)
@@ -877,9 +882,9 @@
                     const hit = vals.find(v => String(v).toLowerCase() === raw.toLowerCase());
                     if (!hit) return { error: 'No ' + (spec.label || key).toLowerCase() + ' called "' + raw + '".'
                         + (vals.length ? ' Try: ' + vals.slice(0, 6).join(', ') + (vals.length > 6 ? '…' : '') + '.' : '') };
-                    return { field: key, op, raw: String(hit).toLowerCase() };
+                    return ftExact({ field: key, op, raw: String(hit).toLowerCase() }, spec);
                 }
-                return { field: key, op, raw: raw.toLowerCase() };
+                return ftExact({ field: key, op, raw: raw.toLowerCase() }, spec);
             }
             // A trailing operator is incomplete, not wrong.
             for (const [ alias, key ] of aliases) {
@@ -892,6 +897,12 @@
             return fields[free] ? { field: free, op: '=', raw: s.toLowerCase() } : { error: 'Type a filter like ' + Object.keys(fields)[0] + ':…' };
         }
 
+        // A field declared `exact: true` yields terms filterTagsMatch compares
+        // whole-value (type:running must not also match indoor_running).
+        function ftExact(term, spec) {
+            if (spec.exact) term.loose = false;
+            return term;
+        }
         function ftValues(key) {
             const v = fields[key].values;
             return (typeof v === 'function' ? v() : v) || [];
@@ -1041,6 +1052,7 @@
         if (opts.builderButton) {
             const box = document.createElement('div');
             box.className = 'filter-tags-menu filter-tags-builder';
+            opts.builderButton.classList.add('filter-tags-add');
             opts.builderButton.parentNode.insertBefore(box, opts.builderButton.nextSibling);
             let bField = null;
             const showFields = () => {

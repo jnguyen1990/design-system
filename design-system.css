@@ -5493,6 +5493,8 @@ tr.product-row {
 @media (max-width: 768px) {
     .week-grid { grid-template-columns: 1fr; }
     .day-col { min-height: auto; }
+    /* !important only outranks the inline style the dashboard used to carry;
+       drop it once no deployed view sets grid-template-columns inline. */
     .dash-side-by-side { grid-template-columns: 1fr !important; }
 }
 
@@ -6101,6 +6103,13 @@ tr[data-log-toggle] { cursor: pointer; }
 
 /* The builder hangs off its own button, not the field. */
 .filter-tags-builder { left: auto; right: 0; top: calc(100% + 4px); }
+
+/* The "+ Filter" button beside the field: as tall as the field's resting
+   height (36px) whatever .btn size it also carries, and never squeezed by
+   the field's flex: 1. installFilterTags adds this class to its
+   builderButton; put it in the markup too so the button does not grow on
+   load. */
+.filter-tags-add { height: 36px; flex-shrink: 0; }
 
 .filter-tags-menu-head {
     padding: 6px var(--space-3) 4px;
