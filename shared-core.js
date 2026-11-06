@@ -32,8 +32,8 @@
                                         (Chart.js colours); fallback when empty.
                                         cssToken('green-9') or cssToken('--green-9').
      - toggleTheme()                    flips data-theme, persists to localStorage
-     - updateThemeIcon(theme)           sets #theme-icon glyph ☀️/🌙
-                                        (mealplanner + budgeter override: other glyphs)
+                                        (the apps dock's button calls it and
+                                        draws its own glyph)
      - showStatus(divId, message, type) status-message div; success auto-hides in 3s
                                         (budgeter overrides: defaults type to 'info')
      - dsConfirm(message, opts)         styled Promise<boolean> replacement for
@@ -96,7 +96,6 @@
 
    Also runs on load:
      - applies the saved theme from localStorage immediately (before first paint)
-     - syncs #theme-icon on DOMContentLoaded
      - wires the mobile menu toggle / overlay / nav-link close (delegated, Turbo-safe)
      - row-select tables: clicking a row toggles its checkbox when that
        checkbox opts in with data-row-select (delegated; clicks on the row's
@@ -282,12 +281,6 @@
         html.classList.remove(currentTheme);
         html.classList.add(newTheme);
         localStorage.setItem('theme', newTheme);
-        global.updateThemeIcon(newTheme);  // via global so app overrides win
-    };
-
-    global.updateThemeIcon = function updateThemeIcon(theme) {
-        const icon = document.getElementById('theme-icon');
-        if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
     };
 
     global.showStatus = function showStatus(divId, message, type) {
@@ -463,12 +456,6 @@
             window.location.href = link.getAttribute('href');
         });
     };
-
-    // Sync the theme toggle icon with the active theme.
-    document.addEventListener('DOMContentLoaded', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        global.updateThemeIcon(currentTheme);  // via global so app overrides win
-    });
 
     // Toasts: click anywhere on a .status-message to dismiss. Delegated so it
     // covers server-rendered flash divs and app-level showStatus overrides.
