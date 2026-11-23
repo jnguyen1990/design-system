@@ -58,6 +58,11 @@
      - dsToast(message, type, ms)       a toast that needs no pre-placed div. type:
                                         success (default) | error | info | warning;
                                         all but error clear after ms (default 3000).
+                                        The third argument may instead be an options
+                                        object {ms, action: {label, onClick}}: the
+                                        action renders as a button inside the toast
+                                        ("Undo"), runs onClick once, and the toast
+                                        then stays 6000ms by default.
      - dsCopy(text)                     copy to the clipboard → Promise<boolean>.
      - dsEmptyState(text, opts)         HTML string for an .empty-state block. opts:
                                         icon (a NAV_ICONS name), action (trusted HTML
@@ -529,6 +534,12 @@
     let toastTimer = null;
     global.dsToast = function dsToast(message, type, ms) {
         if (!document.body) return null;
+        // dsToast(msg, {…}) and dsToast(msg, type, {…}) as well as the
+        // original dsToast(msg, type, ms).
+        let opts = {};
+        if (type && typeof type === 'object') { opts = type; type = opts.type; }
+        else if (ms && typeof ms === 'object') { opts = ms; }
+        else if (ms) { opts = { ms: ms }; }
         let el = document.getElementById('ds-toast');
         if (!el) {
             el = document.createElement('div');
@@ -539,10 +550,25 @@
         }
         type = type || 'success';
         el.textContent = message;
-        el.className = 'status-message status-' + type;
+        const action = opts.action;
+        if (action && action.label) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'toast-action';
+            btn.textContent = action.label;
+            let used = false;
+            btn.addEventListener('click', () => {
+                if (used) return;
+                used = true;
+                if (typeof action.onClick === 'function') action.onClick();
+            });
+            el.appendChild(btn);
+        }
+        el.className = 'status-message status-' + type + (action && action.label ? ' has-action' : '');
         el.style.display = 'block';
         clearTimeout(toastTimer);
-        if (type !== 'error') toastTimer = setTimeout(() => { el.style.display = 'none'; }, ms || 3000);
+        const wait = opts.ms || (action && action.label ? 6000 : 3000);
+        if (type !== 'error') toastTimer = setTimeout(() => { el.style.display = 'none'; }, wait);
         return el;
     };
 

@@ -3349,6 +3349,25 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 
 .status-message:hover::after { opacity: 1; }
 
+/* dsToast(msg, type, {action: {label, onClick}}) — "Undo" inside the toast.
+   A text button in the toast's own colour; clicking it also dismisses
+   (the toast's click-anywhere listener). */
+.status-message .toast-action {
+    margin-left: var(--space-3);
+    padding: 2px var(--space-1_5);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: var(--weight-semibold);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+.status-message .toast-action:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+.status-message .toast-action:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+
 @keyframes status-toast-in {
     from { opacity: 0; transform: translate(-50%, var(--space-2)); }
     to   { opacity: 1; transform: translate(-50%, 0); }
