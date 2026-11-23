@@ -1962,7 +1962,10 @@ code, kbd, samp, pre, .mono {
 }
 
 a { color: inherit; text-decoration: none; }
-a:hover { color: var(--color-link); }
+/* Only bare links turn link-blue. A classed anchor (.btn, .card-link,
+   .meta-chip, .dropdown-item…) owns its hover colour; as plain `a:hover`
+   (0,1,1) this beat .btn (0,1,0) and turned <a class="btn"> blue. */
+a:not([class]):hover { color: var(--color-link); }
 
 /* v4: text selection carries the per-app accent */
 ::selection {
@@ -2645,16 +2648,6 @@ textarea.form-control {
     min-height: 96px;
 }
 
-select.form-control {
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 32px;
-    cursor: pointer;
-}
-
 .form-hint {
     font-size: var(--text-xs);
     color: var(--text-muted);
@@ -2732,6 +2725,20 @@ textarea {
     line-height: var(--lh-body);
     min-height: 96px;
     resize: vertical;
+}
+
+/* The chevron has to come AFTER the reset above: both are (0,1,1), and the
+   reset's `background` shorthand and `padding` wiped the image and the right
+   padding while appearance:none survived — a select that looked like a text
+   input in every app. */
+select.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
 }
 
 input::placeholder, textarea::placeholder { color: var(--text-faint); }
@@ -3023,7 +3030,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     overflow-y: auto;
     box-shadow: var(--shadow-floating);
     z-index: 1;
-    animation: modalIn var(--motion-slow) ease-out;
+    animation: modalIn var(--motion-slow);  /* the token carries the easing; a second one made the declaration invalid */
 }
 
 /* Opt-in for modals whose content can grow unbounded (import previews, long
@@ -3486,7 +3493,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 .settings-pane .pane[hidden] { display: none; }
 
 @media (max-width: 900px) {
-    .settings-pane { grid-template-columns: 1fr; }
+    .settings-pane { grid-template-columns: minmax(0, 1fr); }  /* 1fr = minmax(auto,1fr): a wide table pushed the pane past the viewport */
     .settings-nav { position: static; flex-direction: row; flex-wrap: wrap; }
     .settings-nav-label { display: none; }
 }
@@ -6083,6 +6090,7 @@ tr[data-log-toggle] { cursor: pointer; }
     .sidebar.open {
         transform: translateX(0);
         box-shadow: var(--shadow-floating);
+        z-index: 102;  /* over .mobile-menu-toggle (101), which sat on the logo */
     }
 
     .main-content { margin-left: 0; }
