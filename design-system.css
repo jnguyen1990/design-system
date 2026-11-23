@@ -6313,7 +6313,7 @@ tbody tr.is-key-focus > td { background: transparent; }
 /* Notches and the home indicator. Only takes effect where a layout opts in
    with <meta name="viewport" content="…, viewport-fit=cover">. */
 @supports (padding: env(safe-area-inset-left)) {
-    .sidebar { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .sidebar { padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px)); }  /* keep the 16px base padding */
     @media (max-width: 768px) {
         .mobile-menu-toggle {
             top: calc(var(--space-3) + env(safe-area-inset-top, 0px));
