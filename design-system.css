@@ -1710,6 +1710,25 @@
     --color-info:     var(--teal-9);
     --color-link:     var(--blue-9);
 
+    /* ----- Data viz (2026-11-23) — read by dsChartTheme() for Chart.js ----
+       Categorical series in this FIXED order; never cycle past 8 (fold the
+       rest into "Other"). Light = Radix step 11 of blue, orange, teal,
+       purple, amber, pink, indigo, green. Dark = step 9, with orange and
+       amber deepened to stay in the dark lightness band. Validated with the
+       dataviz palette checks (lightness band, chroma, adjacent CVD and
+       normal-vision separation, 3:1 on the card) in both themes. Literal
+       hex because the dark values are not Radix steps. */
+    --viz-1: #0d74ce;
+    --viz-2: #cc4e00;
+    --viz-3: #008573;
+    --viz-4: #8145b5;
+    --viz-5: #ab6400;
+    --viz-6: #c2298a;
+    --viz-7: #3a5bc7;
+    --viz-8: #218358;
+    --viz-grid: var(--slate-4);   /* recessive gridlines */
+    --viz-axis: var(--text-muted);/* tick labels, axis titles */
+
     /* ----- Amount / delta semantics (use for +/- numeric values) ----- */
     --text-amount-positive: var(--green-11);
     --text-amount-negative: var(--red-11);
@@ -1830,6 +1849,15 @@
     --danger-on:          var(--slate-1);
     --danger-solid-shade: #fff;
     --text-faint: color-mix(in srgb, var(--slate-11) 30%, var(--slate-10));
+    --viz-1: #0090ff;
+    --viz-2: #ef5f00;
+    --viz-3: #12a594;
+    --viz-4: #9a5cd0;
+    --viz-5: #c98500;
+    --viz-6: #d6409f;
+    --viz-7: #5472e4;
+    --viz-8: #30a46c;
+    --viz-grid: var(--slate-5);
     --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.24);

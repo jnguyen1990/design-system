@@ -33,6 +33,15 @@
      - cssToken(name, fallback)         a :root custom property as a trimmed string
                                         (Chart.js colours); fallback when empty.
                                         cssToken('green-9') or cssToken('--green-9').
+     - dsChartTheme()                   the current theme's chart colours:
+                                        {palette: [--viz-1..8], grid, axis, text,
+                                        surface, border, font}. When Chart.js is on
+                                        the page it also sets Chart.defaults (font,
+                                        tick/grid/tooltip colours, 2px lines), and
+                                        from then on a theme toggle re-applies them
+                                        and redraws every chart. Series colours are
+                                        the page's: re-read palette on
+                                        "ds:themechange" if datasets hold them.
      - toggleTheme()                    flips data-theme, persists to localStorage
                                         (the apps dock's button calls it and
                                         draws its own glyph), then dispatches
@@ -206,6 +215,80 @@
         const prop = String(name).indexOf('--') === 0 ? String(name) : '--' + name;
         const v = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
         return v || (fallback === undefined ? '' : fallback);
+    };
+
+    // Chart theme from tokens. Returns plain strings so any library can use
+    // it; with Chart.js present it also sets Chart.defaults. Called once, it
+    // keeps Chart.defaults in step with the theme (ds:themechange) and
+    // redraws live charts — dataset colours stay the page's job.
+    let chartThemeWired = false;
+    global.dsChartTheme = function dsChartTheme() {
+        const t = n => global.cssToken(n);
+        const theme = {
+            palette: [1, 2, 3, 4, 5, 6, 7, 8].map(i => t('--viz-' + i)),
+            grid: t('--viz-grid'),
+            axis: t('--viz-axis'),
+            text: t('--text'),
+            surface: t('--card'),
+            border: t('--card-border'),
+            font: t('--font-sans') || 'Inter, sans-serif',
+            mono: t('--font-mono') || 'monospace',
+        };
+        const C = global.Chart;
+        if (C && C.defaults) {
+            const d = C.defaults;
+            d.color = theme.axis;
+            d.borderColor = theme.grid;
+            d.font = Object.assign({}, d.font, { family: theme.font, size: 12 });
+            if (d.scale && d.scale.grid) d.scale.grid.color = theme.grid;
+            if (d.elements && d.elements.line) d.elements.line.borderWidth = 2;
+            const tip = d.plugins && d.plugins.tooltip;
+            if (tip) Object.assign(tip, {
+                backgroundColor: theme.surface, titleColor: theme.text, bodyColor: theme.text,
+                borderColor: theme.border, borderWidth: 1, padding: 10, cornerRadius: 7,
+            });
+            if (d.plugins && d.plugins.legend && d.plugins.legend.labels) d.plugins.legend.labels.color = theme.axis;
+            if (!chartThemeWired) {
+                chartThemeWired = true;
+                let prev = theme;
+                document.addEventListener('ds:themechange', () => {
+                    const next = global.dsChartTheme();
+                    // Chart.js caches resolved options, so a defaults change
+                    // alone does not reach a live chart. Swap every option
+                    // value that still holds the previous theme's colour for
+                    // the new one — colours a page chose itself are left alone.
+                    const swap = new Map();
+                    ['grid', 'axis', 'text', 'surface', 'border'].forEach(k => { if (prev[k]) swap.set(prev[k], next[k]); });
+                    prev.palette.forEach((c, i) => { if (c) swap.set(c, next.palette[i]); });
+                    const walk = (o, depth) => {
+                        if (!o || typeof o !== 'object' || depth > 6) return;
+                        Object.keys(o).forEach(k => {
+                            const v = o[k];
+                            if (typeof v === 'string' && swap.has(v)) o[k] = swap.get(v);
+                            else if (Array.isArray(v)) v.forEach((x, i) => { if (typeof x === 'string' && swap.has(x)) v[i] = swap.get(x); });
+                            else if (v && typeof v === 'object' && k !== 'chart' && k[0] !== '_') walk(v, depth + 1);
+                        });
+                    };
+                    const live = C.instances ? Object.values(C.instances) : [];
+                    live.forEach(ch => {
+                        try {
+                            const sc = ch.options && ch.options.scales;
+                            if (sc) Object.keys(sc).forEach(id => {
+                                const ax = ch.config.options.scales && ch.config.options.scales[id] || (ch.config.options.scales = ch.config.options.scales || {}, ch.config.options.scales[id] = {});
+                                ax.grid = Object.assign({}, ax.grid, { color: swap.get(sc[id].grid && sc[id].grid.color) || (ax.grid && ax.grid.color) || next.grid });
+                                ax.border = Object.assign({}, ax.border, { color: swap.get(sc[id].border && sc[id].border.color) || (ax.border && ax.border.color) || next.grid });
+                                ax.ticks = Object.assign({}, ax.ticks, { color: swap.get(sc[id].ticks && sc[id].ticks.color) || (ax.ticks && ax.ticks.color) || next.axis });
+                            });
+                            walk(ch.config.options.plugins, 0);
+                            (ch.data.datasets || []).forEach(ds => walk(ds, 0));
+                            ch.update('none');
+                        } catch (_) { /* destroyed or foreign chart */ }
+                    });
+                    prev = next;
+                });
+            }
+        }
+        return theme;
     };
 
     // JSON fetch wrapper. What every caller has always seen is unchanged:
