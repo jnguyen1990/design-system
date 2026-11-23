@@ -69,6 +69,22 @@ const FIXTURE = `
   <div class="form-group"><label>Fixture text</label>
     <input type="text" class="form-control" id="fx-input"></div>
   <p class="text-faint" id="fx-faint">Faint text</p>
+  <div class="card"><table class="table-stack" id="fx-stack">
+    <thead><tr><th></th><th>Payee</th><th>Category</th><th>Amount</th><th>Imported</th><th></th></tr></thead>
+    <tbody><tr>
+      <td data-cell="select"><input type="checkbox" aria-label="Select"></td>
+      <td data-cell="title">Costco Wholesale W549 with a long payee name that must wrap</td>
+      <td data-label="Category"><span class="badge badge--green">Groceries</span></td>
+      <td data-label="Amount" class="td-amount">−$720.03</td>
+      <td data-cell="hide">Sep 22</td>
+      <td data-cell="actions"><button class="btn btn-ghost btn-sm" aria-label="More">⋮</button></td>
+    </tr></tbody></table></div>
+  <div class="card"><table class="table-stack table-stack--days" id="fx-days">
+    <thead><tr><th>Date</th><th>Payee</th><th>Category</th><th>Amount</th><th>Source</th></tr></thead>
+    <tbody><tr class="stack-day"><td colspan="5"><span>Tue, Sep 22</span><span class="stack-day-total">−$755.92</span></td></tr>
+      <tr><td>Sep 22</td><td data-cell="title">Costco Wholesale W549</td><td data-cell="meta"><span class="badge badge--green">Groceries</span></td>
+        <td data-cell="amount" class="td-amount">−$720.03</td><td data-cell="aside">Rogers Bank</td></tr>
+    </tbody></table></div>
 </div>
 <div class="modal" id="fx-modal"><div class="modal-box"><div class="modal-header">
   <h3 class="modal-title">Fixture modal</h3><button class="modal-close" data-modal-close aria-label="Close">&times;</button></div>
@@ -153,6 +169,23 @@ async function invariants(page, { width, theme }) {
         // aria-current on the active nav link
         const active = document.querySelector('.nav-link.active');
         if (active && active.getAttribute('aria-current') !== 'page') fails.push('.nav-link.active lacks aria-current="page"');
+
+        // Stacked tables (M2): untouched on desktop, card rows on mobile.
+        const stack = $('#fx-stack'), days = $('#fx-days');
+        const dayRow = days.querySelector('tr.stack-day');
+        if (width > 768) {
+            if (cs(stack.querySelector('thead')).display === 'none') fails.push('.table-stack thead hidden on desktop');
+            if (cs(dayRow).display !== 'none') fails.push('.stack-day row shows on desktop');
+        } else {
+            if (cs(stack.querySelector('thead')).display !== 'none') fails.push('.table-stack thead still shows at 375');
+            if (cs(stack.querySelector('tbody tr')).display !== 'grid') fails.push('.table-stack rows are not cards at 375');
+            const lbl = getComputedStyle(stack.querySelector('td[data-label="Amount"]'), '::before').content;
+            if (!/Amount/.test(lbl)) fails.push(`.table-stack data-label not rendered (::before ${lbl})`);
+            if (cs(stack.querySelector('td[data-cell="hide"]')).display !== 'none') fails.push('data-cell="hide" still shows at 375');
+            if (cs(dayRow).display === 'none' || cs(dayRow).position !== 'sticky') fails.push('.stack-day header is not a sticky row at 375');
+            if (cs(days.querySelector('tbody tr:not(.stack-day) td:first-child')).display !== 'none') fails.push('.table-stack--days shows a cell without a role');
+            for (const t of [stack, days]) if (t.getBoundingClientRect().right > window.innerWidth + 1) fails.push(`#${t.id} overflows at 375`);
+        }
 
         // Mobile floor
         if (width <= 768) {
