@@ -62,7 +62,7 @@ The product **sounds like a tool**, not a product. No marketing voice, no emoji,
 
 ### Casing (v4)
 - **Sentence case everywhere**: `New entry`, `Today`, `Archive`, `Apr 22 · Amex`. The v3 lowercase-labels rule is retired.
-- **Micro-labels are sentence case (v4.4)**: table headers (`thead th`) and stat labels (`.stat-label`) are 12px medium muted, no tracking — the old UPPERCASE instrument-panel signature; don't extend it to other labels.
+- **Micro-labels are sentence case (v4.4)**: table headers (`thead th`) and stat labels (`.stat-label`) are 12px medium muted, no tracking. The old UPPERCASE instrument-panel signature is retired.
 - **Sentence case** — never Title Case — for buttons, menus, headings: `Add transaction`, not `Add Transaction`.
 - `.td-date` applies `text-transform: capitalize`, so lowercase strftime output renders as `Apr 22` for free.
 - Acronyms keep their case: `CSV`, `ID`, `USD`.
