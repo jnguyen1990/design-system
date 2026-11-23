@@ -47,6 +47,9 @@
                                         draws its own glyph), then dispatches
                                         "ds:themechange" on document
                                         ({detail:{theme}}) so charts can re-theme.
+     - dsSheet(id, open)                open/close a .sheet bottom sheet (the mobile
+                                        "More" sheet); toggles otherwise come from
+                                        [data-sheet-toggle][aria-controls] buttons.
      - dsEnhanceLabels(root)            points each .form-group's lone <label> at
                                         the group's lone text control (gives the
                                         control an id when it has none). Runs on
@@ -852,7 +855,8 @@
         clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
         briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
         users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-        search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'
+        search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+        more: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>'
     };
 
     function iconSvg(name) {
@@ -1624,6 +1628,70 @@
         if (e.target.closest('#mobileMenuBtn')) { e.stopPropagation(); setMobileMenu(!sidebar.classList.contains('open')); }
         else if (e.target.closest('#mobileOverlay') || e.target.closest('.nav-link')) setMobileMenu(false);
     });
+    // ── Bottom sheet (v4.4, the mobile "More" sheet) ────────────────────────
+    // <button data-sheet-toggle aria-controls="more-sheet" aria-expanded="false">
+    // opens <div class="sheet" id="more-sheet" hidden> and the .sheet-scrim
+    // before it. Focus moves into the sheet and stays there; Esc, a scrim
+    // tap or following a link closes it and focus returns to the toggle.
+    let openSheet = null;
+    let sheetToggle = null;
+    function sheetFocusables(sheet) {
+        return Array.prototype.filter.call(
+            sheet.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+            el => el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    }
+    function setSheet(sheet, open, toggle) {
+        if (!sheet) return;
+        const scrim = sheet.previousElementSibling && sheet.previousElementSibling.classList.contains('sheet-scrim')
+            ? sheet.previousElementSibling : null;
+        sheet.hidden = !open;
+        if (scrim) scrim.hidden = !open;
+        const t = toggle || document.querySelector('[data-sheet-toggle][aria-controls="' + sheet.id + '"]');
+        if (t) t.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) {
+            openSheet = sheet;
+            sheetToggle = t;
+            const first = sheetFocusables(sheet)[0];
+            if (first) first.focus();
+        } else {
+            openSheet = null;
+            if (t && document.contains(t)) t.focus();
+            sheetToggle = null;
+        }
+    }
+    global.dsSheet = function dsSheet(idOrEl, open) {
+        const sheet = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
+        setSheet(sheet, open === undefined ? sheet.hidden : !!open);
+    };
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        const t = e.target.closest('[data-sheet-toggle]');
+        if (t) {
+            const sheet = document.getElementById(t.getAttribute('aria-controls'));
+            if (sheet) { e.preventDefault(); setSheet(sheet, sheet.hidden, t); }
+            return;
+        }
+        if (!openSheet) return;
+        if (e.target.closest('.sheet-scrim')) setSheet(openSheet, false, sheetToggle);
+        else if (e.target.closest('.sheet a[href]')) { openSheet.hidden = true; const s = openSheet.previousElementSibling; if (s && s.classList.contains('sheet-scrim')) s.hidden = true; openSheet = null; }
+    });
+    document.addEventListener('keydown', function (e) {
+        if (!openSheet) return;
+        if (e.key === 'Escape') { e.preventDefault(); setSheet(openSheet, false, sheetToggle); return; }
+        if (e.key === 'Tab') {
+            const items = sheetFocusables(openSheet);
+            if (!items.length) return;
+            const first = items[0], last = items[items.length - 1];
+            if (!openSheet.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+            else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    }, true);
+    // Rotating to a wide screen leaves no tab bar to come back to.
+    try {
+        global.matchMedia('(min-width: 769px)').addEventListener('change', ev => { if (ev.matches && openSheet) setSheet(openSheet, false, sheetToggle); });
+    } catch (_) { /* old Safari */ }
+
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
         const sidebar = document.querySelector('.sidebar.open');

@@ -214,6 +214,26 @@
     </div>
   </main>
 
+  <!-- Mobile tab bar + "More" sheet: the engine shell renders these from nav_items (first four, or the tab: true ones). -->
+  <nav class="tab-bar" aria-label="Tabs">
+    <a href="#" class="tab-bar-item"><span class="tab-bar-ico"><span class="nav-ico" data-ico="grid"></span></span><span class="tab-bar-label">dashboard</span></a>
+    <a href="#" class="tab-bar-item"><span class="tab-bar-ico"><span class="nav-ico" data-ico="pie-chart"></span></span><span class="tab-bar-label">budget</span></a>
+    <a href="index.html" class="tab-bar-item active" aria-current="page"><span class="tab-bar-ico"><span class="nav-ico" data-ico="list"></span></span><span class="tab-bar-label">all transactions</span></a>
+    <a href="#" class="tab-bar-item"><span class="tab-bar-ico"><span class="nav-ico" data-ico="inbox"></span></span><span class="tab-bar-label">uncategorized</span></a>
+    <button type="button" class="tab-bar-item" data-sheet-toggle aria-controls="more-sheet" aria-expanded="false" aria-haspopup="dialog"><span class="tab-bar-ico"><span class="nav-ico" data-ico="more"></span></span><span class="tab-bar-label">More</span></button>
+  </nav>
+  <div class="sheet-scrim" hidden></div>
+  <div class="sheet" id="more-sheet" role="dialog" aria-modal="true" aria-label="More" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <ul class="nav-menu">
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="trending-up"></span>reports</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>settings</a></li>
+    </ul>
+    <div class="sheet-sec">Apps</div>
+    <div class="sheet-dock"></div>
+  </div>
+
+
   <!-- ⌘1..⌘9 and ⌘, sidebar shortcuts. The theme toggle, mobile menu, toasts
        and nav icons all come from shared-core.js — no page script needed. -->
   <script>installNavHotkeys({ allowComma: true });</script>

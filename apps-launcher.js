@@ -114,19 +114,7 @@
     { id: "postings",    name: "Postings", url: "https://postings.joenguyen.ca", logo: LOGO_POSTINGS }
   ];
 
-  function init() {
-    const currentApp = document.documentElement.getAttribute("data-app") || "";
-    const sidebar = document.querySelector(".sidebar");
-    if (!sidebar) return;
-
-    let footer = sidebar.querySelector(".sidebar-footer");
-    if (!footer) {
-      footer = document.createElement("div");
-      footer.className = "sidebar-footer";
-      sidebar.appendChild(footer);
-    }
-    footer.innerHTML = "";
-
+  function buildDock(currentApp) {
     const dock = document.createElement("div");
     dock.className = "app-dock";
 
@@ -157,17 +145,43 @@
     themeBtn.type = "button";
     themeBtn.className = "dock-theme";
     themeBtn.title = "Toggle theme";
-    const glyph = () =>
-      document.documentElement.getAttribute("data-theme") === "dark" ? "\u2600" : "\u263D";
-    themeBtn.textContent = glyph();
+    themeBtn.setAttribute("aria-label", "Toggle theme");
     themeBtn.addEventListener("click", () => {
       if (window.toggleTheme) window.toggleTheme();
-      themeBtn.textContent = glyph();
+      syncGlyphs();
     });
     dock.appendChild(themeBtn);
-
-    footer.appendChild(dock);
+    return dock;
   }
+
+  // Every dock's theme button shows the same glyph (the sidebar and the
+  // mobile "More" sheet each carry one).
+  function syncGlyphs() {
+    const g = document.documentElement.getAttribute("data-theme") === "dark" ? "\u2600" : "\u263D";
+    document.querySelectorAll(".dock-theme").forEach(b => { b.textContent = g; });
+  }
+
+  function init() {
+    const currentApp = document.documentElement.getAttribute("data-app") || "";
+    const sidebar = document.querySelector(".sidebar");
+    if (sidebar) {
+      let footer = sidebar.querySelector(".sidebar-footer");
+      if (!footer) {
+        footer = document.createElement("div");
+        footer.className = "sidebar-footer";
+        sidebar.appendChild(footer);
+      }
+      footer.innerHTML = "";
+      footer.appendChild(buildDock(currentApp));
+    }
+    // v4.4: the engine shell's mobile "More" sheet has a .sheet-dock slot.
+    document.querySelectorAll(".sheet-dock").forEach(slot => {
+      slot.innerHTML = "";
+      slot.appendChild(buildDock(currentApp));
+    });
+    syncGlyphs();
+  }
+  document.addEventListener("ds:themechange", syncGlyphs);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

@@ -187,6 +187,45 @@ async function invariants(page, { width, theme }) {
             for (const t of [stack, days]) if (t.getBoundingClientRect().right > window.innerWidth + 1) fails.push(`#${t.id} overflows at 375`);
         }
 
+        // Mobile navigation (M2): tab bar + More sheet where the shell renders
+        // one; the hamburger + drawer wherever it does not (postings).
+        const bar = document.querySelector('body > .tab-bar');
+        const burger = $('#mobileMenuBtn');
+        if (width > 768) {
+            if (bar && cs(bar).display !== 'none') fails.push('.tab-bar shows on desktop');
+        } else if (bar) {
+            if (cs(bar).display === 'none') fails.push('.tab-bar hidden at 375');
+            if (burger && cs(burger).display !== 'none') fails.push('hamburger still shows beside the tab bar');
+            const br = bar.getBoundingClientRect();
+            if (br.left < 0 || br.right > window.innerWidth) fails.push('.tab-bar runs past the viewport');
+            bar.querySelectorAll('.tab-bar-item').forEach(t => { const r = t.getBoundingClientRect(); if (r.height < 44 || r.width < 44) fails.push(`tab ${t.textContent.trim()} is ${Math.round(r.width)}x${Math.round(r.height)} (< 44)`); });
+            const act = bar.querySelector('.tab-bar-item.active');
+            if (act && act.getAttribute('aria-current') !== 'page') fails.push('active tab lacks aria-current');
+            const more = bar.querySelector('[data-sheet-toggle]');
+            const sheet = more && document.getElementById(more.getAttribute('aria-controls'));
+            if (!sheet) fails.push('tab bar has no More sheet');
+            else {
+                more.focus(); more.click();
+                await new Promise(r => setTimeout(r, 50));
+                if (sheet.hidden || cs(sheet).display === 'none') fails.push('More did not open the sheet');
+                if (!sheet.contains(document.activeElement)) fails.push('focus did not move into the sheet');
+                if (more.getAttribute('aria-expanded') !== 'true') fails.push('More aria-expanded not true when open');
+                if (!sheet.querySelector('.sheet-dock .app-dock')) fails.push('sheet has no app dock');
+                const shr = sheet.getBoundingClientRect();
+                if (shr.right > window.innerWidth + 1) fails.push('sheet overflows');
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+                await new Promise(r => setTimeout(r, 30));
+                if (!sheet.hidden) fails.push('Esc did not close the sheet');
+                if (document.activeElement !== more) fails.push('closing the sheet did not return focus to More');
+            }
+        } else if (burger) {
+            if (cs(burger).display === 'none') fails.push('no tab bar and no hamburger at 375');
+            burger.click();
+            await new Promise(r => setTimeout(r, 30));
+            if (!$('.sidebar').classList.contains('open')) fails.push('hamburger did not open the drawer');
+            burger.click();
+        }
+
         // Mobile floor
         if (width <= 768) {
             const fs = parseFloat(cs(inp).fontSize);

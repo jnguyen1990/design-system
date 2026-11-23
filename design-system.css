@@ -1651,6 +1651,8 @@
     --z-sidebar:  100;  /* fixed sidebar */
     --z-toggle:   101;  /* mobile hamburger, over the closed drawer */
     --z-drawer:   102;  /* open mobile drawer, over the hamburger */
+    --z-tabbar:   90;   /* mobile tab bar (v4.4) */
+    --z-sheet:    110;  /* mobile bottom sheet + its scrim (v4.4) */
     --z-dropdown: 150;  /* dropdown menus, popovers */
     --z-popover:  160;  /* menus that open from inside a dropdown/filter bar */
     --z-modal:    200;
@@ -6463,6 +6465,147 @@ tbody tr.is-key-focus > td { background: transparent; }
 .meter-seg--due { background: repeating-linear-gradient(135deg, var(--border-hover) 0 4px, transparent 4px 8px); box-shadow: inset 0 0 0 1px var(--border-hover); }
 .swatch--due { background: repeating-linear-gradient(135deg, var(--border-hover) 0 2px, transparent 2px 4px); box-shadow: inset 0 0 0 1px var(--border-hover); }
 .swatch--warn { background: var(--color-pending); }
+
+/* ============================================================
+   Mobile tab bar + "More" sheet (v4.4, M2 — Joe's pick: B's floating
+   blurred pill, C's bottom sheet). Rendered by the engine shell from the
+   app's nav_items; below 768px it replaces the hamburger + drawer. A page
+   without a .tab-bar (postings' own layout) keeps the hamburger unchanged.
+
+     <nav class="tab-bar" aria-label="Tabs">
+       <a class="tab-bar-item active" href="/" aria-current="page">
+         <span class="tab-bar-ico"><span class="nav-ico" data-ico="grid"></span></span>
+         <span class="tab-bar-label">dashboard</span></a>
+       …
+       <button type="button" class="tab-bar-item" data-sheet-toggle
+               aria-controls="more-sheet" aria-expanded="false" aria-haspopup="dialog">
+         <span class="tab-bar-ico"><span class="nav-ico" data-ico="more"></span></span>
+         <span class="tab-bar-label">More</span></button>
+     </nav>
+     <div class="sheet-scrim" hidden></div>
+     <div class="sheet" id="more-sheet" role="dialog" aria-modal="true" aria-label="More" hidden>
+       <div class="sheet-handle" aria-hidden="true"></div>
+       <ul class="nav-menu">…the other .nav-link rows…</ul>
+       <div class="sheet-sec">Apps</div><div class="sheet-dock"></div>
+     </div>
+
+   Inactive tabs are 44px icons (the label stays for screen readers); the
+   active tab widens to show its label on the accent tint. shared-core.js
+   opens the sheet ([data-sheet-toggle]), traps focus in it, closes it on
+   Esc / scrim / a link, and returns focus to the toggle. apps-launcher.js
+   fills .sheet-dock with the app dock.
+   ============================================================ */
+.tab-bar, .sheet, .sheet-scrim { display: none; }
+
+@media (max-width: 768px) {
+    body:has(> .tab-bar) .mobile-menu-toggle,
+    body:has(> .tab-bar) .mobile-overlay { display: none; }
+    body:has(> .tab-bar) .page-header { padding-left: var(--space-4); }
+    body:has(> .tab-bar) .main-content { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+    body:has(> .tab-bar) .status-message { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+
+    .tab-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-1);
+        position: fixed;
+        z-index: var(--z-tabbar);
+        left: calc(var(--space-3) + env(safe-area-inset-left, 0px));
+        right: calc(var(--space-3) + env(safe-area-inset-right, 0px));
+        bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+        padding: var(--space-1_5);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        background: var(--card);            /* fallback: solid */
+        box-shadow: var(--shadow-floating);
+    }
+    @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+        .tab-bar {
+            background: color-mix(in srgb, var(--card) 82%, transparent);
+            -webkit-backdrop-filter: saturate(1.6) blur(16px);
+            backdrop-filter: saturate(1.6) blur(16px);
+        }
+    }
+    .tab-bar-item {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-1);
+        width: 44px;
+        min-height: 44px;
+        padding: 0;
+        border: 0;
+        border-radius: var(--radius-full);
+        background: none;
+        color: var(--text-muted);
+        font: inherit;
+        font-size: var(--text-sm);
+        text-decoration: none;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .tab-bar-item:hover { color: var(--text); }
+    .tab-bar-item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+    .tab-bar-ico { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
+    .tab-bar-ico .nav-ico, .tab-bar-ico > svg { width: 22px; height: 22px; color: currentColor; }
+    .tab-bar-label {
+        /* Visually hidden on inactive tabs, still read by screen readers. */
+        position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap;
+    }
+    .tab-bar-item.active {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+        padding: 0 var(--space-3) 0 var(--space-2);
+        background: var(--accent-soft);
+        color: var(--text);
+        font-weight: var(--weight-medium);
+    }
+    .tab-bar-item.active .tab-bar-label {
+        position: static; width: auto; height: auto; clip: auto;
+        overflow: hidden; text-overflow: ellipsis;
+    }
+    .tab-bar-item[aria-expanded="true"] { color: var(--text); background: var(--panel); }
+
+    .sheet-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: var(--z-sheet);
+        background: rgba(0, 0, 0, 0.4);
+    }
+    [data-theme="dark"] .sheet-scrim { background: rgba(0, 0, 0, 0.6); }
+    .sheet {
+        display: block;
+        position: fixed;
+        z-index: calc(var(--z-sheet) + 1);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        max-height: 85dvh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: var(--space-2) calc(var(--space-3) + env(safe-area-inset-right, 0px)) calc(var(--space-4) + env(safe-area-inset-bottom, 0px)) calc(var(--space-3) + env(safe-area-inset-left, 0px));
+        background: var(--card);
+        border-radius: 16px 16px 0 0;
+        box-shadow: var(--shadow-floating);
+        animation: sheet-in var(--motion-slow);
+    }
+    .sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto var(--space-3); }
+    .sheet .nav-link { height: 48px; font-size: 15px; color: var(--text); }
+    .sheet .nav-link .nav-ico { color: var(--text-muted); }
+    .sheet .nav-kbd { display: none; }
+    .sheet-sec { font-size: var(--text-xs); color: var(--text-muted); padding: var(--space-3) var(--space-3) var(--space-1); border-top: 1px solid var(--border); margin-top: var(--space-2); }
+    .sheet-dock .app-dock { padding: var(--space-2) var(--space-3); gap: var(--space-3); flex-wrap: wrap; }
+    .sheet-dock .dock-app svg { width: 32px; height: 32px; }
+    .sheet-dock .dock-theme { width: 44px; height: 44px; }
+}
+@keyframes sheet-in {
+    from { transform: translateY(16px); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+}
 
 /* ============================================================
    Stacked tables (v4.4, M2) — a table that becomes rows of cards below
