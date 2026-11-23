@@ -17,7 +17,7 @@
   <script src="https://design-system.joenguyen.ca/apps-launcher.js" defer></script>
   <style>
     /* Page-local overrides only — everything else comes from the design system */
-    .recent-row { display: flex; align-items: center; gap: var(--space-3); padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .recent-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2_5) 0; border-bottom: 1px solid var(--border); }
     .recent-row:last-child { border-bottom: none; }
     .recent-row .recent-source { font-size: 11px; color: var(--text-muted); width: 80px; flex-shrink: 0; }
     .recent-row .recent-text { flex: 1; min-width: 0; font-size: var(--text-sm); }
@@ -98,26 +98,26 @@
 
     <div class="content">
       <!-- Today + Upcoming -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); align-items: start;">
+      <div class="columns-2">
         <div class="card">
           <div class="d-flex justify-between align-center mb-2">
-            <h3 class="card-title" style="margin:0;">Today</h3>
-            <span class="text-muted" style="font-size: var(--text-xs); font-family: var(--font-mono);">thu · apr 24</span>
+            <h3 class="card-title m-0">Today</h3>
+            <span class="text-meta-xs">thu · apr 24</span>
           </div>
-          <p class="text-muted" style="font-size: var(--text-sm); margin-bottom: var(--space-4);">3 things on the docket.</p>
-          <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-            <label class="d-flex align-center gap-2" style="cursor: pointer;">
-              <input type="checkbox" style="margin: 0;">
+          <p class="text-muted mb-4">3 things on the docket.</p>
+          <div class="stack stack-sm">
+            <label class="d-flex align-center gap-2">
+              <input type="checkbox">
               <span style="font-size: var(--text-sm);">Threshold ride · 1h 30m</span>
               <span class="badge session-type-cycling" style="margin-left: auto;"><span class="color-dot color-dot--orange"></span> fitness</span>
             </label>
-            <label class="d-flex align-center gap-2" style="cursor: pointer;">
-              <input type="checkbox" style="margin: 0;">
+            <label class="d-flex align-center gap-2">
+              <input type="checkbox">
               <span style="font-size: var(--text-sm);">Rebalance brokerage Q2</span>
               <span class="badge" style="margin-left: auto;"><span class="color-dot color-dot--slate"></span> note</span>
             </label>
-            <label class="d-flex align-center gap-2" style="cursor: pointer;">
-              <input type="checkbox" style="margin: 0;">
+            <label class="d-flex align-center gap-2">
+              <input type="checkbox">
               <span style="font-size: var(--text-sm);">Grocery list for sunday</span>
               <span class="badge" style="margin-left: auto;"><span class="color-dot color-dot--slate"></span> note</span>
             </label>
@@ -130,36 +130,36 @@
 
         <div class="card">
           <div class="d-flex justify-between align-center mb-2">
-            <h3 class="card-title" style="margin:0;">Upcoming</h3>
-            <span class="text-muted" style="font-size: var(--text-xs); font-family: var(--font-mono);">next 14 days</span>
+            <h3 class="card-title m-0">Upcoming</h3>
+            <span class="text-meta-xs">next 14 days</span>
           </div>
-          <div style="display: flex; flex-direction: column;">
-            <div class="recent-row" style="padding: 10px 0;">
+          <div>
+            <div class="recent-row">
               <span class="recent-source">fitness</span>
               <span class="recent-text">Long ride · 3h</span>
               <span class="recent-time">sat · apr 26</span>
             </div>
-            <div class="recent-row" style="padding: 10px 0;">
+            <div class="recent-row">
               <span class="recent-source">budgeter</span>
               <span class="recent-text">Amex statement closes</span>
               <span class="recent-time">Apr 28</span>
             </div>
-            <div class="recent-row" style="padding: 10px 0;">
+            <div class="recent-row">
               <span class="recent-source">fitness</span>
               <span class="recent-text">FTP test · z2 ramp</span>
               <span class="recent-time">may 1</span>
             </div>
-            <div class="recent-row" style="padding: 10px 0;">
+            <div class="recent-row">
               <span class="recent-source">budgeter</span>
               <span class="recent-text">Rent · auto-transfer</span>
               <span class="recent-time">may 1</span>
             </div>
-            <div class="recent-row" style="padding: 10px 0;">
+            <div class="recent-row">
               <span class="recent-source">base</span>
               <span class="recent-text">Q3 reading list · review</span>
               <span class="recent-time">may 5</span>
             </div>
-            <div class="recent-row" style="padding: 10px 0;">
+            <div class="recent-row">
               <span class="recent-source">fitness</span>
               <span class="recent-text">Squat cycle wk 4 starts</span>
               <span class="recent-time">may 5</span>

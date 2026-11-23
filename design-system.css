@@ -6138,14 +6138,57 @@ tbody tr.is-key-focus > td { background: transparent; }
 .flex-1          { flex: 1; }
 .flex-wrap       { flex-wrap: wrap; }
 
+.gap-5           { gap: var(--space-5); }
+.gap-6           { gap: var(--space-6); }
+
+.m-0  { margin: 0; }
+.mt-0 { margin-top: 0; }
 .mt-1 { margin-top: var(--space-1); }
 .mt-2 { margin-top: var(--space-2); }
+.mt-3 { margin-top: var(--space-3); }
 .mt-4 { margin-top: var(--space-4); }
+.mt-5 { margin-top: var(--space-5); }
 .mt-6 { margin-top: var(--space-6); }
+.mt-8 { margin-top: var(--space-8); }
+.mb-0 { margin-bottom: 0; }
 .mb-1 { margin-bottom: var(--space-1); }
 .mb-2 { margin-bottom: var(--space-2); }
+.mb-3 { margin-bottom: var(--space-3); }
 .mb-4 { margin-bottom: var(--space-4); }
+.mb-5 { margin-bottom: var(--space-5); }
 .mb-6 { margin-bottom: var(--space-6); }
+.mb-8 { margin-bottom: var(--space-8); }
+
+/* ── Layout primitives (2026-11-23) ────────────────────────────
+   Three shapes cover most of the 1,004 inline style="" attributes in the
+   apps (display:flex + gap, margin-bottom between blocks, a 1fr 1fr grid).
+   Prefer these to inline styles; the margin utilities above are for the
+   one-off gap a primitive does not own.
+
+   .stack      vertical rhythm: children spaced by --stack-gap (16px);
+               .stack-sm 8px, .stack-lg 24px. Children's own margins are
+               zeroed so the gap is the only spacing.
+   .cluster    a wrapping row of inline things (buttons, chips, meta):
+               centred, 8px gap; .cluster-between pushes the ends apart,
+               .cluster-end right-aligns.
+   .columns-2  two equal columns that never overflow (minmax(0, 1fr)) and
+               stack below 900px.
+   .columns-aside  a main column plus a 280-380px rail; stacks below 900px.
+   ──────────────────────────────────────────────────────────── */
+.stack { display: flex; flex-direction: column; gap: var(--stack-gap, var(--space-4)); }
+.stack > * { margin-top: 0; margin-bottom: 0; }
+.stack-sm { --stack-gap: var(--space-2); }
+.stack-lg { --stack-gap: var(--space-6); }
+
+.cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cluster-gap, var(--space-2)); min-width: 0; }
+.cluster-between { justify-content: space-between; }
+.cluster-end { justify-content: flex-end; }
+
+.columns-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); align-items: start; }
+.columns-aside { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 380px); gap: var(--space-6); align-items: start; }
+@media (max-width: 900px) {
+    .columns-2, .columns-aside { grid-template-columns: minmax(0, 1fr); }
+}
 
 .text-center { text-align: center; }
 .text-right  { text-align: right; }
