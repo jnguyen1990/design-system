@@ -2004,6 +2004,31 @@ label {
     border: 0;
 }
 
+/* Skip link (rendered by the personal_app_client shell as
+   `.sr-only.skip-link`): hidden until keyboard focus, then a visible
+   chip at the top-left, over the sidebar and the menu button. */
+.skip-link:focus,
+.skip-link:focus-visible {
+    position: fixed;
+    top: var(--space-3);
+    left: var(--space-3);
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip: auto;
+    overflow: visible;
+    white-space: normal;
+    padding: var(--space-2) var(--space-3);
+    z-index: var(--z-toast);
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-card);
+    font-weight: 600;
+    text-decoration: none;
+}
+
 .text-muted    { color: var(--text-muted); }
 .text-faint    { color: var(--text-faint); }
 .text-tertiary { color: var(--text-faint); }
