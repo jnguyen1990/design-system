@@ -25,8 +25,10 @@ Apps feel like considered tools with product polish. Linear's edge, Things 3's s
 
 | Role | Family | Source |
 |---|---|---|
-| Sans (body, UI) | **Inter** | Google Fonts |
-| Mono (data, code, kbd) | **Geist Mono** | `geist-font` package / jsDelivr |
+| Sans (body, UI) | **Inter** (variable, latin + latin-ext) | self-hosted, `fonts/` (from `@fontsource-variable/inter` 5.3.0, OFL) |
+| Mono (data, code, kbd) | **Geist Mono** (variable) | self-hosted, `fonts/` (from `geist` 1.3.1, OFL) |
+
+The stylesheet's `@font-face` rules use relative URLs, so the fonts come from wherever the CSS does. Apps load them cross-origin; `_headers` sends `Access-Control-Allow-Origin` for `/fonts/*`. No Google Fonts or jsDelivr request remains (since 2026-11-23).
 
 ```css
 --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -35,6 +37,7 @@ Apps feel like considered tools with product polish. Linear's edge, Things 3's s
 
 ### Scale (16px root)
 ```css
+--text-2xs:  0.6875rem; /* 11px — micro-labels, table heads, meta (v4.3) */
 --text-xs:   0.75rem;   /* 12px — captions, kbd hints */
 --text-sm:   0.8125rem; /* 13px — secondary UI, table rows */
 --text-base: 0.875rem;  /* 14px — body, default UI */
@@ -93,10 +96,10 @@ Step intent (memorize):
 --panel-active: var(--slate-5);
 --border:       var(--slate-6);    /* default border */
 --border-hover: var(--slate-7);
---focus-ring:   var(--accent-300);  /* per-app: indigo-7 default, green-7 budgeter, orange-7 fitness, slate-7 base */
+--focus-ring:   var(--accent-text); /* per-app step 11 (v4.3; was step 7 at 1.6-1.9:1) */
 --text:         var(--slate-12);
 --text-muted:   var(--slate-11);
---text-faint:   var(--slate-10);
+--text-faint:   color-mix(in srgb, var(--slate-11) 70%, var(--slate-10)); /* v4.3; dark: 30% — >= 4.5:1 on card, page, panel */
 ```
 
 Backgrounds are **slightly off** — light is `~#fafafa`, dark is `~#0a0a0a`. Slightly cool. Never pure black or white.
@@ -150,7 +153,17 @@ The app UI stays neutral. Each app picks **one** Radix accent for branding momen
 
 Those six are the only `data-app` values the stylesheet defines. The legacy aliases `hub`, `health` and `meals` were removed 2026-11-05.
 
-The brand color appears in: logo, favicon, empty-state illustration tint, onboarding pages, loading states — **and, since v4, in five chrome moments**: the primary button (`.btn-primary` → `--accent-500`), the active nav item (`--accent-soft` tinted bg; label stays `--text` since v4.2), the focus ring, text selection (`::selection`), and checked checkboxes/radios. Everything else in chrome stays neutral slate. The alpha tokens (`--accent-soft` = accent `a3`, `--accent-soft-hover` = `a4`) composite correctly on any surface and remap per app.
+The brand color appears in: logo, favicon, empty-state icon tint (`.empty-state-icon`), onboarding pages, loading states — **and, since v4, in five chrome moments**: the primary button (`.btn-primary` → `--accent-solid`), the active nav item (`--accent-soft` tinted bg; label stays `--text` since v4.2), the focus ring, text selection (`::selection`), and checked checkboxes/radios. Everything else in chrome stays neutral slate. The alpha tokens (`--accent-soft` = accent `a3`, `--accent-soft-hover` = `a4`) composite correctly on any surface and remap per app.
+
+**Solid fills that carry text (v4.3).** Never put `#fff` on `--accent-500`: white on step 9 measured 2.97–3.85:1 in five of six apps. Use the pair tokens, which pass AA in both themes for every app:
+
+| Token | Light | Dark |
+|---|---|---|
+| `--accent-solid` / `--accent-on` | step 11 / white (4.5–6.1:1) | step 9 / white for base, mealplanner (and the indigo default); near-black (`--slate-1`) for budgeter, fitness, upkeep, postings (4.9–6.4:1) |
+| `--accent-solid-hover`, `--accent-solid-active` | darkened 14% / 24% | moved away from the text colour, so hover never loses contrast |
+| `--danger-solid` / `--danger-on` (+ `-hover`, `-active`) | red-11 / white | red-9 / near-black |
+
+`.btn-primary`, `.btn-danger`, `.filter-btn.active` and checked checkboxes/radios use them. A new app's `[data-app]` block needs nothing extra unless its step 9 is bright: then add it to the dark near-black rule beside budgeter/fitness/upkeep/postings.
 
 ---
 
@@ -161,7 +174,9 @@ The brand color appears in: logo, favicon, empty-state illustration tint, onboar
 ```css
 --space-0_5: 2px;   /* hairline gap */
 --space-1:   4px;   /* icon-to-text in dense rows */
+--space-1_5: 6px;   /* v4.3 — label-to-field, chip gaps */
 --space-2:   8px;   /* tight padding */
+--space-2_5: 10px;  /* v4.3 — compact row padding */
 --space-3:  12px;   /* control padding */
 --space-4:  16px;   /* default gap, card padding */
 --space-6:  24px;   /* section spacing */
@@ -174,18 +189,30 @@ The brand color appears in: logo, favicon, empty-state illustration tint, onboar
 - Default row height: 36–40px (not 28)
 - Default form input height: 36px
 - Default button height: 36px (sm: 32, lg: 40)
+- **Touch (`pointer: coarse`): 44px** (sm 40, lg 48) — the tokens `--control-h-sm/-h/-lg` change, so never hard-code a control height
+
+**Layout primitives (v4.3)** — use these instead of inline `style=""`:
+- `.stack` — vertical rhythm, 16px (`.stack-sm` 8, `.stack-lg` 24); children's margins are zeroed
+- `.cluster` — wrapping centred row, 8px (`.cluster-between`, `.cluster-end`)
+- `.columns-2` — two equal `minmax(0, 1fr)` columns, one column below 900px
+- `.columns-aside` — main column + 280–380px rail, one column below 900px
+- margins `m-0`, `mt-/mb-{0,1,2,3,4,5,6,8}`; gaps `gap-{1..6}`
+
+**Layers.** z-index only from the scale: `--z-raised` 1, `--z-sticky` 50, `--z-overlay` 99, `--z-sidebar` 100, `--z-toggle` 101, `--z-drawer` 102, `--z-dropdown` 150, `--z-popover` 160, `--z-modal` 200, `--z-toast` 300.
 
 ---
 
 ## 5. Layout
 
 - **Width:** wide / responsive. Sidebar + main fills viewport. No artificial centered max-width on dashboard surfaces.
-- **Sidebar:** 240px fixed width. Things 3 style — colored dots (9px) before items, 40px rows at 15px text (bolder v4.1 proportions, 2026-09-08 — nav no longer reads undersized against 24px page titles), optional UPPERCASE `.nav-section-label` micro-labels, generous vertical rhythm, hover = `panel` background only.
+- **Sidebar:** 240px fixed width. Things 3 style — a quiet outline icon (`.nav-ico`, v4.2) before each item, 40px rows at 15px text (bolder v4.1 proportions, 2026-09-08 — nav no longer reads undersized against 24px page titles), optional UPPERCASE `.nav-section-label` micro-labels, generous vertical rhythm, hover = `panel` background only.
 - **Main padding:** 32px horizontal, 24px top, more below.
 - **Reading views** (long-form notes, settings, account pages): cap content width at 720px, centered.
 
 ### Mobile rules (already in repo README)
-- All pages render at 375px wide with zero horizontal page-level scroll
+- All pages render at 375px wide with zero horizontal page-level scroll — check `document.body.scrollWidth <= window.innerWidth` (not `documentElement`, which the system's `overflow-x: hidden` makes always pass)
+- Text inputs are 16px under 768px (the system does it; iOS zooms below 16px)
+- Touch targets 44px (the system does it through `--control-h`)
 - Tables wrap in `.table-responsive`
 - Page-header controls use `.toolbar` (flex-wrap)
 - Grids collapse to 1–2 columns under 768px
@@ -248,12 +275,12 @@ For tile-style numeric cards (PRs, account balances, KPI metrics), use the dedic
 
 Linear-style: solid fill + subtle inner highlight + tiny shadow. Tactile, not skeuomorphic.
 
-### Primary (v4 — per-app accent)
+### Primary (v4 — per-app accent; v4.3 — AA solid tokens)
 ```css
 .btn-primary {
-  background: var(--accent-500);   /* green in Budgeter, orange in Fitness, slate in Base */
-  color: white;
-  border: 1px solid var(--accent-600);
+  background: var(--accent-solid);  /* step 11 light / step 9 dark of the app accent */
+  color: var(--accent-on);          /* white, or near-black on bright dark accents */
+  border: 1px solid var(--accent-solid);
   border-radius: var(--radius-sm);
   height: 36px;
   padding: 0 12px;
@@ -263,8 +290,8 @@ Linear-style: solid fill + subtle inner highlight + tiny shadow. Tactile, not sk
     0 1px 2px rgba(0,0,0,0.08);
   transition: background 120ms ease-out, border-color 120ms ease-out;
 }
-.btn-primary:hover  { background: var(--accent-600); }
-.btn-primary:active { background: var(--accent-700); }
+.btn-primary:hover  { background: var(--accent-solid-hover); }
+.btn-primary:active { background: var(--accent-solid-active); }
 ```
 
 ### Secondary
@@ -288,7 +315,7 @@ Linear-style: solid fill + subtle inner highlight + tiny shadow. Tactile, not sk
 ```
 
 ### Destructive
-Same structure as primary, swap `--indigo-*` for `--red-*`.
+`.btn-danger`: same structure as primary on `--danger-solid` / `--danger-on`.
 
 ### Sizes
 - `sm`: height 32px, padding 0 10px, font 12px
@@ -297,35 +324,36 @@ Same structure as primary, swap `--indigo-*` for `--red-*`.
 
 ### Focus
 ```css
-outline: 2px solid var(--indigo-7);
+outline: 2px solid var(--focus-ring);   /* = --accent-text, step 11: 4.5:1+ on a card */
 outline-offset: 2px;
 ```
+Never mix the ring with transparency: the old 30% mix on inputs measured 1.1–1.2:1.
 
 ---
 
 ## 8. Forms
 
+The class is `.form-control` (there is no `.input`), inside a `.form-group` with a `.form-label`:
+
 ```css
-.input {
-  height: 36px;
+.form-control {
+  height: var(--control-h);           /* 36px, 44px on touch */
   padding: 0 12px;
-  background: var(--bg-subtle);
+  background: var(--bg);              /* inset field on the elevated card */
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font: 400 14px 'Inter', sans-serif;
+  font: 400 14px 'Inter', sans-serif; /* 16px under 768px */
 }
-.input::placeholder { color: var(--text-faint); }
-.input:focus {
+.form-control::placeholder { color: var(--text-faint); }
+.form-control:focus {
   border-color: var(--focus-ring);
-  outline: 2px solid var(--indigo-7);
-  outline-offset: 0;
-  outline-color: color-mix(in srgb, var(--indigo-7) 30%, transparent);
+  outline: 1px solid var(--focus-ring);  /* + the border = a 2px ring */
 }
-.input[aria-invalid="true"] {
-  border-color: var(--red-7);
-}
+.form-control[aria-invalid="true"] { border-color: var(--red-7); }
 ```
+
+`select.form-control` draws its own chevron. Associate every label: `<label for>` + `id`, or let shared-core's `dsEnhanceLabels()` do it — it wires a `.form-group` with exactly one `<label>` and one text control on load and on every modal open.
 
 - Label: 13px / weight 500 / `--text` / 6px below label
 - Helper text: 12px / weight 400 / `--text-muted`
@@ -357,7 +385,8 @@ Minimal. No springs, no layout animations.
 ```
 
 - No page transitions
-- Respect `prefers-reduced-motion: reduce`
+- The modal fades in (`modalIn`, `--motion-slow`). The token already carries the easing: never append a second timing function to a `--motion-*` value — that makes the declaration invalid and silently drops it (the v4.2 modal had no animation for this reason)
+- Respect `prefers-reduced-motion: reduce` (skeleton shimmer and toast slide stop too)
 - Easing is always ease-out (sharp start, soft end)
 
 ---
@@ -449,11 +478,12 @@ Compose with the amount-color utilities for +/- columns:
 
 ### Modal
 - Width: 480px (sm), 640px (default), 800px (lg)
-- Background: `--bg`
-- Border: 1px `--border`
+- Background: `--card`
+- Border: 1px `--card-border`
 - Radius: `--radius-md`
 - Shadow: floating shadow (see §6)
 - Backdrop: `rgba(0,0,0,0.4)` light, `rgba(0,0,0,0.6)` dark
+- Behaviour (modal-keys.js, v4.3, automatic for every `.modal`): `role="dialog"` + `aria-modal` + `aria-labelledby` its `.modal-title`; focus moves to the first field on open; Tab stays inside; focus returns to the opener on close. Give every modal a `.modal-title` so it has a name.
 
 ### Toast (success / error / status messages)
 Use `.status-message` plus a variant (`.status-success`, `.status-error`, `.status-warning`, `.status-info`) for any transient feedback ("saved", "deleted", "sync failed"). The class is **position: fixed, bottom-centered** — it never pushes layout. Floating shadow, 4px colored left border that encodes severity.
@@ -464,6 +494,7 @@ Use `.status-message` plus a variant (`.status-success`, `.status-error`, `.stat
 - **Don't toast on every save.** Silent success is fine for the common path; toast only when the action isn't otherwise visible (e.g. a save with no inline state change). Errors always toast.
 - Copy: name the outcome, not the reaction. `saved`, `deleted`, `sync failed`, `amount required`. Never `Successfully saved!` or `Oops!`.
 - One toast at a time per page — reuse a single `<div class="status-message">` element and update its text/class.
+- **Undo, not confirm, for recoverable removals (v4.3).** `dsToast('Removed "Rent"', 'success', {action: {label: 'Undo', onClick: restore}})` — the action renders inside the toast, runs once, and the toast stays 6s. Keep `dsConfirm` for what cannot come back.
 - **Toasts sit above modals** (`z-index: 300` over `.modal`'s 200), so a validation message raised while a modal is open reads at full strength over the scrim and can be clicked away. This holds over the `dsConfirm` / `dsPrompt` dialogs too: the toast is pinned to the bottom edge, the dialog box is centred.
 
 ```html
@@ -590,6 +621,30 @@ one column at 768px and below) so the fitness dashboard needs no inline style, a
 the identical `.goal-tabs` / `.goal-tab` rules for fitness and base are one pair,
 still scoped to those two apps. `.theme-toggle*` was removed on 2026-11-06 once
 `rails-app-template` moved to the dock; the app dock renders the theme button.
+
+#### Removed 2026-11-23 (v4.3) — do not reintroduce
+
+Token-name grep over the stylesheet, this repo's JS, kits and previews, all six
+`app/` trees, the gem, the template, mini and proxmox-scripts (quoted names too,
+for `cssToken()`):
+
+| Removed | Use instead |
+|---|---|
+| `--gray-50…950` | `--slate-N` / the semantic tokens |
+| `--success-*`, `--warning-*`, `--error-*`, `--info-500`, `--primary-500` | `--green-N`, `--amber-N`, `--red-N`, `--teal-N`, `--accent-500` |
+| `--gradient-*` | `--accent-500`, `--accent-soft` |
+| `--surface`, `--surface-hover`, `--surface-raised`, `--bg-primary`, `--bg-tertiary` | `--bg`, `--bg-subtle`, `--panel` |
+| `--border-light`, `--border-medium` | `--border` |
+| `--text-primary`, `--text-secondary`, `--text-tertiary` | `--text`, `--text-muted`, `--text-faint` |
+| `--shadow-md`, `--shadow-lg`, `--shadow-xl`, `--shadow-accent` | `--shadow-card`, `--shadow-floating` (`--shadow-sm` stays) |
+| `--leading-*`, `--transition-*` | `--lh-body` / `--lh-heading`, `--motion-*` |
+| `--text-3xl`, `--text-4xl`, `--radius-lg/xl/2xl` | `--text-2xl`, `--radius-md` |
+| `--color-primary`, `--color-feature`, `--color-personal`, `--color-warning` | `--accent-500`, `--purple-9`, `--pink-9`, `--orange-9` |
+| `--sidebar-w` (256px) | `--sidebar-width` (240px) |
+| raw `z-index` numbers | the `--z-*` scale (§4) |
+
+Kept although unused in the stylesheet: `--accent-soft-hover` (the new-app
+checklist asks for it), `--row-h-spacious`, and the unused spacing steps.
 
 ---
 
@@ -751,10 +806,46 @@ All globals from `shared-core.js`, loaded by every layout. Each of these existed
 | A copy button | `data-copy-text="…"` or `data-copy-target="#field"` on the button (toast confirms; `data-copy-label` to change it). From script: `dsCopy(text)` | a per-page `navigator.clipboard` handler |
 | A toast with no pre-placed div | `dsToast('saved')`, `dsToast('sync failed', 'error')` | — (`showStatus(id, …)` is still right when the page owns a status div) |
 | A flash from the server | render `.status-message.status-success` / `.status-error`; success hides itself after 3s | a `setTimeout` one-liner in the layout |
+| An undo after a removal | `dsToast(msg, 'success', {action: {label: 'Undo', onClick}})` | a confirm dialog before a recoverable delete |
+| Nothing to show | `.empty-state` markup, or `dsEmptyState(text, {icon, action, compact})` from JS | a bare "No items" string or a "Loading…" string left behind |
+| Data is loading | `.skeleton` shapes inside the container, `apiRequest(url, {busy: container})` | "Loading…" text |
+| A chart | `const t = dsChartTheme()` → `t.palette[i]`, `t.grid`, `t.axis`; Chart.js defaults and theme toggles are handled | `cssToken('green-9')` per dataset, hand-set tick colours |
+| j/k through a list | `dsListKeys(container, {keys, onEnter, search})` | a page-local keydown handler |
+| React to the theme | `document.addEventListener('ds:themechange', e => …e.detail.theme)` | polling `data-theme` |
 
 Two helpers take a per-app default, set once in the layout, for apps that want the other behaviour everywhere: `formatDate.defaults.short = true` (budgeter, fitness) and `apiRequest.defaults.serverErrorMessage = true` (fitness — `error.message` becomes the server's `error` text instead of `HTTP error! status: 422`).
 
 `goal-render.js` (base + fitness, beside `session-render.js`) exports `GoalRender.shortMonthDay`, `.parseGoalValue`, `.formatMinutes`, `.togglePlan`, `.toggleNotes` for the goal-detail screen the two apps share; its CSS is the **Goal pages** section of `design-system.css`.
+
+### Empty states — `.empty-state` (v4.3)
+
+One line of copy (§1 voice: what is empty, not an apology), an optional icon tile and at most one action. No illustration.
+
+```html
+<div class="empty-state">
+  <span class="empty-state-icon"><span class="nav-ico" data-ico="inbox"></span></span>
+  <p class="empty-state-text">No uncategorized transactions</p>
+  <a class="btn btn-sm" href="/import">Import CSV</a>
+</div>
+```
+
+`.empty-state--compact` is the one-line form for a table cell (`<td colspan="N">`) or a card that already has a title. The icon tile is one of the places the app accent may tint.
+
+### Loading — `.skeleton` (v4.3)
+
+Shapes that stand where the content will be: `.skeleton.skeleton-text` (a line; `style="--w: 60%"`), `.skeleton-row` (a table-row bar), `.skeleton-block` (`--h`). Put `aria-busy="true"` on the container — `apiRequest(url, {busy: el})` does it for the life of the request. The shimmer stops under reduced motion.
+
+### Charts — `dsChartTheme()` and `--viz-*` (v4.3)
+
+Series colours are `--viz-1…8` in that fixed order (blue, orange, teal, purple, amber, pink, indigo, green); validated for lightness band, CVD and normal-vision separation and 3:1 on the card in both themes. Never cycle past eight — fold the rest into "Other". `--viz-grid` and `--viz-axis` are the recessive grid and tick colours. Status colours (`--green/amber/red-*`) stay reserved for state, never "series 4". Call `dsChartTheme()` before building Chart.js charts; it sets the defaults and re-themes live charts on a theme toggle.
+
+### Keyboard lists — `dsListKeys()` (v4.3)
+
+Ledgers, inboxes and reminder lists share one keyboard: `j`/`k` move, `Enter` opens, `Esc` clears, `/` focuses the filter, plus per-page action keys (`c` categorize, `x` select…). The focus row is `.is-key-focus`. Show the keys in the page's `?` help or a `.kbd` hint, not in a toast.
+
+### Print (v4.3)
+
+Pages print light with chrome, toolbars and row actions hidden, cards unsplit and tables in full. Mark anything else screen-only with `.no-print`; paper-only content (a printed date, a total) with `.print-only`.
 
 ### Card stacks — `.card-stack`
 
@@ -966,11 +1057,16 @@ Cross-app shared widgets — paired with `session-render.js` and the `.session-c
 
 ## 14. Accessibility floor
 
-- Body text contrast ≥ 4.5:1 (Radix step 11/12 over step 1/2 passes)
-- Focus visible on every interactive element (2px ring, never `outline: none` without replacement)
+Enforced by `scripts/check.mjs` on the kits; hold new pages to it.
+
+- Text contrast ≥ 4.5:1 — including `--text-faint` (v4.3) and text on solid fills: use `--accent-solid`/`--accent-on`, `--danger-solid`/`--danger-on`, never `#fff` on step 9
+- Focus visible on every interactive element: 2px `--focus-ring` (step 11, ≥ 3:1), never mixed with transparency, never `outline: none` without replacement
 - Color is never the only signal — pair colored dots with text labels
-- Tap targets ≥ 36×36px on mobile
-- All form fields have a `<label>` (visible or `sr-only`)
+- Tap targets ≥ 44×44px on touch — `--control-h` does it for controls; custom hit areas use the token
+- All form fields have a `<label>` tied to the control (`for`/`id`, wrapping, or `dsEnhanceLabels()`), or an `.sr-only` one; icon-only buttons get `aria-label`
+- Modals are dialogs with a name and trapped, restored focus (automatic via modal-keys.js); a danger confirm focuses Cancel
+- `aria-current="page"` on the active nav link (automatic); `color-scheme` follows the theme (automatic)
+- Text inputs 16px on mobile (automatic); `prefers-reduced-motion` honoured
 
 ---
 
@@ -1004,9 +1100,8 @@ For a project that cannot link `design-system.css`. Pull Radix from the `@radix-
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono', 'SF Mono', Monaco, monospace;
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-sm: 7px;
+  --radius-md: 9px;
 
   --motion-fast: 120ms cubic-bezier(0.2, 0, 0, 1);
   --motion-base: 160ms cubic-bezier(0.2, 0, 0, 1);
@@ -1019,10 +1114,10 @@ For a project that cannot link `design-system.css`. Pull Radix from the `@radix-
   --panel-active: var(--slate-5);
   --border:       var(--slate-6);
   --border-hover: var(--slate-7);
-  --focus-ring:   var(--accent-300);  /* per-app: indigo-7 default, slate-7 base, green-7 budgeter, orange-7 fitness, purple-7 mealplanner, blue-7 upkeep, crimson-7 postings */
+  --focus-ring:   var(--indigo-11);   /* the app accent's step 11 */
   --text:         var(--slate-12);
   --text-muted:   var(--slate-11);
-  --text-faint:   var(--slate-10);
+  --text-faint:   color-mix(in srgb, var(--slate-11) 70%, var(--slate-10));
 }
 
 [data-theme="dark"] {

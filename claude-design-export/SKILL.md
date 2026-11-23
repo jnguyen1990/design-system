@@ -30,9 +30,10 @@ Key rules to internalize:
 **Color & accent**
 - Chrome stays neutral (slate) except five v4 accent moments (all automatic from the CSS): primary button, active nav item (`--accent-soft` tint), focus ring, text selection, checked controls. Beyond those, per-app accent appears only in logo, favicon, empty-state tint, onboarding.
 - Set `<html data-app="{base|budgeter|fitness|mealplanner|upkeep|postings}">` on every page — this drives `--accent-{50..700}` and the `--focus-ring`. The six accents: base slate, budgeter green, fitness orange, mealplanner purple, upkeep blue, postings crimson.
-- Theme: a page that loads `shared-core.js` (every app layout, every kit) sets no theme attribute — the script applies the saved theme (`data-theme` + the matching class, dark by default) before first paint. A static mock that does **not** load it needs both `class="dark"` and `data-theme="dark"` on `<html>` for dark; the Radix dark scales key on the class.
+- Theme: a page that loads `shared-core.js` (every app layout, every kit) sets no theme attribute — the script applies the saved theme (`data-theme` + the matching class) before first paint; with nothing saved it follows the OS, dark when the OS has no preference. React to toggles with the `ds:themechange` event. A static mock that does **not** load it needs both `class="dark"` and `data-theme="dark"` on `<html>` for dark; the Radix dark scales key on the class.
 - Categorical color comes through tinted chips: `<span class="badge badge--{red|orange|amber|green|teal|blue|indigo|purple|pink|slate}">Label</span>` (v4 — alpha-tint bg, step-11 text, no dot needed). Standalone `.color-dot--{color}` remains for legends/lists. **Never** inline `style="background: var(--X-9)"`.
-- Focus rings inherit the per-app accent via `--focus-ring` → `--accent-300`. Don't hardcode focus colors.
+- Focus rings inherit the per-app accent via `--focus-ring` → `--accent-text` (step 11, AA). Don't hardcode focus colors, and never mix them with transparency.
+- Any solid fill that carries text uses `--accent-solid` + `--accent-on` (or `--danger-solid` + `--danger-on`) — never `#fff` on `--accent-500`, which fails AA in five of six apps.
 
 **Surfaces (v4 — elevated)**
 - The page takes the subtle tint (`--bg`); cards are the lighter elevated surface: `--card` bg, `--card-border`, 9px radius, resting `--shadow-card`. All baked into `.card` / `.stat-card` — never hand-roll card styles. Default `.card` (20px), `.card-dense` (16px) for stat tiles, `.card-compact` (12px) for calendar/grid cells.
@@ -42,13 +43,22 @@ Key rules to internalize:
 **Interaction**
 - Hover = next slate step (panel→panel-hover); card hover = border to `--card-border-hover`. Never opacity, never lift, never scale, never shadow growth.
 - Animation is minimal: `120ms` / `160ms` / `200ms`, ease-out only (`cubic-bezier(0.2, 0, 0, 1)`).
-- Density floor: 36px controls, 36–40px rows. Spacious, not cramped.
+- Density floor: 36px controls, 36–40px rows; 44px on touch (automatic via `--control-h` — never hard-code a control height). Spacious, not cramped.
+- Modals: `openModal(id)` / `.modal-open`; modal-keys.js makes every open `.modal` a named dialog with focus moved in, trapped and restored — give it a `.modal-title`. Recoverable removals get an undo toast (`dsToast(msg, 'success', {action: {label: 'Undo', onClick}})`), not a confirm.
+- Lists with keyboard: `dsListKeys(container, {keys, onEnter, search})` — j/k/Enter/Esc/`/` the same in every app.
+
+**Layout & states (v4.3)**
+- No inline `style=""` for layout: `.stack` (`-sm`/`-lg`), `.cluster` (`-between`/`-end`), `.columns-2`, `.columns-aside`, `m-0`, `mt-/mb-{0,1,2,3,4,5,6,8}`, `gap-{1..6}`. Tokens for the in-between steps: `--text-2xs` (11px), `--space-1_5` (6px), `--space-2_5` (10px); z-index only from `--z-*`.
+- Empty: `.empty-state` (+ `.empty-state-icon`, `.empty-state-text`, optional action; `--compact`), or `dsEmptyState(text, {icon})` from JS. Loading: `.skeleton` shapes + `apiRequest(url, {busy: el})`. Never a bare "Loading…".
+- Charts: `const t = dsChartTheme()`; series colours `t.palette[0..7]` (`--viz-1…8`) in order, `t.grid`, `t.axis`. Never cycle past 8.
+- Print is handled; mark screen-only bits `.no-print`.
+- Mobile check: `document.body.scrollWidth <= window.innerWidth` at 375px (not `documentElement`). Before pushing the design system itself: `scripts/check.mjs`.
 
 **Tables**
 - Use bare `<table>` inside `.table-responsive`. Semantic td modifiers: `.td-date` (mono+muted+xs+nowrap+capitalize), `.td-amount` (mono+tabular+right), `.td-actions` (48px wide), `.td-muted` (mono-friendly secondary).
 
 **Forms**
-- `.form-control` for all inputs (text, number, date, select, textarea). `.form-group` wrapper, `.form-label` for labels, `.form-hint` for helper text, `.form-error` for error text. Set `aria-invalid="true"` on the input to trigger the red error border.
+- `.form-control` for all inputs (text, number, date, select, textarea). `.form-group` wrapper, `.form-label` for labels, `.form-hint` for helper text, `.form-error` for error text. Set `aria-invalid="true"` on the input to trigger the red error border. Tie labels to fields (`for`/`id`; shared-core's `dsEnhanceLabels()` wires a group with one label and one field automatically); label-less fields and icon-only buttons get `.sr-only` text or `aria-label`.
 - See `ui_kits/budgeter/add-transaction.html` for the canonical form pattern.
 
 **Token discipline (the rule that makes everything else work)**

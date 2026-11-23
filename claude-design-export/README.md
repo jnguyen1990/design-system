@@ -150,7 +150,7 @@ Always **monospace**, always tabular-nums. Currency, counts, durations, timestam
 
 ### Borders
 - **1px solid** always. Never 2px hairlines, never dashed, never dotted on chrome.
-- Default: `--border` (slate-6). Interactive: `--border-hover` (slate-7) on hover. Focus: `--focus-ring` (per-app accent step-7) — used as both the input border and a 2px outline at 30% alpha. Renders indigo by default, green in Budgeter, orange in Fitness, slate in Base.
+- Default: `--border` (slate-6). Interactive: `--border-hover` (slate-7) on hover. Focus: `--focus-ring` (per-app accent step 11, = `--accent-text`; v4.3) — the input border plus a 1px outline (a 2px ring), and a 2px outline on buttons. Full strength, never alpha-mixed (the old step-7-at-30% ring measured 1.1–1.2:1). Renders indigo by default, green in Budgeter, orange in Fitness, slate in Base.
 
 ### Shadows (v4)
 - **Resting cards carry `--shadow-card`** — `0 1px 2px rgba(16,20,26,0.05), 0 6px 20px rgba(16,20,26,0.06)` light, deeper in dark. Hover never grows it.
@@ -215,7 +215,7 @@ Used sparingly for:
 Each app has a **single-glyph logo** rendered as inline SVG using its accent color at step 9. See `assets/` — favicons and SVG marks only, no marketing-style logo lockups.
 
 ### Substitutions flagged
-- **Inter** & **Geist Mono** — loaded from Google Fonts and jsDelivr CDN respectively. No local TTFs included. Replace with self-hosted copies if offline reliability matters.
+- **Inter** & **Geist Mono** — self-hosted variable woff2 in the repo's `fonts/` (OFL licences beside them), declared with `@font-face` in `design-system.css` since v4.3. No Google Fonts or jsDelivr request.
 - **Lucide** — pulled from CDN. No local sprite. Replace with a self-hosted copy if needed.
 
 ---
@@ -230,4 +230,4 @@ Each app has a **single-glyph logo** rendered as inline SVG using its accent col
 2. **Reach for tokens, not raw Radix:** use `var(--text)` / `var(--panel)` / `var(--border)` / `var(--focus-ring)` — not `var(--slate-12)` directly. The semantic layer is what makes light/dark parity and per-app accent automatic.
 3. **One accent per app.** Don't mix per-app accents into shared chrome.
 4. **Categorical color comes from chips/dots, not surfaces.** A red row background is wrong; a red dot in a row is right.
-5. **Density floor:** 36px controls, 36–40px rows, 16/20/24px card padding, 32×32 minimum tap target on mobile (36 preferred).
+5. **Density floor:** 36px controls, 36–40px rows, 16/20/24px card padding; 44×44 tap targets on touch (the `--control-h` tokens do it under `pointer: coarse`).

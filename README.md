@@ -2,9 +2,9 @@
 
 Shared CSS design system for Joe Nguyen's self-hosted web applications. Provides consistent theming, component styles, and responsive layout across all apps.
 
-## v3.0 — Linear meets Things 3
+## v4.3 — Linear meets Things 3
 
-Sharp, precise, technical. Inter + Geist Mono, Radix Colors (slate neutral, per-app accent), 4/6/8 px corners, flat surfaces, minimal motion. See [`brand-guide.md`](brand-guide.md) for the full spec.
+Sharp, precise, technical. Inter + Geist Mono (self-hosted in `fonts/`), Radix Colors (slate neutral, per-app accent), 7/9 px corners, elevated cards on a tinted page, minimal motion. v4.3 (2026-11-23) is the accessibility, mobile and safety-net release: AA solid buttons and focus rings, dialog focus management, a 44px touch floor, 16px mobile inputs, empty/loading/print/chart/keyboard components, layout primitives, and `scripts/check.mjs`. See [`brand-guide.md`](brand-guide.md) for the full spec.
 
 ## Usage
 
@@ -95,15 +95,18 @@ All six are server-rendered ERB with vanilla JS (no Turbo, no Stimulus) and load
 
 ## Features
 
-- Light/dark theme toggle via `data-theme` attribute (both first-class)
+- Light/dark theme via `data-theme` (both first-class). With nothing saved, the boot follows the OS (`prefers-color-scheme`; dark when the OS has no preference). `toggleTheme()` fires `ds:themechange`. `color-scheme` follows the theme. Pages print light.
 - Radix Colors paired light/dark scales, inlined in the stylesheet (`@radix-ui/colors@3.0.0`, no CDN request) — semantic tokens (`--bg`, `--panel`, `--border`, `--text`, `--{color}-{1..12}`)
 - Per-app accent via `data-app` attribute
 - Responsive sidebar layout with mobile menu
-- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`, `.insight-card`, `.dropdown`, `.toolbar`, `.table-responsive`, `.card-stack`, `.danger-zone`, `.row-actions`, `.filter-chip`
+- Component classes: `.card`, `.btn`, `.form-control`, `.table`, `.modal`, `.badge`, `.stat-card`, `.insight-card`, `.dropdown`, `.toolbar`, `.table-responsive`, `.card-stack`, `.danger-zone`, `.row-actions`, `.filter-chip`, `.empty-state`, `.skeleton`, `.sr-only`
+- Layout primitives: `.stack` (`.stack-sm`, `.stack-lg`), `.cluster` (`.cluster-between`, `.cluster-end`), `.columns-2`, `.columns-aside`, plus `m-0`, `mt/mb-{0,1,2,3,4,5,6,8}`, `gap-{1..6}`. Use them instead of inline `style=""`.
+- Tokens added in v4.3: `--accent-solid` / `--accent-on` (+ `-hover`, `-active`) and `--danger-solid` / `--danger-on` for any fill that carries text; `--text-2xs` (11px); `--space-1_5` (6px), `--space-2_5` (10px); the layer scale `--z-raised … --z-toast`; `--viz-1…8`, `--viz-grid`, `--viz-axis`. Removed: the whole v2.1 alias block (see brand-guide "Removed").
+- Print: chrome hidden, cards unsplit, tables in full; `.no-print`, `.print-only`.
 - `dsConfirm(message, opts)` in shared-core.js — styled Promise-based confirm; auto-wired into `data-turbo-confirm`. New code never calls native `confirm()`; `dsPrompt(message, opts)` is its sibling for native `prompt()`
 - Session/calendar widgets: `.session-card` (with `.session-type-*` color variants), `.session-done` indicator, `.sleep-chip`, `.vitals-chip`, `.vitals-modal-grid`, `.session-done-mark` — all driven by [`session-render.js`](session-render.js)
 - Goal-detail screen (base + fitness): `.target-band`, `.plan-row` / `.plan-item` / `.plan-expand`, `.pe-*`, `.notes-text` — the **Goal pages** section of the stylesheet, driven by [`goal-render.js`](goal-render.js)
-- Mobile-first breakpoints (768px, 1024px)
+- Mobile-first breakpoints (768px, 1024px); 16px inputs under 768px; 44px controls under `(pointer: coarse)` (via `--control-h`); safe-area insets and `dvh`
 
 ## JS helpers
 
@@ -111,7 +114,7 @@ Everything below is a global from `shared-core.js` unless noted. Use these inste
 
 | Helper | What it does |
 |---|---|
-| `apiRequest(url, options)` | JSON fetch; resolves with the parsed body, throws `Error("HTTP error! status: N")` on a non-2xx. Sends `X-CSRF-Token` (from the `csrf-token` meta) on same-origin non-GET requests; a `FormData` body is sent without a JSON content type. The thrown error carries `.status`, `.data` (parsed error body) and `.serverMessage`. Options: `accept: 'json'`, `csrf: false`, `serverErrorMessage: true` (make `error.message` the server's message). App-wide: `apiRequest.defaults.serverErrorMessage = true`. |
+| `apiRequest(url, options)` | JSON fetch; resolves with the parsed body, throws `Error("HTTP error! status: N")` on a non-2xx. Sends `X-CSRF-Token` (from the `csrf-token` meta) on same-origin non-GET requests; a `FormData` body is sent without a JSON content type. The thrown error carries `.status`, `.data` (parsed error body) and `.serverMessage`. Options: `accept: 'json'`, `csrf: false`, `serverErrorMessage: true` (make `error.message` the server's message), `busy: el` (that element is `aria-busy` while the request runs — pair with `.skeleton`). App-wide: `apiRequest.defaults.serverErrorMessage = true`. |
 | `escapeHtml(value)` | Escapes `& < > " '`; `null`/`undefined` → `''`. |
 | `todayKey()` | Today as `YYYY-MM-DD` in the browser's **local** zone. Never use `new Date().toISOString()` for this — it is UTC and shows tomorrow in the evening. |
 | `dateKey(date)`, `monthKey(date)` | `YYYY-MM-DD` / `YYYY-MM` for a `Date`, local. |
@@ -119,14 +122,19 @@ Everything below is a global from `shared-core.js` unless noted. Use these inste
 | `formatDate(dateString, opts)` | `Monday, July 6, 2026`; with `{ short: true }` (or `'short'`) → `Jul 6, 2026`. App-wide: `formatDate.defaults.short = true`. |
 | `shortDate(dateString)` | `Jul 6`. |
 | `cssToken(name, fallback)` | A `:root` custom property as a trimmed string, for Chart.js/Leaflet colours: `cssToken('green-9', '#30A46C')`. Returns the fallback when the read is empty (stylesheet not applied yet). |
-| `dsConfirm(message, opts)` | `Promise<boolean>`. `opts`: `title`, `confirmLabel`, `cancelLabel`, `danger` (default true). |
+| `dsConfirm(message, opts)` | `Promise<boolean>`. `opts`: `title`, `confirmLabel`, `cancelLabel`, `danger` (default true — Cancel then takes focus, so Enter never fires the destructive action). |
 | `dsPrompt(message, opts)` | `Promise<string\|null>` — the text on OK, `null` on cancel. `opts`: `title`, `value`, `placeholder`, `confirmLabel`, `cancelLabel`, `danger` (default false), `multiline`. |
 | `showStatus(divId, message, type)` | Shows a page's own `.status-message` div; success hides after 3s. |
-| `dsToast(message, type, ms)` | A toast that needs no div in the page. `type`: `success` (default), `error`, `info`, `warning`. |
+| `dsToast(message, type, ms)` | A toast that needs no div in the page. `type`: `success` (default), `error`, `info`, `warning`. The third (or second) argument may be `{ms, action: {label, onClick}}`: the action is a button in the toast ("Undo"), runs once, and the toast stays 6s. |
+| `dsEmptyState(text, opts)` | HTML for an `.empty-state`: `opts.icon` (a nav icon name), `opts.action` (trusted HTML), `opts.compact`. `text` is escaped. |
+| `dsChartTheme()` | `{palette, grid, axis, text, surface, border, font, mono}` from the `--viz-*` and surface tokens. With Chart.js present it sets `Chart.defaults` and from then on re-themes live charts on `ds:themechange`. Use `palette[i]` in order; never cycle past 8. |
+| `dsListKeys(container, opts)` | j/k list keyboard: `rows` (selector), `keys` (`{c: row => …}`), `onEnter(row)` (default: the row's `[data-row-open]` or first link), `search` (selector focused by `/`), `arrows`, `onFocus`. Returns `{focus, current, clear, destroy}`. The focus row gets `.is-key-focus`. |
+| `dsEnhanceLabels(root)` | Points a `.form-group`'s lone `<label>` at its lone text control. Runs on load and on every modal open; call it after inserting a form by hand. |
+| `ds:themechange` event | Fired on `document` by `toggleTheme()` and by an OS scheme change (when no theme is saved); `detail.theme` is `light` or `dark`. |
 | `dsCopy(text)` | Copies to the clipboard → `Promise<boolean>`. |
 | `[data-copy-text="…"]`, `[data-copy-target="<selector>"]` | Markup-only copy button: copies the literal text, or the target's value/text, and toasts "Copied" (`data-copy-label` to change it). |
 | Flash auto-dismiss | A `.status-message.status-success` visible at page load hides after 3s; errors stay. No layout script needed. |
-| `openModal(id)`, `closeModal(id)` *(modal-keys.js)* | Add/remove `modal-open`; fire `modal:open` / `modal:close` on the modal. Esc closes the topmost modal through the same path, so `modal:close` fires for it too. |
+| `openModal(id)`, `closeModal(id)` *(modal-keys.js)* | Add/remove `modal-open`; fire `modal:open` / `modal:close` on the modal. Esc closes the topmost modal through the same path, so `modal:close` fires for it too. Any open `.modal` (however it was opened) gets `role="dialog"`, `aria-modal`, `aria-labelledby` (its `.modal-title` or first heading), focus moved to its first field, Tab trapped inside, and focus returned to the opener on close. |
 | `[data-modal-close]` *(modal-keys.js)* | Closes the modal it sits in, or the one it names. |
 | `.modal[data-backdrop-close]` *(modal-keys.js)* | Opt-in: a click on the scrim closes the modal. |
 | `GoalRender.*` *(goal-render.js)* | `shortMonthDay`, `parseGoalValue`, `formatMinutes`, `togglePlan`, `toggleNotes`. |
@@ -134,6 +142,7 @@ Everything below is a global from `shared-core.js` unless noted. Use these inste
 | `installFilterTags(el, opts)` | The list-page filter bar: a committed term becomes a tag. The "+ Filter" button passed as `builderButton` takes `class="btn btn-secondary btn-sm filter-tags-add"` — no inline height. A text or enum field can set `exact: true`. |
 | `filterTagsMatch(row, tags, get)` | Client-side matcher for pages that hold their own rows. Strings match as substrings, except fields declared `exact: true` (`type:running` then no longer matches `indoor_running`). |
 | `installNavHotkeys`, `initSettingsPanes`, `enhanceFileInputs`, `toggleTheme` | See the header of [`shared-core.js`](shared-core.js). |
+| Automatic | `aria-current="page"` on `.nav-link.active`; `aria-label`/`aria-expanded` on `#mobileMenuBtn`; Esc closes the mobile drawer; print uses the light theme. |
 
 ## Page conventions
 
