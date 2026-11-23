@@ -13,9 +13,9 @@ Apps feel like considered tools with product polish. Linear's edge, Things 3's s
 ### Voice & tone
 - Direct. No hype, no exclamation points.
 - **Sentence case everywhere** (v4 — replaces the old lowercase-labels rule): `New entry`, `Today`, `Archive`, `Apr 22 · Amex`.
-- **Exception:** table headers (`thead th`) and stat labels (`.stat-label`) are **UPPERCASE micro-labels** (11px, +0.05em tracking, faint) — kept deliberately as an instrument-panel signature alongside mono numbers.
+- **Micro-labels are sentence case too (v4.4, Joe 2026-11-23).** Table headers (`thead th`), `.stat-label`, `.row-section-label`, `.nav-section-label` and `.settings-nav-label` are 12px medium `--text-muted`, no tracking. The v4 UPPERCASE signature is retired — two casing registers only: lowercase nav/page titles where the apps already use them, sentence case for everything else.
 - Sentence case — never Title Case — for buttons and menus.
-- Monospace for anything data-shaped: IDs, timestamps, currency, counts, keyboard shortcuts. **Exception (v4.1, 2026-09-08): `.stat-value` big numbers are Inter** (tabular-nums kept) — stat tiles read as headline figures, not instrument data; table amounts/dates stay mono.
+- **Mono only for numbers in data, IDs and kbd (v4.4).** Amounts, counts and IDs in tables, `.kbd`, filter syntax. Metadata — subtitles, crumbs, dates (`.td-date`), `.text-meta`, `.mono-meta`, `.row-lead`, chips — is Inter with tabular figures. `.stat-value` big numbers are Inter (v4.1).
 - Empty states: one short line of copy, no illustration.
 - Error messages name what's wrong, not what to do (`Amount required` not `Please enter an amount`).
 
@@ -85,11 +85,13 @@ Step intent (memorize):
 
 ```css
 /* Light + dark are paired automatically by Radix.
-   v4 surface model: the PAGE takes the subtle tint; CARDS are the lighter
-   elevated surface (inverted from v3). */
+   v4.4 surface model (flat, M1 B): one white page --sheet (dark: slate-1);
+   only the sidebar is tinted (--sidebar-bg). Floating layers use --card. */
 --bg:           var(--slate-2);    /* page + sidebar ground (dark: slate-1) */
 --bg-subtle:    var(--slate-2);
---card:         #ffffff;           /* elevated card surface (dark: slate-2) */
+--card:         #ffffff;           /* floating surfaces — modal, menu, toast, tab bar (dark: slate-2) */
+--sheet:        var(--card);       /* the page (dark: --bg) */
+--sidebar-bg:   var(--bg-subtle);  /* the only tinted surface (dark: --card) */
 --card-border:  var(--slate-4);    /* near-invisible card edge (hover: slate-6) */
 --panel:        var(--slate-3);    /* raised UI rest, row hover */
 --panel-hover:  var(--slate-4);
@@ -204,16 +206,17 @@ The brand color appears in: logo, favicon, empty-state icon tint (`.empty-state-
 
 ## 5. Layout
 
-- **Width:** wide / responsive. Sidebar + main fills viewport. No artificial centered max-width on dashboard surfaces.
-- **Sidebar:** 240px fixed width. Things 3 style — a quiet outline icon (`.nav-ico`, v4.2) before each item, 40px rows at 15px text (bolder v4.1 proportions, 2026-09-08 — nav no longer reads undersized against 24px page titles), optional UPPERCASE `.nav-section-label` micro-labels, generous vertical rhythm, hover = `panel` background only.
-- **Main padding:** 32px horizontal, 24px top, more below.
+- **Width (v4.4):** `.content` caps at 1200px of content, left-aligned with the page header (wider screens get empty sheet on the right, not stretched cards).
+- **Sidebar (v4.4 — the quietest text on screen):** 240px, tinted `--sidebar-bg`. 34px rows, 14px regular `--text-muted` labels, 16px `--text-faint` outline icons; the active row is `--text` medium on the `--accent-soft` tint; ⌘ hints appear on hover. Brand 15px. The app dock's icons are full colour with the app name on hover.
+- **Main padding:** 32px horizontal, 8px top under the header, more below.
+- **Phones (v4.4, M2):** below 768px the engine shell's floating tab bar replaces the hamburger + drawer — see §11 "Mobile tab bar".
 - **Reading views** (long-form notes, settings, account pages): cap content width at 720px, centered.
 
 ### Mobile rules (already in repo README)
 - All pages render at 375px wide with zero horizontal page-level scroll — check `document.body.scrollWidth <= window.innerWidth` (not `documentElement`, which the system's `overflow-x: hidden` makes always pass)
 - Text inputs are 16px under 768px (the system does it; iOS zooms below 16px)
 - Touch targets 44px (the system does it through `--control-h`)
-- Tables wrap in `.table-responsive`
+- Tables wrap in `.table-responsive`, or opt into card rows with `.table-stack` (§11 "Stacked tables")
 - Page-header controls use `.toolbar` (flex-wrap)
 - Grids collapse to 1–2 columns under 768px
 - Calendars switch to per-day list under 768px
@@ -230,25 +233,24 @@ The brand color appears in: logo, favicon, empty-state icon tint (`.empty-state-
 ```
 Never larger than 12px. No pills. (16px checkboxes stay at 4px so they don't read as circles.)
 
-### Cards (v4 — elevated)
+### Cards (v4.4 — flat sections, Joe's M1 pick B, 2026-11-23)
+One sheet; a `.card` is a section of it, opened by a hairline. No fill, no side borders, no radius, no shadow. Its content lines up with the page title.
 ```css
 .card {
-  background: var(--card);                  /* white / dark slate-2 */
-  border: 1px solid var(--card-border);     /* slate-4, near-invisible */
-  border-radius: var(--radius-md);
-  padding: var(--space-5);                  /* 20px default */
-  box-shadow: var(--shadow-card);           /* soft two-layer resting shadow */
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border);      /* the hairline that opens the section */
+  border-radius: 0;
+  padding: var(--space-5) 0 var(--space-6); /* vertical rhythm only */
+  box-shadow: none;
 }
-.card:hover {                               /* if interactive */
-  border-color: var(--card-border-hover);   /* slate-6 */
-}
-
-/* Density modifiers — collapse old per-app .acc-card / .pr-card / .day-col duplicates */
-.card-dense   { padding: var(--space-4); }  /* 16px — stat tiles, account cards */
-.card-compact { padding: var(--space-3); }  /* 12px — calendar day cols, dense grids */
+.card-dense   { padding: var(--space-4) 0; }
+.card-compact { padding: var(--space-3) 0; }
+.card .list-row, .card table first/last cells   /* flush to the section edges */
 ```
+`.card-stack`, `.dc-main` and `.dc-rail` have no gap (the hairlines split sections); `.detail-columns` has 40px between columns. A `.card-link` keeps a small inset and a hover tint. `.card.danger-zone` opens with a red hairline. Floating layers (modal, dropdown, toast, tab bar, sheet) keep `--card` + `--shadow-floating`.
 
-For tile-style numeric cards (PRs, account balances, KPI metrics), use the dedicated `.stat-card` family — same surface as `.card` but with semantic children:
+For numeric tiles use `.stats-grid > .stat-card`: one hairline band split by vertical hairlines on desktop; on phones the tiles sit in a 2-up (≤768) / 1-up (≤480) grid under the band's top hairline, with no vertical rules.
 
 ```html
 <div class="stats-grid">
@@ -260,14 +262,10 @@ For tile-style numeric cards (PRs, account balances, KPI metrics), use the dedic
 </div>
 ```
 
-### Elevation (v4)
-- **Resting cards:** soft two-layer shadow — `--shadow-card`:
-  ```css
-  box-shadow: 0 1px 2px rgba(16,20,26,0.04), 0 3px 10px rgba(16,20,26,0.04);  /* light — softened 2026-09-08 */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3),    0 4px 12px rgba(0,0,0,0.24);      /* dark (elevation reads mostly via surface + border) */
-  ```
-- **Interactive hover:** border darkens, no lift, no shadow growth
-- **Floating** (popover, dropdown, modal): `--shadow-floating` as before, on the `--card` surface
+### Elevation (v4.4)
+- **Resting surfaces have none.** `--shadow-card` remains as a token but the core components no longer use it.
+- **Interactive hover:** a tint (`--panel-hover`), never lift or shadow growth
+- **Floating** (popover, dropdown, modal, toast, tab bar, sheet): `--shadow-floating`, on the `--card` surface
 
 ---
 
@@ -678,7 +676,7 @@ A page is a vertical list of `<div class="card">` sections. Each card has `style
 
 - **`<h3>`** for section titles (no `<h2>` inside cards — `<h2 class="page-title">` is reserved for the page header rendered by the layout).
 - **Sentence case** for headings, labels, and button text. "Backup & restore", not "Backup & Restore". Acronyms keep their case (CSV, ID, MCP, HRV).
-- **`<p class="card-subtitle">` description** below the heading. Explains what the section is for in one short sentence. Never `.stat-label` here — that is the UPPERCASE micro-label for stat tiles and renders a sentence in caps.
+- **`<p class="card-subtitle">` description** below the heading. Explains what the section is for in one short sentence. Never `.stat-label` here — that is the micro-label for stat tiles and renders a sentence in caps.
 - **`.d-flex gap-2`** for action button rows; or `.toolbar` if there's a left/right split.
 
 ### Page subtitle (mono, dynamic)
@@ -842,6 +840,19 @@ Series colours are `--viz-1…8` in that fixed order (blue, orange, teal, purple
 ### Keyboard lists — `dsListKeys()` (v4.3)
 
 Ledgers, inboxes and reminder lists share one keyboard: `j`/`k` move, `Enter` opens, `Esc` clears, `/` focuses the filter, plus per-page action keys (`c` categorize, `x` select…). The focus row is `.is-key-focus`. Show the keys in the page's `?` help or a `.kbd` hint, not in a toast.
+
+### Mobile tab bar — engine shell (v4.4, M2)
+
+Below 768px the shell renders a floating, translucent pill (`backdrop-filter` blur; solid `--card` where unsupported) with the app's first four nav items (or those marked `tab: true` in `nav_items`) plus **More**, which opens a bottom sheet with the remaining items and the app dock. Inactive tabs are 44px icons (label kept for screen readers); the active tab (`aria-current="page"`) shows its label on the accent tint. The sheet traps focus, closes on Esc / scrim / a link and returns focus to More. A page without a tab bar (postings) keeps the hamburger + drawer. Markup contract: README "Mobile tab bar". Config: `tab_bar`, `tab_count` in the gem.
+
+### Stacked tables (v4.4, M2)
+
+Below 768px a table opts into rows of cards; desktop is untouched and no table needs its own CSS.
+- **`.table-stack`** — every `td[data-label="…"]` renders as a "label · value" line; `data-cell="select"` top-left, `"title"` first line, `"actions"` top-right, `"hide"` dropped; other cells span the card. A `tr.row-section` is a plain section label. The `.card` around the table steps back so the rows are the cards.
+- **`.table-stack.table-stack--days`** — the ledger: `tr.stack-day` rows (hidden on desktop) are sticky day headers with `.stack-day-total`; rows are `data-cell="title"` + `"amount"` over `"meta"` + `"aside"`, optional `"select"` / `"actions"`; cells without a role hide.
+
+### Page patterns (v4.4, round one)
+Shared: `.list-rows--flush`, `.row-section-label--block`, `.detail-columns.reflow` + `.reflow-first` (a rail card second on the page below 1024px). Base Today: `.att-label`, `.att-list`, `.att-item`. Weekly review: `.rv-matrix(-wrap)`, `.rv-total`, `.rv-chip` (`--miss`, `--rest`), `.rv-low`, phone `.rv-days` / `.rv-day(-h/-b/-k)`, `.rv-row`. Budgeter inbox: `.card.pane-card` > `.pane-wrap` > `.pane-list` (`.pane-search`, `.pane-row` + `.is-current`) / `.pane-detail` (`.pane-back`, `.focus-title`, `.rule-box`/`-h`/`-line`/`-meta`, `.form-control--inline`, `.pane-foot`), `.kbd-bar`. Dashboard: `.hero-line`, `.meter-seg--due`, `.swatch--due`, `.swatch--warn`.
 
 ### Print (v4.3)
 
@@ -1047,7 +1058,7 @@ Always require a confirm dialog — `dsConfirm()`, or a typed-confirmation modal
 
 **The button label and the modal must promise the same thing.** Budgeter's button said "Remove all transactions" while its modal said "delete ALL your data"; they were the same action, and the mismatch is the kind of thing that stops you trusting either one.
 
-Note `.card-subtitle`, not `.stat-label`. `.stat-label` is the UPPERCASE micro-label for stat tiles — used as body copy it renders whole sentences in caps, which is how it went unnoticed across four apps until the 2026-09-11 sweep.
+Note `.card-subtitle`, not `.stat-label`. `.stat-label` is the micro-label for stat tiles — used as body copy it renders whole sentences in caps (it did until v4.4), which is how it went unnoticed across four apps until the 2026-09-11 sweep.
 
 ### Session card + vitals chip (fitness pattern)
 

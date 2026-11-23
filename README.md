@@ -2,9 +2,9 @@
 
 Shared CSS design system for Joe Nguyen's self-hosted web applications. Provides consistent theming, component styles, and responsive layout across all apps.
 
-## v4.3 — Linear meets Things 3
+## v4.4 — Linear meets Things 3
 
-Sharp, precise, technical. Inter + Geist Mono (self-hosted in `fonts/`), Radix Colors (slate neutral, per-app accent), 7/9 px corners, elevated cards on a tinted page, minimal motion. v4.3 (2026-11-23) is the accessibility, mobile and safety-net release: AA solid buttons and focus rings, dialog focus management, a 44px touch floor, 16px mobile inputs, empty/loading/print/chart/keyboard components, layout primitives, and `scripts/check.mjs`. See [`brand-guide.md`](brand-guide.md) for the full spec.
+Sharp, precise, technical. Inter + Geist Mono (self-hosted in `fonts/`), Radix Colors (slate neutral, per-app accent), 7/9 px corners, minimal motion. **v4.4 (2026-11-23, Joe's M1 B + M2 picks):** one flat white sheet with hairline sections (only the sidebar is tinted), a quieter sidebar, mono only for numbers, sentence-case micro-labels, a 1200px content measure, a floating tab bar + "More" sheet on phones (rendered by the gem's engine shell), and stacked-table card rows. v4.3 (2026-11-23) is the accessibility, mobile and safety-net release: AA solid buttons and focus rings, dialog focus management, a 44px touch floor, 16px mobile inputs, empty/loading/print/chart/keyboard components, layout primitives, and `scripts/check.mjs`. See [`brand-guide.md`](brand-guide.md) for the full spec.
 
 ## Usage
 
@@ -142,14 +142,15 @@ Everything below is a global from `shared-core.js` unless noted. Use these inste
 | `installFilterTags(el, opts)` | The list-page filter bar: a committed term becomes a tag. The "+ Filter" button passed as `builderButton` takes `class="btn btn-secondary btn-sm filter-tags-add"` — no inline height. A text or enum field can set `exact: true`. |
 | `filterTagsMatch(row, tags, get)` | Client-side matcher for pages that hold their own rows. Strings match as substrings, except fields declared `exact: true` (`type:running` then no longer matches `indoor_running`). |
 | `installNavHotkeys`, `initSettingsPanes`, `enhanceFileInputs`, `toggleTheme` | See the header of [`shared-core.js`](shared-core.js). |
-| Automatic | `aria-current="page"` on `.nav-link.active`; `aria-label`/`aria-expanded` on `#mobileMenuBtn`; Esc closes the mobile drawer; print uses the light theme. |
+| `dsSheet(id, open)` | Open/close a `.sheet` bottom sheet. Markup buttons use `[data-sheet-toggle][aria-controls="<id>"]` instead. |
+| Automatic | `aria-current="page"` on `.nav-link.active`; `aria-label`/`aria-expanded` on `#mobileMenuBtn`; Esc closes the mobile drawer; the "More" sheet's focus trap / Esc / scrim; print uses the light theme. |
 
 ## Page conventions
 
 Apps that share this system also share a set of layout/markup/copy conventions so screens feel like the same product. **Read [section 13 of `brand-guide.md`](brand-guide.md#13-page-conventions) before building or modifying any page.** Key rules:
 
 - Stack of `<div class="card" style="margin-bottom:16px">` sections — never `1rem`/`1.5rem`/`12px`/`20px`
-- Each section: `<h3>` (sentence case) + `<p class="card-subtitle">` description + content + `.toolbar` action row. `.card-subtitle` is the class for muted description copy; `.stat-label` is only the UPPERCASE micro-label on stat tiles
+- Each section: `<h3>` (sentence case) + `<p class="card-subtitle">` description + content + `.toolbar` action row. `.card-subtitle` is the class for muted description copy; `.stat-label` is only theASE micro-label on stat tiles
 - Buttons: only `btn-primary` / `btn-secondary` / `btn-ghost` / `btn-danger`. `btn-success`, `btn-error` and `btn-cta` no longer exist in the stylesheet
 - Modal actions: always in `.modal-footer` (right-aligned, plain `btn`), affirmative action rightmost, cancel to its left, destructive far-left via `margin-right:auto`; in-card rows are the mirror (primary first, left, `btn-sm`)
 - Row/chip/field remove `×` inside an uncommitted form: `btn-ghost`, no confirm; `btn-danger` = persisted destruction, always confirmed
@@ -158,6 +159,46 @@ Apps that share this system also share a set of layout/markup/copy conventions s
 - Color tokens: Radix scale only (`var(--green-9)`), never legacy aliases (`var(--success-500)`, `var(--hover-bg)`, `var(--color-bg)`, `var(--color-border)` — those are forbidden and have all been swept from the production apps)
 - Emoji: only the functional symbols whitelisted in the brand guide (✓ ✕ ⋮ × ← → ☰ ☀ stars `−` `·` `–` ▲ + the vitals chip's 😴 ❤️ 🚶). Decorative emoji (📊📄💾🗑️⚠️📥 etc.) do not appear in headings or button labels — use `.badge` + `.color-dot` for categorical signaling.
 - Concept explainers in settings use a grid of accent-bordered cards + small nested-bullet diagram, not `<pre>` ASCII trees or `<code>`-heavy bullet lists
+
+## Mobile tab bar and stacked tables (v4.4)
+
+**Tab bar.** Apps on the engine shell (personal_app_client 0.8.0) get it from `nav_items`: the first four (or `tab: true` ones; `tab: false` keeps one out; `tab_count`, `tab_bar: false` in the gem config) plus More. Markup, for a page that is not on the shell:
+
+```html
+<nav class="tab-bar" aria-label="Tabs">                       <!-- a direct child of <body> -->
+  <a href="/" class="tab-bar-item active" aria-current="page">
+    <span class="tab-bar-ico"><span class="nav-ico" data-ico="grid"></span></span>
+    <span class="tab-bar-label">dashboard</span></a>
+  …
+  <button type="button" class="tab-bar-item" data-sheet-toggle aria-controls="more-sheet"
+          aria-expanded="false" aria-haspopup="dialog">
+    <span class="tab-bar-ico"><span class="nav-ico" data-ico="more"></span></span>
+    <span class="tab-bar-label">More</span></button>
+</nav>
+<div class="sheet-scrim" hidden></div>
+<div class="sheet" id="more-sheet" role="dialog" aria-modal="true" aria-label="More" hidden>
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <ul class="nav-menu"><li><a class="nav-link" href="/settings">…</a></li></ul>
+  <div class="sheet-sec">Apps</div><div class="sheet-dock"></div>   <!-- apps-launcher.js fills it -->
+</div>
+```
+
+When `body > .tab-bar` exists, the hamburger and overlay hide below 768px, the main column gets bottom padding and toasts sit above the bar. Without it (postings) the hamburger + drawer work as before.
+
+**Stacked tables.** Below 768px, opt in per table; desktop is untouched:
+
+```html
+<table class="table-stack">                       <!-- generic card rows -->
+  <tr><td data-cell="select">…</td><td data-cell="title">Costco</td><td data-cell="actions">⋮</td>
+      <td data-label="Amount" class="td-amount">−$720.03</td><td data-cell="hide">Sep 22</td></tr>
+  <tr class="row-section"><td>Bills</td><td>$1,200</td></tr>   <!-- a section label, not a card -->
+
+<table class="table-stack table-stack--days">     <!-- day-grouped ledger -->
+  <tr class="stack-day"><td colspan="8"><span>Tue, Sep 22</span><span class="stack-day-total">−$755.92</span></td></tr>
+  <tr><td data-cell="title">…</td><td data-cell="amount">…</td><td data-cell="meta">badge</td><td data-cell="aside">Amex</td><td>hidden on phones</td></tr>
+```
+
+`scripts/check.mjs` asserts both at 375px.
 
 ## Mobile Design Rules
 

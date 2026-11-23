@@ -62,7 +62,7 @@ The product **sounds like a tool**, not a product. No marketing voice, no emoji,
 
 ### Casing (v4)
 - **Sentence case everywhere**: `New entry`, `Today`, `Archive`, `Apr 22 · Amex`. The v3 lowercase-labels rule is retired.
-- **Exception — uppercase micro-labels**: table headers (`thead th`) and stat labels (`.stat-label`) render UPPERCASE (11px, +0.05em tracking, faint). This is a deliberate instrument-panel signature; don't extend it to other labels.
+- **Micro-labels are sentence case (v4.4)**: table headers (`thead th`) and stat labels (`.stat-label`) are 12px medium muted, no tracking — the old UPPERCASE instrument-panel signature; don't extend it to other labels.
 - **Sentence case** — never Title Case — for buttons, menus, headings: `Add transaction`, not `Add Transaction`.
 - `.td-date` applies `text-transform: capitalize`, so lowercase strftime output renders as `Apr 22` for free.
 - Acronyms keep their case: `CSV`, `ID`, `USD`.
@@ -99,7 +99,7 @@ Name what's wrong, not what to do. The user can usually figure out the fix.
 > `Sync failed — last attempt 2m ago` (not `Oh no! Could not sync.`)
 
 ### Numbers, IDs, time
-Always **monospace**, always tabular-nums. Currency, counts, durations, timestamps, hashes, keyboard shortcuts. This is non-negotiable — alignment matters.
+Numbers in data — currency, counts, durations, hashes — and keyboard shortcuts are **monospace**, tabular-nums. Metadata (dates in subtitles, timestamps in meta lines) is Inter with tabular figures since v4.4.
 
 > `$1,247.03` · `12:04` · `tx_8f3a` · `⌘K`
 
@@ -119,7 +119,7 @@ Always **monospace**, always tabular-nums. Currency, counts, durations, timestam
 
 ### Type
 - **Inter** for body and UI. Weights: 400/500/600 (never 700+).
-- **Geist Mono** for any data-shaped content: numbers, IDs, timestamps, kbd hints. `font-variant-numeric: tabular-nums` always.
+- **Geist Mono** for numbers in data, IDs and kbd hints. `font-variant-numeric: tabular-nums` always. Metadata is Inter (v4.4).
 - Heading letter-spacing: `-0.01em`. Body line-height `1.5`, headings `1.25`.
 
 ### Spacing
@@ -153,13 +153,13 @@ Always **monospace**, always tabular-nums. Currency, counts, durations, timestam
 - Default: `--border` (slate-6). Interactive: `--border-hover` (slate-7) on hover. Focus: `--focus-ring` (per-app accent step 11, = `--accent-text`; v4.3) — the input border plus a 1px outline (a 2px ring), and a 2px outline on buttons. Full strength, never alpha-mixed (the old step-7-at-30% ring measured 1.1–1.2:1). Renders indigo by default, green in Budgeter, orange in Fitness, slate in Base.
 
 ### Shadows (v4)
-- **Resting cards carry `--shadow-card`** — `0 1px 2px rgba(16,20,26,0.05), 0 6px 20px rgba(16,20,26,0.06)` light, deeper in dark. Hover never grows it.
+- **No resting shadows (v4.4 flat model).** Only floating layers (modal, menu, toast, tab bar, sheet) cast `--shadow-floating`.
 - **Floating elements** (popover, dropdown, modal): `--shadow-floating` `0 8px 24px rgba(0,0,0,0.12)` light / `…0.4` dark, on the `--card` surface.
 - Solid buttons get an inner highlight (`inset 0 1px 0 rgba(255,255,255,0.12)`) plus tiny press shadow (`0 1px 2px rgba(0,0,0,0.08)`) — Linear-style tactile, never skeuomorphic.
 - **No protection gradients.** Floating UI sits on a backdrop scrim instead.
 
 ### Layout rules
-- **Wide / responsive.** Sidebar (240–260px fixed) + main fills viewport. No artificial centered max-width on dashboards.
+- **Responsive, 1200px measure (v4.4).** Sidebar (240px, the only tinted surface) + one white sheet; content caps at 1200px, left-aligned with the header. Phones get the engine shell's floating tab bar + "More" sheet.
 - **Reading views** (settings, long-form notes, account): cap content at **720px**, centered.
 - **Main padding:** 32px horizontal, 24px top, more below.
 - **Mobile:** all pages render at 375px wide with zero horizontal page-level scroll. Tables wrap, grids collapse to 1–2 cols under 768px.
@@ -174,8 +174,8 @@ Always **monospace**, always tabular-nums. Currency, counts, durations, timestam
 - `12px` — page-level containers (rare, `--radius-lg`).
 - **Never** larger than 12px. **No pills.** Checkboxes stay 4px. Use exact circles for avatars/dots.
 
-### Cards (v4 — elevated)
-- Background `--card` (white light / slate-2 dark), 1px `--card-border` (slate-4), `radius-md` (9px), 20px padding, resting `--shadow-card` (soft two-layer).
+### Cards (v4.4 — flat sections)
+- No fill, no side borders, no radius, no shadow: a top hairline (`--border`) opens each section, 20px above / 24px below, content flush with the page title.
 - The **page** takes the subtle tint (`--bg` = slate-2 light / slate-1 dark); cards float above it — inverted from v3.
 - Hover only changes border color to `--card-border-hover` (slate-6). Interactive cards add `cursor: pointer`. They do not lift, and shadows never grow on hover.
 
