@@ -140,6 +140,8 @@
         : disabled
           ? `${app.name} (coming soon)`
           : `Switch to ${app.name}`;
+      item.setAttribute("data-name", app.name);  // hover label (design-system.css)
+      item.setAttribute("aria-label", item.title);
       if (!disabled && !isCurrent) item.setAttribute("href", app.url);
       item.innerHTML = app.logo;
       dock.appendChild(item);

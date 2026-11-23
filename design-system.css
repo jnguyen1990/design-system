@@ -1679,6 +1679,8 @@
     --bg:           var(--slate-2);   /* page + sidebar ground */
     --bg-subtle:    var(--slate-2);
     --card:         #ffffff;          /* elevated card surface */
+    --sheet:        var(--card);      /* v4.4 flat model: the one page sheet (dark: --bg) */
+    --sidebar-bg:   var(--bg-subtle); /* v4.4: the only tinted surface (dark: --card) */
     --card-border:  var(--slate-4);   /* near-invisible card edge */
     --card-border-hover: var(--slate-6);
     --panel:        var(--slate-3);
@@ -1881,6 +1883,8 @@
     /* v4 dark surfaces: page drops to slate-1, cards float at slate-2 */
     --bg:   var(--slate-1);
     --card: var(--slate-2);
+    --sheet: var(--bg);
+    --sidebar-bg: var(--card);
 }
 
 /* green 5.97, orange 6.35, blue 5.78, crimson 4.90 with near-black text on
@@ -1929,9 +1933,10 @@ body {
     line-height: var(--lh-body);
     font-weight: var(--weight-regular);
     color: var(--text);
-    background: var(--bg);
+    background: var(--sheet);
     min-height: 100vh;
-    min-height: 100dvh;  /* the visible height on mobile, not the toolbar-hidden one */
+    min-height: 100dvh;
+    font-feature-settings: "cv11", "ss03";  /* Inter: single-storey a, straight-sided digits */  /* the visible height on mobile, not the toolbar-hidden one */
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -1940,6 +1945,7 @@ h1, h2, h3, h4, h5, h6 {
     line-height: var(--lh-heading);
     letter-spacing: -0.01em;
     color: var(--text);
+    text-wrap: balance;
 }
 h1 { font-size: var(--text-2xl); }
 h2 { font-size: var(--text-xl); }
@@ -1948,7 +1954,7 @@ h4 { font-size: var(--text-md); }
 h5 { font-size: var(--text-base); }
 h6 { font-size: var(--text-sm); }
 
-p { margin: 0; }
+p { margin: 0; text-wrap: pretty; }
 
 code, kbd, samp, pre, .mono {
     font-family: var(--font-mono);
@@ -2053,7 +2059,7 @@ label {
     top: 0;
     bottom: 0;
     width: var(--sidebar-width);
-    background: var(--bg);
+    background: var(--sidebar-bg);
     border-right: 1px solid var(--border);
     overflow-y: auto;
     z-index: var(--z-sidebar);
@@ -2080,14 +2086,14 @@ label {
     margin-left: var(--sidebar-width);
     min-height: 100vh;
     min-height: 100dvh;
-    background: var(--bg);
+    background: var(--sheet);
     display: flex;
     flex-direction: column;
 }
 
 .page-header {
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
+    background: var(--sheet);
+    border-bottom: 1px solid transparent;  /* v4.4 flat: the sheet runs on under the title */
     padding: var(--space-4) var(--space-8);
     position: sticky;
     top: 0;
@@ -2105,7 +2111,8 @@ label {
    Excluded from the flex rule above — it renders as one left-aligned line. */
 .page-crumb {
     display: block;
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
     font-size: var(--text-xs);
     color: var(--text-muted);
     margin-bottom: var(--space-2);
@@ -2168,13 +2175,15 @@ label {
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
     color: var(--text);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     line-height: var(--lh-heading);
 }
 
 .page-subtitle {
     color: var(--text-muted);
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);   /* v4.4: metadata is Inter */
+    font-variant-numeric: tabular-nums;
+    text-wrap: pretty;
     font-size: var(--text-sm);
     margin-top: 4px;
     line-height: var(--lh-body);
@@ -2207,7 +2216,7 @@ label {
 /* Sidebar brand title — replaces the <h1>Brand</h1> pattern so each
    page has exactly one <h1>. */
 .brand-title {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: var(--weight-semibold);
     color: var(--text);
     letter-spacing: -0.01em;
@@ -2233,10 +2242,30 @@ label {
 }
 
 .app-dock .dock-app {
+    position: relative;
     display: inline-flex;
     border-radius: 8px;
-    opacity: 0.5;
+    opacity: 1;  /* v4.4: full-colour icons — at 50% the dock read as disabled */
     transition: opacity var(--motion-fast);
+}
+/* Name on hover/focus (apps-launcher.js sets data-name). */
+.app-dock .dock-app[data-name]:hover::after,
+.app-dock .dock-app[data-name]:focus-visible::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-popover);
+    padding: 3px var(--space-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--text);
+    box-shadow: var(--shadow-floating);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+    pointer-events: none;
 }
 
 .app-dock a.dock-app:hover { opacity: 1; }
@@ -2296,14 +2325,18 @@ label {
 
 /* Mono+muted meta text utilities. The "mono + muted + small" combination
    was reinvented inline by every app — promoted here. */
-.text-meta    { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
-.text-meta-xs { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
+/* v4.4: metadata is Inter (tabular figures); mono is for numbers in data,
+   IDs and kbd only. */
+.text-meta    { font-family: var(--font-sans); font-variant-numeric: tabular-nums; font-size: var(--text-sm); color: var(--text-muted); }
+.text-meta-xs { font-family: var(--font-sans); font-variant-numeric: tabular-nums; font-size: var(--text-xs); color: var(--text-muted); }
 
 .content {
-    padding: var(--space-6) var(--space-8) var(--space-12);
+    padding: var(--space-2) var(--space-8) var(--space-12);
     width: 100%;
+    max-width: calc(1200px + 2 * var(--space-8));  /* v4.4: 1200px of content, left-aligned with the header */
     flex: 1;
 }
+.page-header > * { max-width: 1200px; }
 
 /* ============================================================
    Navigation — Things 3 sidebar items
@@ -2314,11 +2347,9 @@ label {
 }
 
 .nav-section-label {
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-weight: var(--weight-medium);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-faint);
+    color: var(--text-muted);
     padding: var(--space-4) var(--space-3) var(--space-2);
 }
 
@@ -2335,11 +2366,11 @@ label {
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 40px;
+    height: 34px;                         /* v4.4: the quietest text on screen */
     padding: 6px var(--space-3);
-    color: var(--text);
-    font-size: 15px;
-    font-weight: var(--weight-medium);
+    color: var(--text-muted);
+    font-size: var(--text-base);
+    font-weight: var(--weight-regular);
     border-radius: var(--radius-sm);
     transition: background var(--motion-fast), color var(--motion-fast);
     white-space: nowrap;
@@ -2354,8 +2385,12 @@ label {
    doesn't fight the tint. */
 .nav-link.active {
     background: var(--accent-soft);
-    font-weight: var(--weight-semibold);
+    color: var(--text);
+    font-weight: var(--weight-medium);
 }
+/* Shortcut hints appear on hover, not as a column of noise. */
+.nav-link .nav-kbd { opacity: 0; transition: opacity var(--motion-fast); }
+.nav-link:hover .nav-kbd, .nav-link:focus-visible .nav-kbd { opacity: 0.7; }
 
 /* v4.2: categorical dots clash with the accent tint — gone from nav. Apps
    may still render the spans; they're hidden here. Rows carry a quiet
@@ -2366,10 +2401,10 @@ label {
    into <span class="nav-ico" data-ico="name"></span>. Muted at rest; text
    color on hover/active (the accent stays out of them). */
 .nav-ico {
-    width: 17px;
-    height: 17px;
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
-    color: var(--text-muted);
+    color: var(--text-faint);
     transition: color var(--motion-fast);
 }
 
@@ -2411,23 +2446,30 @@ label {
    Cards — v4: elevated surface on the tinted page. Soft two-layer
    shadow at rest; hover still only shifts the border, no lift.
    ============================================================ */
+/* v4.4 (M1 B, Joe 2026-11-23): fully flat. One sheet; a card is a section
+   of it, opened by a hairline — no fill, no side border, no radius, no
+   shadow. Its content aligns with the page title. Floating things (modals,
+   menus, toasts) keep --card and --shadow-floating. */
 .card {
     position: relative;
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-5);
-    box-shadow: var(--shadow-card);
-    transition: border-color var(--motion-fast);
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    padding: var(--space-5) 0 var(--space-6);
+    box-shadow: none;
 }
 
-.card:hover {
-    border-color: var(--card-border-hover);
-}
+/* Density modifiers — vertical rhythm only in the flat model */
+.card-dense   { padding: var(--space-4) 0; }   /* stat tiles, account cards */
+.card-compact { padding: var(--space-3) 0; }   /* dense grids */
 
-/* Density modifiers — keep .card 20px default; collapse old .acc-card / .day-col / .pr-card duplicates */
-.card-dense   { padding: var(--space-4); }   /* 16px — stat tiles, account cards */
-.card-compact { padding: var(--space-3); }   /* 12px — calendar day cols, dense grids */
+/* Inside a flat section, rows and tables meet the section's edges. */
+.card .list-row { padding-left: 0; padding-right: 0; }
+.card table th:first-child, .card table td:first-child { padding-left: 0; }
+.card table th:last-child, .card table td:last-child { padding-right: 0; }
+/* A section that carries its own fill gets its padding back. */
+.card.exercise-group { padding: var(--space-4); border-top: 0; border-radius: var(--radius-md); }
 
 .card-header {
     display: flex;
@@ -2448,6 +2490,7 @@ label {
     font-weight: var(--weight-semibold);
     color: var(--text);
     letter-spacing: -0.01em;
+    text-wrap: balance;
 }
 
 .card-subtitle {
@@ -2929,15 +2972,14 @@ thead {
 }
 
 /* v4: uppercase micro-header — kept as an instrument-panel signature */
+/* v4.4: sentence-case micro-labels — the UPPERCASE signature is retired. */
 thead th {
     padding: 0 12px;
     height: 32px;
     text-align: left;
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-weight: var(--weight-medium);
-    color: var(--text-faint);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    color: var(--text-muted);
     white-space: nowrap;
 }
 
@@ -2968,7 +3010,8 @@ tbody td {
 
 /* Semantic table cell modifiers */
 .td-date {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
     font-size: var(--text-xs);
     color: var(--text-muted);
     white-space: nowrap;
@@ -3014,10 +3057,8 @@ tbody tr.row-section:hover,
 tbody tr.row-total:hover { background: var(--bg-subtle); }
 
 .row-section-label {
-    font-size: 11px;
-    font-weight: var(--weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
     color: var(--text-muted);
 }
 
@@ -3151,32 +3192,28 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 }
 
 .stat-card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-5);
-    box-shadow: var(--shadow-card);
-    transition: border-color var(--motion-fast);
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    padding: var(--space-4) 0 var(--space-5);
+    box-shadow: none;
 }
 
-.stat-card:hover {
-    border-color: var(--card-border-hover);
-}
+.stat-card.card-dense   { padding: var(--space-4) 0; }
+.stat-card.card-compact { padding: var(--space-3) 0; }
 
-/* .card-dense is declared ~700 lines earlier, so at equal specificity
-   .stat-card's padding won and `.stat-card.card-dense` silently rendered at
-   20px. Mealplanner carried a local override for exactly this. */
-.stat-card.card-dense   { padding: var(--space-4); }
-.stat-card.card-compact { padding: var(--space-3); }
+/* A stats row is one hairline band split by vertical hairlines (v4.4). */
+.stats-grid { gap: 0; border-top: 1px solid var(--border); }
+.stats-grid > .stat-card { border-top: 0; padding: var(--space-4) var(--space-5) var(--space-5); }
+.stats-grid > .stat-card + .stat-card { border-left: 1px solid var(--border); }
+.stats-grid > .stat-card:first-child { padding-left: 0; }
 
-/* v4: uppercase micro-label (kept deliberately as an instrument-panel
-   signature alongside mono numbers — copy elsewhere is sentence case) */
+/* v4.4: sentence case, 12px — no more UPPERCASE micro-label */
 .stat-label {
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-weight: var(--weight-medium);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-faint);
+    color: var(--text-muted);
     margin-bottom: var(--space-2);
 }
 
@@ -3188,7 +3225,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     font-size: var(--text-2xl);
     font-weight: var(--weight-semibold);
     color: var(--text);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     line-height: var(--lh-heading);
 }
 
@@ -3231,13 +3268,13 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 .card-stack {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 0;  /* v4.4: sections are split by their hairlines */
 }
 .card-stack > .card { margin-bottom: 0; }
 
 /* Settings danger zone: the one card per app that holds destructive
    actions (wipe, restore-overwrite, delete account/data). */
-.card.danger-zone { border-color: var(--red-6); }
+.card.danger-zone { border-top-color: var(--red-7); }
 .card.danger-zone > h3 { color: var(--red-11); }
 
 /* ── Row actions ───────────────────────────────────────────────────────
@@ -3335,7 +3372,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     border-left: 3px solid var(--card-border);
     border-radius: var(--radius-md);
     margin-bottom: var(--space-3);
-    box-shadow: var(--shadow-card);
+    box-shadow: none;  /* v4.4 flat: only floating layers cast shadows */
     transition: border-color var(--motion-fast);
 }
 
@@ -3538,11 +3575,9 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 .settings-nav-label {
     margin: var(--space-3) 0 var(--space-1);
     padding: 0 10px;
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-weight: var(--weight-medium);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-faint);
+    color: var(--text-muted);
 }
 
 .settings-pane .pane[hidden] { display: none; }
@@ -3789,11 +3824,13 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 /* ── Mono micro-text ──────────────────────────────────────────
    `font-family: var(--font-mono); font-size: 11px; color: muted`
    appeared ~25 times across the apps. */
+/* v4.4: the names stay for compatibility; the face is Inter with tabular
+   figures (mono only for numbers in data, IDs and kbd). */
 .mono-meta,
 .mono-faint {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.02em;
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-2xs);
 }
 
 .mono-meta  { color: var(--text-muted); }
@@ -3904,7 +3941,7 @@ a.meta-chip:hover {
 .detail-columns {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--detail-rail, 320px);
-    gap: var(--space-6);
+    gap: var(--space-10);  /* v4.4: flat columns need air, not boxes */
     align-items: start;
 }
 
@@ -3916,7 +3953,7 @@ a.meta-chip:hover {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 0;  /* v4.4: flat sections carry their own hairline + padding */
 }
 
 .detail-columns--wide { --detail-rail: 1fr; grid-template-columns: 2fr 1fr; }
@@ -4293,8 +4330,9 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
 .row-lead {
     width: var(--lead-w, 110px);
     flex: 0 0 var(--lead-w, 110px);
-    font-family: var(--font-mono);
-    font-size: 11px;
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
 }
 
@@ -4343,6 +4381,7 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
 }
 
 .card-link:hover { background: var(--panel-hover); }
+.card.card-link { padding-left: var(--space-3); padding-right: var(--space-3); border-radius: var(--radius-sm); }
 
 /* Media beside a body — an item dossier, a recipe header. */
 .hero-split {
@@ -5415,7 +5454,7 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
 
 /* --- from pages/reminders.html.erb --- */
 .rem-chips { display: flex; gap: 2px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
-.rem-chips .label { font-size: 11px; color: var(--text-muted); margin-right: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+.rem-chips .label { font-size: var(--text-xs); color: var(--text-muted); margin-right: 6px; }
 .rem-group-h { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 4px; }
 .rem-group-h strong { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
 .rem-group-h .count { font-size: 11px; color: var(--text-muted); }
@@ -5459,7 +5498,7 @@ input#sleep-disruptions { box-sizing: border-box; max-width: 100%; }
 .job-tile .tile-when { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 11px; color: var(--text-faint); }
 .job-tile .tile-detail { font-size: 12px; color: var(--text-muted); line-height: 1.5; overflow-wrap: anywhere; }
 .job-tile .tile-sched { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); margin-top: 6px; }
-.cadence-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); margin: var(--space-4) 0 var(--space-2); }
+.cadence-label { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--text-muted); margin: var(--space-4) 0 var(--space-2); }
 .cadence-label:first-of-type { margin-top: 0; }
 .job-meta-row { display: flex; gap: var(--space-5); font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: var(--space-4); flex-wrap: wrap; }
 .job-meta-row b { color: var(--text); font-weight: 500; }
@@ -5476,7 +5515,7 @@ tr[data-log-toggle] { cursor: pointer; }
 .arch-day-row .score-pips .pip { width: 6px; height: 6px; border-radius: 1px; background: var(--bg-subtle); }
 .arch-day-row .summary { font-size: 14px; line-height: 1.55; color: var(--text-muted); min-width: 0; }
 .arch-day-row .stats { display: flex; gap: 14px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-muted); align-items: flex-start; flex-wrap: wrap; }
-.arch-day-row .stat .label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+.arch-day-row .stat .label { font-size: var(--text-2xs); color: var(--text-muted); }
 .arch-day-row .stat .value { font-size: 13px; color: var(--text); margin-top: 2px; }
 @media (max-width: 768px) {
     .arch-day-row { grid-template-columns: 90px minmax(0, 1fr); }
@@ -5628,9 +5667,8 @@ tr[data-log-toggle] { cursor: pointer; }
       border-top: 1px solid var(--border);
   }
 .hero-fig .f-label {
-      font-size: 11px; font-weight: var(--weight-medium);
-      text-transform: uppercase; letter-spacing: 0.05em;
-      color: var(--text-faint); margin-bottom: 4px;
+      font-size: var(--text-xs); font-weight: var(--weight-medium);
+      color: var(--text-muted); margin-bottom: 4px;
   }
 .hero-fig .f-value {
       font-family: var(--font-sans); font-variant-numeric: tabular-nums;
@@ -5694,8 +5732,7 @@ tr[data-log-toggle] { cursor: pointer; }
       gap: var(--space-3); margin-bottom: var(--space-2);
   }
 .cat-group-name {
-      font-size: 11px; font-weight: var(--weight-semibold);
-      text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint);
+      font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--text-muted);
   }
 .fixed-toggle {
       display: flex; align-items: center; gap: 6px;
@@ -5819,9 +5856,8 @@ tr[data-log-toggle] { cursor: pointer; }
 .filter-tags-menu-head {
     padding: 6px var(--space-3) 4px;
     font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-faint);
+    font-weight: var(--weight-medium);
+    color: var(--text-muted);
 }
 
 .filter-tags-opt {
@@ -6302,6 +6338,16 @@ tbody tr.is-key-focus > td { background: transparent; }
 
 @media (max-width: 480px) {
     .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* Flat stats band on small screens: hairlines follow the 2-up / 1-up grid. */
+@media (max-width: 768px) {
+    .stats-grid > .stat-card:nth-child(odd) { padding-left: 0; border-left: 0; }
+    .stats-grid > .stat-card:nth-child(n+3) { border-top: 1px solid var(--border); }
+}
+@media (max-width: 480px) {
+    .stats-grid > .stat-card { padding-left: 0; border-left: 0; }
+    .stats-grid > .stat-card + .stat-card { border-top: 1px solid var(--border); }
 }
 
 /* ============================================================
