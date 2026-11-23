@@ -1575,7 +1575,7 @@
 }
 
 /* ============================================================
-   :root — v3 tokens
+   :root — tokens
    ============================================================ */
 :root {
     /* ----- Type families ----- */
@@ -1583,15 +1583,14 @@
     --font-mono: 'Geist Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
 
     /* ----- Type scale (16px root) ----- */
+    --text-2xs:  0.6875rem; /* 11px — micro-labels, table heads, meta (was raw 11px x50) */
     --text-xs:   0.75rem;   /* 12px */
     --text-sm:   0.8125rem; /* 13px */
     --text-base: 0.875rem;  /* 14px */
     --text-md:   1rem;      /* 16px */
     --text-lg:   1.125rem;  /* 18px */
     --text-xl:   1.5rem;    /* 24px */
-    --text-2xl:  2rem;      /* 32px */
-    --text-3xl:  2rem;      /* 32px (capped) */
-    --text-4xl:  2rem;      /* 32px (capped — v3 has no 40+) */
+    --text-2xl:  2rem;      /* 32px — the top of the scale */
 
     /* ----- Weights ----- */
     --weight-regular:  400;
@@ -1603,15 +1602,12 @@
     --lh-heading: 1.25;
     --lh-mono:    1.0;
 
-    /* v2.1 leading aliases */
-    --leading-tight:  1.25;
-    --leading-snug:   1.35;
-    --leading-normal: 1.5;
-
     /* ----- Spacing (8px base + 4px halfsteps) ----- */
     --space-0_5: 2px;
     --space-1:   4px;
+    --space-1_5: 6px;   /* the de facto step (raw 6px x40) */
     --space-2:   8px;
+    --space-2_5: 10px;  /* the de facto step (raw 10px x30) */
     --space-3:  12px;
     --space-4:  16px;
     --space-5:  20px;
@@ -1624,9 +1620,6 @@
     /* ----- Radii (v4: softened; still no pills except full) ----- */
     --radius-sm:   7px;   /* buttons, inputs, badges, chips, nav items */
     --radius-md:   9px;   /* cards, panels, modals, dropdowns */
-    --radius-lg:  12px;   /* page-level containers */
-    --radius-xl:  12px;
-    --radius-2xl: 12px;
     --radius-full: 9999px; /* circular avatars/dots only */
 
     /* ----- Motion (ease-out only) ----- */
@@ -1634,10 +1627,17 @@
     --motion-base: 160ms cubic-bezier(0.2, 0, 0, 1);
     --motion-slow: 200ms cubic-bezier(0.2, 0, 0, 1);
 
-    /* v2.1 transition aliases */
-    --transition-fast: var(--motion-fast);
-    --transition-base: var(--motion-base);
-    --transition-slow: var(--motion-slow);
+    /* ----- Layers (z-index). Use these, never a raw number. ----- */
+    --z-raised:   1;    /* above siblings inside a component */
+    --z-sticky:   50;   /* sticky page header, sticky bars */
+    --z-overlay:  99;   /* mobile drawer scrim */
+    --z-sidebar:  100;  /* fixed sidebar */
+    --z-toggle:   101;  /* mobile hamburger, over the closed drawer */
+    --z-drawer:   102;  /* open mobile drawer, over the hamburger */
+    --z-dropdown: 150;  /* dropdown menus, popovers */
+    --z-popover:  160;  /* menus that open from inside a dropdown/filter bar */
+    --z-modal:    200;
+    --z-toast:    300;  /* over modals, so a validation toast reads */
 
     /* ----- Sizes ----- */
     --control-h-sm:   32px;
@@ -1646,7 +1646,6 @@
     --row-h-default:  36px;
     --row-h-spacious: 40px;
     --sidebar-width:  240px;
-    --sidebar-w:      256px;
 
     /* ----- Shadows ----- */
     --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -1654,6 +1653,7 @@
     --shadow-press:    0 1px 2px rgba(0, 0, 0, 0.08);
     /* v4: resting cards carry a soft two-layer shadow */
     --shadow-card:     0 1px 2px rgba(16, 20, 26, 0.04), 0 3px 10px rgba(16, 20, 26, 0.04);
+    --shadow-sm:       0 1px 2px rgba(0, 0, 0, 0.04);
 
     /* ----- Semantic neutral surface tokens (slate) -----
        v4 surface model: the PAGE takes the subtle tint and CARDS are the
@@ -1705,57 +1705,20 @@
 
     /* ----- Categorical intent tokens (Radix step-9 dots) ----- */
     --color-error:    var(--red-9);
-    --color-warning:  var(--orange-9);
     --color-pending:  var(--amber-9);
     --color-success:  var(--green-9);
     --color-info:     var(--teal-9);
     --color-link:     var(--blue-9);
-    --color-primary:  var(--indigo-9);
-    --color-feature:  var(--purple-9);
-    --color-personal: var(--pink-9);
 
     /* ----- Amount / delta semantics (use for +/- numeric values) ----- */
     --text-amount-positive: var(--green-11);
     --text-amount-negative: var(--red-11);
     --text-amount-neutral:  var(--text-faint);
 
-    /* ============================================================
-       v2.1 compatibility aliases
-       Map every legacy variable to a v3 equivalent.
-       ============================================================ */
-
-    /* ----- Surfaces ----- */
-    --bg-primary:     var(--bg);
-    --surface:        var(--bg-subtle);
-    --surface-hover:  var(--panel);
-    --surface-raised: var(--bg-subtle);
-    --bg-tertiary:    var(--panel);
-
-    /* ----- Borders ----- */
-    --border-light:  var(--border);
-    --border-medium: var(--border);
-
-    /* ----- Text ----- */
-    --text-primary:   var(--text);
-    --text-secondary: var(--text-muted);
-    --text-tertiary:  var(--text-faint);
-
-    /* ----- Gray scale → slate steps ----- */
-    --gray-50:  var(--slate-1);
-    --gray-100: var(--slate-2);
-    --gray-150: var(--slate-2);
-    --gray-200: var(--slate-3);
-    --gray-300: var(--slate-5);
-    --gray-400: var(--slate-8);
-    --gray-500: var(--slate-9);
-    --gray-600: var(--slate-10);
-    --gray-700: var(--slate-11);
-    --gray-800: var(--slate-12);
-    --gray-850: var(--slate-12);
-    --gray-900: var(--slate-12);
-    --gray-950: var(--slate-12);
-
-    /* ----- Accent scale → indigo (default; per-app overrides below) ----- */
+    /* ----- Accent scale (per-app overrides below; indigo default) -----
+       50 tint · 100 tint-hover · 300 border · 400 border-hover ·
+       500 solid (step 9) · 600 solid-hover · 700 text (step 11). Text on a
+       solid fill uses --accent-solid / --accent-on, not 500 + #fff. */
     --accent-50:  var(--indigo-3);
     --accent-100: var(--indigo-4);
     --accent-300: var(--indigo-7);
@@ -1763,36 +1726,6 @@
     --accent-500: var(--indigo-9);
     --accent-600: var(--indigo-10);
     --accent-700: var(--indigo-11);
-    --primary-500: var(--indigo-9);
-
-    /* ----- Semantic intent aliases ----- */
-    --success-50:  var(--green-3);
-    --success-400: var(--green-9);
-    --success-500: var(--green-9);
-    --success-600: var(--green-10);
-    --warning-50:  var(--amber-3);
-    --warning-400: var(--amber-9);
-    --warning-500: var(--amber-9);
-    --warning-600: var(--amber-10);
-    --error-50:    var(--red-3);
-    --error-400:   var(--red-9);
-    --error-500:   var(--red-9);
-    --error-600:   var(--red-10);
-    --info-500:    var(--teal-9);
-
-    /* ----- Shadows: subtle for chrome, floating for popovers ----- */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
-    --shadow-xl: var(--shadow-floating);
-    --shadow-accent: none; /* v3 has no accent glow */
-
-    /* ----- Gradients: flatten to solid colors ----- */
-    --gradient-accent:        var(--accent-500);
-    --gradient-accent-hover:  var(--accent-600);
-    --gradient-accent-subtle: var(--accent-50);
-    --gradient-card-dark:        var(--bg-subtle);
-    --gradient-card-dark-hover:  var(--panel);
 }
 
 /* ============================================================
@@ -1811,10 +1744,6 @@
     --accent-500: var(--slate-9);
     --accent-600: var(--slate-10);
     --accent-700: var(--slate-11);
-    --color-primary: var(--slate-9);
-    --gradient-accent:        var(--slate-9);
-    --gradient-accent-hover:  var(--slate-10);
-    --gradient-accent-subtle: var(--slate-3);
 }
 
 /* Budgeter — green */
@@ -1829,10 +1758,6 @@
     --accent-500: var(--green-9);
     --accent-600: var(--green-10);
     --accent-700: var(--green-11);
-    --color-primary: var(--green-9);
-    --gradient-accent:        var(--green-9);
-    --gradient-accent-hover:  var(--green-10);
-    --gradient-accent-subtle: var(--green-3);
 }
 
 /* Fitness — orange */
@@ -1847,10 +1772,6 @@
     --accent-500: var(--orange-9);
     --accent-600: var(--orange-10);
     --accent-700: var(--orange-11);
-    --color-primary: var(--orange-9);
-    --gradient-accent:        var(--orange-9);
-    --gradient-accent-hover:  var(--orange-10);
-    --gradient-accent-subtle: var(--orange-3);
 }
 
 /* Mealplanner — purple */
@@ -1865,10 +1786,6 @@
     --accent-500: var(--purple-9);
     --accent-600: var(--purple-10);
     --accent-700: var(--purple-11);
-    --color-primary: var(--purple-9);
-    --gradient-accent:        var(--purple-9);
-    --gradient-accent-hover:  var(--purple-10);
-    --gradient-accent-subtle: var(--purple-3);
 }
 
 /* Upkeep — blue (teal read too close to budgeter's green at icon size) */
@@ -1883,10 +1800,6 @@
     --accent-500: var(--blue-9);
     --accent-600: var(--blue-10);
     --accent-700: var(--blue-11);
-    --color-primary: var(--blue-9);
-    --gradient-accent:        var(--blue-9);
-    --gradient-accent-hover:  var(--blue-10);
-    --gradient-accent-subtle: var(--blue-3);
 }
 
 /* Postings — crimson (job-hunt tracker) */
@@ -1901,10 +1814,6 @@
     --accent-500: var(--crimson-9);
     --accent-600: var(--crimson-10);
     --accent-700: var(--crimson-11);
-    --color-primary: var(--crimson-9);
-    --gradient-accent:        var(--crimson-9);
-    --gradient-accent-hover:  var(--crimson-10);
-    --gradient-accent-subtle: var(--crimson-3);
 }
 
 /* ============================================================
@@ -1923,9 +1832,6 @@
     --text-faint: color-mix(in srgb, var(--slate-11) 30%, var(--slate-10));
     --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-    --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.5);
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.24);
     /* v4 dark surfaces: page drops to slate-1, cards float at slate-2 */
     --bg:   var(--slate-1);
@@ -1945,9 +1851,6 @@
     :root:not([data-theme="light"]) {
         --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.4);
         --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-        --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4);
-        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-        --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.5);
         --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.24);
     }
 }
@@ -2078,7 +1981,7 @@ label {
     background: var(--bg);
     border-right: 1px solid var(--border);
     overflow-y: auto;
-    z-index: 100;
+    z-index: var(--z-sidebar);
     padding: var(--space-4) 0;
     display: flex;
     flex-direction: column;
@@ -2113,7 +2016,7 @@ label {
     padding: var(--space-4) var(--space-8);
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: var(--z-sticky);
 }
 
 .page-header > div:not(.page-crumb) {
@@ -3050,7 +2953,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     display: none;
     position: fixed;
     inset: 0;
-    z-index: 200;
+    z-index: var(--z-modal);
     align-items: center;
     justify-content: center;
     padding: var(--space-4);
@@ -3087,7 +2990,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     max-height: calc(100dvh - 2 * var(--space-4));
     overflow-y: auto;
     box-shadow: var(--shadow-floating);
-    z-index: 1;
+    z-index: var(--z-raised);
     animation: modalIn var(--motion-slow);  /* the token carries the easing; a second one made the declaration invalid */
 }
 
@@ -3313,7 +3216,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     position: fixed;
     top: var(--space-3);
     left: var(--space-3);
-    z-index: 101;
+    z-index: var(--z-toggle);
     align-items: center;
     justify-content: center;
     width: var(--control-h);   /* 36px, 44px under pointer: coarse */
@@ -3336,7 +3239,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.4);
-    z-index: 99;
+    z-index: var(--z-overlay);
 }
 
 [data-theme="dark"] .mobile-overlay {
@@ -3420,7 +3323,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
        clicked away. That includes the dsConfirm / dsPrompt dialogs, which are
        .modal too — the toast is pinned to the bottom edge and the dialog box
        is centred, so it clears the box rather than covering it. */
-    z-index: 300;
+    z-index: var(--z-toast);
     max-width: calc(100vw - var(--space-8));
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border);
@@ -3733,7 +3636,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 .decide-bar {
     position: sticky;
     bottom: 0;
-    z-index: 2;
+    z-index: calc(var(--z-raised) + 1);
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -4088,7 +3991,7 @@ a.meta-chip:hover {
     position: absolute;
     top: 8px;
     right: 8px;
-    z-index: 1;
+    z-index: var(--z-raised);
 }
 
 /* ── Prose ────────────────────────────────────────────────────
@@ -5078,7 +4981,7 @@ tr.product-row {
     font-family: var(--font-mono); font-variant-numeric: tabular-nums;
     color: var(--text-muted); font-size: var(--text-xs); margin: 0;
 }
-.ws-desc { color: var(--text-secondary); font-size: var(--text-sm); margin: 4px 0 0; }
+.ws-desc { color: var(--text-muted); font-size: var(--text-sm); margin: 4px 0 0; }
 .ws-hero { margin: 0; }
 .ws-hero .stat-value .u { font-size: 11px; color: var(--text-muted); }
 .ws-chart-wrap { position: relative; height: 200px; }
@@ -5803,7 +5706,7 @@ tr[data-log-toggle] { cursor: pointer; }
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-floating);
-    z-index: 160;
+    z-index: var(--z-popover);
     display: none;
 }
 
@@ -5890,7 +5793,7 @@ tr[data-log-toggle] { cursor: pointer; }
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-floating);
     padding: var(--space-1);
-    z-index: 150;
+    z-index: var(--z-dropdown);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-4px);
@@ -6149,7 +6052,7 @@ tr[data-log-toggle] { cursor: pointer; }
     .sidebar.open {
         transform: translateX(0);
         box-shadow: var(--shadow-floating);
-        z-index: 102;  /* over .mobile-menu-toggle (101), which sat on the logo */
+        z-index: var(--z-drawer);  /* over the hamburger, which sat on the logo */
     }
 
     .main-content { margin-left: 0; }
