@@ -2,20 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Card</title>
+<title>Buttons</title>
 <link rel="stylesheet" href="../../design-system.css">
 <style>
+  /* Preview-card frame only; everything inside uses design-system classes. */
   html, body { margin: 0; padding: 0; }
   body { padding: 20px; }
-  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-  .row:last-child { margin-bottom: 0; }
-  .label { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); width: 60px; flex-shrink: 0; }
+  .pv-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .pv-row:last-child { margin-bottom: 0; }
+  .pv-label { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-faint); width: 72px; flex-shrink: 0; }
 </style>
 </head>
 <body>
-  <div class="row"><div class="label">primary</div><button class="btn btn-primary">Add transaction</button><button class="btn btn-primary btn-sm">Save</button></div>
-  <div class="row"><div class="label">secondary</div><button class="btn btn-secondary">Cancel</button><button class="btn btn-secondary btn-sm">Filter</button></div>
-  <div class="row"><div class="label">ghost</div><button class="btn btn-ghost">Skip</button><button class="btn btn-ghost btn-sm">Dismiss</button></div>
-  <div class="row"><div class="label">destructive</div><button class="btn btn-destructive">Delete account</button></div>
+  <div class="pv-row"><div class="pv-label">primary</div><button class="btn btn-primary">Add transaction</button><button class="btn btn-primary btn-sm">Save</button></div>
+  <div class="pv-row"><div class="pv-label">secondary</div><button class="btn btn-secondary">Cancel</button><button class="btn btn-secondary btn-sm">Filter</button></div>
+  <div class="pv-row"><div class="pv-label">ghost</div><button class="btn btn-ghost">Skip</button><button class="btn btn-ghost btn-sm">Dismiss</button></div>
+  <div class="pv-row"><div class="pv-label">danger</div><button class="btn btn-danger">Delete account</button><button class="btn btn-danger btn-sm">Remove</button></div>
+  <div class="pv-row"><div class="pv-label">link</div><a class="btn btn-secondary" href="#">Anchor button</a><button class="btn" disabled>Disabled</button></div>
 </body>
 </html>

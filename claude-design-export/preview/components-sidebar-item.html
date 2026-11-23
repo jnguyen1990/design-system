@@ -2,21 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Card</title>
+<title>Sidebar item</title>
 <link rel="stylesheet" href="../../design-system.css">
 <style>
+  /* Preview-card frame only; everything inside uses design-system classes. */
   html, body { margin: 0; padding: 0; }
-  body { padding: 16px; background: var(--bg-subtle); }
-  .list { display: flex; flex-direction: column; gap: 2px; max-width: 240px; }
+  body { padding: 20px; }
+  .pv-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .pv-row:last-child { margin-bottom: 0; }
+  .pv-label { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-faint); width: 72px; flex-shrink: 0; }
 </style>
 </head>
 <body>
-  <div class="list">
-    <div class="sb-item"><div class="sb-dot sb-dot-blue"></div>Inbox<span class="kbd sb-kbd">⌘1</span></div>
-    <div class="sb-item is-selected"><div class="sb-dot sb-dot-green"></div>Today<span class="kbd sb-kbd">⌘2</span></div>
-    <div class="sb-item"><div class="sb-dot sb-dot-amber"></div>Upcoming<span class="kbd sb-kbd">⌘3</span></div>
-    <div class="sb-item"><div class="sb-dot sb-dot-purple"></div>Someday<span class="kbd sb-kbd">⌘4</span></div>
-    <div class="sb-item"><div class="sb-dot sb-dot-pink"></div>Journal</div>
-  </div>
+  <ul class="nav-menu" style="max-width: 240px">
+    <li><a class="nav-link" href="#"><span class="nav-ico" data-ico="grid"></span>dashboard<kbd class="kbd nav-kbd">⌘1</kbd></a></li>
+    <li><a class="nav-link active" href="#" aria-current="page"><span class="nav-ico" data-ico="list"></span>all transactions<kbd class="kbd nav-kbd">⌘2</kbd></a></li>
+    <li><a class="nav-link" href="#"><span class="nav-ico" data-ico="inbox"></span>uncategorized<kbd class="kbd nav-kbd">⌘3</kbd></a></li>
+    <li><a class="nav-link" href="#"><span class="nav-ico" data-ico="sliders"></span>settings<kbd class="kbd nav-kbd">⌘,</kbd></a></li>
+  </ul>
+  <!-- Icons are injected by shared-core.js renderNavIcons() in the apps; this static card shows the rows without them. -->
 </body>
 </html>

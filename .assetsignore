@@ -1,0 +1,12 @@
+# Files the Worker must NOT publish (wrangler.jsonc publishes the repo root).
+# Same syntax as .gitignore.
+.git
+.gitignore
+.assetsignore
+.claude
+.DS_Store
+wrangler.jsonc
+scripts
+tmp
+*.md
+claude-design-export/scraps

@@ -5,24 +5,25 @@
 <title>Card</title>
 <link rel="stylesheet" href="../../design-system.css">
 <style>
+  /* Preview-card frame only; everything inside uses design-system classes. */
   html, body { margin: 0; padding: 0; }
   body { padding: 20px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .pv-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .pv-row:last-child { margin-bottom: 0; }
+  .pv-label { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-faint); width: 72px; flex-shrink: 0; }
 </style>
 </head>
 <body>
-  <div class="grid">
-    <div class="card">
-      <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">Checking</div>
-      <div style="font-family: var(--font-mono); font-size: 22px; font-weight:500; color:var(--text);">$4,218.42</div>
-      <div class="meta" style="margin-top: 6px;">+$120.50 this week</div>
+  <div class="columns-2">
+    <div class="stat-card card-dense">
+      <div class="stat-label">Checking</div>
+      <div class="stat-value">$4,218.42</div>
+      <div class="stat-subtext">+$120.50 this week</div>
     </div>
-    <div class="card card-interactive">
-      <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">Last workout</div>
-      <div style="font-size: 16px; font-weight: 600; color:var(--text);">Pull · upper</div>
-      <div class="meta" style="margin-top: 6px;">2d ago · 6 lifts</div>
-    </div>
+    <a class="card card-link" href="#">
+      <h3 class="card-title">Pull · upper</h3>
+      <p class="card-subtitle">Last workout · 2d ago · 6 lifts</p>
+    </a>
   </div>
 </body>
 </html>

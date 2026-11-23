@@ -46,11 +46,41 @@ Set `data-app` on `<html>` to pick the per-app accent:
 | `upkeep` | Upkeep | blue |
 | `postings` | Postings | crimson |
 
-For local dev against the un-published version of these files, run a static server inside this repo (e.g. `python3 -m http.server 8765`) and point your app's stylesheet/script tags to `http://localhost:8765/...`. All six Rails layouts support this via the `DS_BASE` env var (`DS_BASE=http://localhost:8765 bin/rails server`); unset, they default to the CDN.
+For local dev against the un-published version of these files, run a static server inside this repo (e.g. `python3 -m http.server 8765`; the webfonts load cross-origin, so a server that sends `Access-Control-Allow-Origin` is needed for Inter and Geist Mono to render — without it the system fallback fonts show) and point your app's stylesheet/script tags to `http://localhost:8765/...`. All six Rails layouts support this via the `DS_BASE` env var (`DS_BASE=http://localhost:8765 bin/rails server`); unset, they default to the CDN.
 
 ## Publishing changes
 
 Push to `main`. Cloudflare Workers Static Assets auto-deploys the repo root (configured in `wrangler.jsonc`). `_headers` sets `Cache-Control: public, no-cache` for all paths: browsers keep a cached copy but revalidate on every use via ETag (Workers Static Assets serves strong ETags, so unchanged files are cheap 304s). Changes propagate to all apps on the next page load — no manual cache purge, no version param, no hard refresh. Was `max-age=43200` until 2026-08-21, which left up to a 12h stale window after a push (bit the mealplanner `.cal-*` rollout). Migrated off jsDelivr on 2026-05-07 (jsDelivr's 7-day `@main` cache was blocking propagation).
+
+### Before you push: `scripts/check.mjs`
+
+There is no CI between `main` and six production apps, so run the check by
+hand before every push (the repo has no git-hooks convention, so it is not
+installed as a hook):
+
+```bash
+/usr/local/bin/mise exec node@22 -- node scripts/check.mjs           # every kit
+/usr/local/bin/mise exec node@22 -- node scripts/check.mjs budgeter  # kits whose path matches
+```
+
+It renders each `claude-design-export/ui_kits/*/*.html` from the working
+tree (CDN URLs are answered from local files) in light and dark at 1440px
+and 375px, writes a screenshot per render (`$TMPDIR/ds-check`, or
+`CHECK_OUT=…`), and fails on any broken invariant: theme boot and
+`color-scheme`, one `<h1>`, a chevron on `select.form-control`,
+`<a class="btn">` hover keeping its colour, the modal entry animation,
+dialog role/focus-in/focus-restore, `dsConfirm` focusing Cancel, AA
+contrast for primary/danger buttons, `--text-faint` and the focus ring,
+`.sr-only`, label association, `aria-current` on the active nav link, the
+self-hosted fonts loading with no Google Fonts / jsDelivr request, and at
+375px: 16px inputs, 44px controls under touch, and nothing past the
+viewport outside `.table-responsive`. Exit code 0 is a pass. It needs
+Google Chrome and `playwright-core` (it uses `~/Repos/mini/browser_sweep`'s
+copy, or `PLAYWRIGHT_CORE=…`). Add an invariant whenever a regression slips
+through.
+
+`.assetsignore` keeps `tmp/`, docs, `scripts/`, the scraps and the Claude
+config off the CDN.
 
 ## Apps using this system
 

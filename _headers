@@ -1,2 +1,5 @@
 /*
   Cache-Control: public, no-cache
+
+/fonts/*
+  Access-Control-Allow-Origin: *
