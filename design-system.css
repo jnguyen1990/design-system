@@ -1669,16 +1669,39 @@
     --panel-active: var(--slate-5);
     --border:       var(--slate-6);
     --border-hover: var(--slate-7);
-    --focus-ring:   var(--accent-300);  /* per-app: indigo-7 default, green-7 budgeter, orange-7 fitness, slate-7 base */
+    /* Step 11 of the app accent (= --accent-text): 4.5-6.1:1 on a light
+       card, 8.4+ on a dark one. Step 7 measured 1.6-1.9:1, and the 30% mix
+       on inputs 1.1-1.2:1. Use it at full strength. */
+    --focus-ring:   var(--accent-text);
     --text:         var(--slate-12);
     --text-muted:   var(--slate-11);
-    --text-faint:   var(--slate-10);
+    /* slate-10 measured 3.78:1 on a card (3.33 on panel) — under AA for the
+       11-12px text it sets. 70% of the way to slate-11 clears 4.5 on card,
+       page and panel while staying a step quieter than --text-muted. */
+    --text-faint:   color-mix(in srgb, var(--slate-11) 70%, var(--slate-10));
 
     /* ----- Accent-in-chrome tokens (v4) — alpha tints that hold on any
        surface. Per-app overrides remap these alongside --accent-N. ----- */
     --accent-soft:       var(--indigo-a3);  /* active nav bg, tinted highlights */
     --accent-soft-hover: var(--indigo-a4);
     --accent-text:       var(--indigo-11);  /* text on top of --accent-soft */
+
+    /* ----- Solid accent fills that carry text (v4.3, a11y floor) -----
+       #fff on --accent-500 (step 9) measured 2.97-3.85:1 in five of six
+       apps. Light: step 11 under white text (4.5-6.1:1). Dark: step 9 kept,
+       with near-black text for the bright accents (see the dark block).
+       Hover/active darken toward the opposite of the text colour, so the
+       hover state is never worse than rest. */
+    --accent-solid:        var(--accent-700);
+    --accent-on:           #fff;
+    --accent-solid-shade:  #000;
+    --accent-solid-hover:  color-mix(in srgb, var(--accent-solid) 86%, var(--accent-solid-shade));
+    --accent-solid-active: color-mix(in srgb, var(--accent-solid) 76%, var(--accent-solid-shade));
+    --danger-solid:        var(--red-11);
+    --danger-on:           #fff;
+    --danger-solid-shade:  #000;
+    --danger-solid-hover:  color-mix(in srgb, var(--danger-solid) 86%, var(--danger-solid-shade));
+    --danger-solid-active: color-mix(in srgb, var(--danger-solid) 76%, var(--danger-solid-shade));
 
     /* ----- Categorical intent tokens (Radix step-9 dots) ----- */
     --color-error:    var(--red-9);
@@ -1889,6 +1912,15 @@
    is set. We only adjust the floating shadow alpha.
    ============================================================ */
 [data-theme="dark"], .dark {
+    color-scheme: dark;  /* native select popups, autofill, scrollbars */
+    /* Dark solids: step 9 (step 11 is a pale tint here). White on it holds
+       for slate, purple and indigo; the bright accents take near-black text
+       below. */
+    --accent-solid:       var(--accent-500);
+    --danger-solid:       var(--red-9);
+    --danger-on:          var(--slate-1);
+    --danger-solid-shade: #fff;
+    --text-faint: color-mix(in srgb, var(--slate-11) 30%, var(--slate-10));
     --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4);
@@ -1899,6 +1931,15 @@
     --bg:   var(--slate-1);
     --card: var(--slate-2);
 }
+
+/* green 5.97, orange 6.35, blue 5.78, crimson 4.90 with near-black text on
+   step 9 (white measured 2.97-3.85). */
+:is([data-theme="dark"], .dark):is([data-app="budgeter"], [data-app="fitness"], [data-app="upkeep"], [data-app="postings"]) {
+    --accent-on:          var(--slate-1);
+    --accent-solid-shade: #fff;
+}
+
+:where(:root) { color-scheme: light; }  /* zero specificity: the dark block above wins */
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -1993,6 +2034,20 @@ label {
     color: var(--text-muted);
     letter-spacing: 0;
     text-transform: none;
+}
+
+/* Visually hidden, still read by screen readers (brand-guide: icon-only
+   controls and label-less inputs carry an .sr-only label). */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .text-muted    { color: var(--text-muted); }
@@ -2485,21 +2540,21 @@ label {
    the v4 brand guide allows the accent in chrome: primary button, active
    nav, selection, checked controls. */
 .btn-primary {
-    background: var(--accent-500);
-    color: #fff;
-    border-color: var(--accent-600);
+    background: var(--accent-solid);
+    color: var(--accent-on);
+    border-color: var(--accent-solid);
     box-shadow: var(--shadow-inner), var(--shadow-press);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--accent-600);
-    border-color: var(--accent-600);
-    color: #fff;
+    background: var(--accent-solid-hover);
+    border-color: var(--accent-solid-hover);
+    color: var(--accent-on);
 }
 
 .btn-primary:active:not(:disabled) {
-    background: var(--accent-700);
-    border-color: var(--accent-700);
+    background: var(--accent-solid-active);
+    border-color: var(--accent-solid-active);
 }
 
 .btn-secondary {
@@ -2518,21 +2573,21 @@ label {
 }
 
 .btn-danger {
-    background: var(--red-9);
-    color: #fff;
-    border-color: var(--red-10);
+    background: var(--danger-solid);
+    color: var(--danger-on);
+    border-color: var(--danger-solid);
     box-shadow: var(--shadow-inner), var(--shadow-press);
 }
 
 .btn-danger:hover:not(:disabled) {
-    background: var(--red-10);
-    border-color: var(--red-10);
-    color: #fff;
+    background: var(--danger-solid-hover);
+    border-color: var(--danger-solid-hover);
+    color: var(--danger-on);
 }
 
 .btn-danger:active:not(:disabled) {
-    background: var(--red-11);
-    border-color: var(--red-11);
+    background: var(--danger-solid-active);
+    border-color: var(--danger-solid-active);
 }
 
 .btn-ghost {
@@ -2636,7 +2691,7 @@ label {
 
 .form-control:focus {
     border-color: var(--focus-ring);
-    outline: 2px solid color-mix(in srgb, var(--focus-ring) 30%, transparent);
+    outline: 1px solid var(--focus-ring);  /* + the 1px border = a 2px ring */
     outline-offset: 0;
 }
 
@@ -2751,7 +2806,7 @@ select:not(.session-type-badge):hover {
 
 input:focus, textarea:focus, select:focus {
     border-color: var(--focus-ring);
-    outline: 2px solid color-mix(in srgb, var(--focus-ring) 30%, transparent);
+    outline: 1px solid var(--focus-ring);
     outline-offset: 0;
 }
 
@@ -2759,8 +2814,8 @@ input[aria-invalid="true"], .form-control[aria-invalid="true"] {
     border-color: var(--red-7);
 }
 input[aria-invalid="true"]:focus, .form-control[aria-invalid="true"]:focus {
-    border-color: var(--red-7);
-    outline-color: color-mix(in srgb, var(--red-7) 30%, transparent);
+    border-color: var(--red-11);
+    outline-color: var(--red-11);
 }
 
 /* Native date/time pickers respect theme */
@@ -2793,8 +2848,8 @@ input[type="checkbox"]:hover, input[type="radio"]:hover {
 }
 
 input[type="checkbox"]:checked, input[type="radio"]:checked {
-    background: var(--accent-500);
-    border-color: var(--accent-600);
+    background: var(--accent-solid);
+    border-color: var(--accent-solid);
 }
 
 input[type="checkbox"]:checked::after {
@@ -2804,7 +2859,7 @@ input[type="checkbox"]:checked::after {
     top: 1px;
     width: 5px;
     height: 9px;
-    border: solid #fff;
+    border: solid var(--accent-on);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
@@ -2817,13 +2872,13 @@ input[type="radio"]:checked::after {
     width: 6px;
     height: 6px;
     border-radius: var(--radius-full);
-    background: #fff;
+    background: var(--accent-on);
     transform: translate(-50%, -50%);
 }
 
 input[type="checkbox"]:focus-visible,
 input[type="radio"]:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--focus-ring) 30%, transparent);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
 }
 
@@ -5500,9 +5555,9 @@ tr[data-log-toggle] { cursor: pointer; }
 .ledger .alloc-row:hover .alloc-input { border-color: var(--border); background: var(--card); }
 .ledger .alloc-input:focus, [data-app="budgeter"] .stat-card .tile-input:focus {
       outline: none;
-      border-color: var(--accent-500);
+      border-color: var(--focus-ring);
       background: var(--card);
-      box-shadow: 0 0 0 3px var(--focus-ring);
+      box-shadow: 0 0 0 1px var(--focus-ring);
   }
 [data-app="budgeter"] .stat-card .tile-input {
       width: 100%;
@@ -5689,8 +5744,8 @@ tr[data-log-toggle] { cursor: pointer; }
 }
 
 .filter-tags:focus-within {
-    border-color: var(--accent-300);
-    box-shadow: 0 0 0 3px var(--focus-ring);
+    border-color: var(--focus-ring);
+    box-shadow: 0 0 0 1px var(--focus-ring);
 }
 
 .filter-tags.is-invalid { border-color: var(--red-7); }
@@ -5728,7 +5783,7 @@ tr[data-log-toggle] { cursor: pointer; }
 .filter-tag--text { border-style: dashed; }
 
 /* Backspace on an empty box selects the last tag before removing it. */
-.filter-tag.is-focused { outline: 2px solid var(--accent-300); outline-offset: 1px; }
+.filter-tag.is-focused { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
 
 .filter-tag-x { cursor: pointer; opacity: 0.6; }
 .filter-tag-x:hover { opacity: 1; }
@@ -6009,15 +6064,15 @@ tr[data-log-toggle] { cursor: pointer; }
 }
 
 .filter-btn.active {
-    background: var(--accent-500);
-    color: #fff;
-    border-color: var(--accent-600);
+    background: var(--accent-solid);
+    color: var(--accent-on);
+    border-color: var(--accent-solid);
 }
 
 .filter-btn.active:hover:not(:disabled) {
-    background: var(--accent-600);
-    border-color: var(--accent-600);
-    color: #fff;
+    background: var(--accent-solid-hover);
+    border-color: var(--accent-solid-hover);
+    color: var(--accent-on);
 }
 
 /* ============================================================

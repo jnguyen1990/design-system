@@ -33,7 +33,13 @@
                                         cssToken('green-9') or cssToken('--green-9').
      - toggleTheme()                    flips data-theme, persists to localStorage
                                         (the apps dock's button calls it and
-                                        draws its own glyph)
+                                        draws its own glyph), then dispatches
+                                        "ds:themechange" on document
+                                        ({detail:{theme}}) so charts can re-theme.
+     - dsEnhanceLabels(root)            points each .form-group's lone <label> at
+                                        the group's lone text control (gives the
+                                        control an id when it has none). Runs on
+                                        load and on every modal open.
      - showStatus(divId, message, type) status-message div; success auto-hides in 3s
                                         (budgeter overrides: defaults type to 'info')
      - dsConfirm(message, opts)         styled Promise<boolean> replacement for
@@ -95,7 +101,11 @@
                                         opts.allowComma — also handle "," (⌘, settings).
 
    Also runs on load:
-     - applies the saved theme from localStorage immediately (before first paint)
+     - applies the saved theme from localStorage immediately (before first paint);
+       with nothing saved, follows the OS (prefers-color-scheme), dark when the
+       OS states no preference, and keeps following it until the user toggles
+     - aria-current="page" on .nav-link.active; aria-label / aria-expanded on
+       the mobile menu button (#mobileMenuBtn) when the layout set none
      - wires the mobile menu toggle / overlay / nav-link close (delegated, Turbo-safe)
      - row-select tables: clicking a row toggles its checkbox when that
        checkbox opts in with data-row-select (delegated; clicks on the row's
@@ -113,13 +123,35 @@
     if (global.__sharedCoreInstalled) return;
     global.__sharedCoreInstalled = true;
 
-    // Apply saved theme immediately so there's no light/dark flash.
-    (function () {
-        const savedTheme = localStorage.getItem('theme') || 'dark';
+    // Apply the theme immediately so there's no light/dark flash. A saved
+    // choice wins; otherwise the OS preference, and dark when the OS states
+    // none (the apps' historical default).
+    function readSavedTheme() {
+        try { return localStorage.getItem('theme'); } catch (_) { return null; }
+    }
+    function systemTheme() {
+        try { return global.matchMedia && global.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+        catch (_) { return 'dark'; }
+    }
+    function applyTheme(theme) {
         const h = document.documentElement;
-        h.setAttribute('data-theme', savedTheme);
-        h.classList.add(savedTheme);
-    })();
+        h.classList.remove('light', 'dark');
+        h.setAttribute('data-theme', theme);
+        h.classList.add(theme);
+    }
+    function announceTheme(theme) {
+        document.dispatchEvent(new CustomEvent('ds:themechange', { detail: { theme: theme } }));
+    }
+    applyTheme(readSavedTheme() || systemTheme());
+    // Until the user picks a theme, follow the OS when it changes.
+    try {
+        global.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+            if (readSavedTheme()) return;
+            const t = systemTheme();
+            applyTheme(t);
+            announceTheme(t);
+        });
+    } catch (_) { /* old Safari: no addEventListener on MediaQueryList */ }
 
     // ── Small pure helpers ─────────────────────────────────────────────────
     // escapeHtml was written privately 15 times across base, budgeter and
@@ -274,13 +306,11 @@
     };
 
     global.toggleTheme = function toggleTheme() {
-        const html = document.documentElement;
-        const currentTheme = html.getAttribute('data-theme');
+        const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', newTheme);
-        html.classList.remove(currentTheme);
-        html.classList.add(newTheme);
-        localStorage.setItem('theme', newTheme);
+        applyTheme(newTheme);
+        try { localStorage.setItem('theme', newTheme); } catch (_) { /* private mode */ }
+        announceTheme(newTheme);
     };
 
     global.showStatus = function showStatus(divId, message, type) {
@@ -294,7 +324,9 @@
 
     // Styled confirm dialog (brand-guide §13). Builds one reusable DS modal.
     // The affirmative sits rightmost; danger:true renders it btn-danger, which
-    // also means modal-keys' Enter-to-primary deliberately does NOT fire it.
+    // also means modal-keys' Enter-to-primary deliberately does NOT fire it —
+    // and Cancel takes focus, because Enter on a focused button activates it
+    // natively and the danger action must never be one keypress away.
     global.dsConfirm = function dsConfirm(message, opts = {}) {
         const danger = opts.danger !== false;
         let modal = document.getElementById('ds-confirm-modal');
@@ -302,6 +334,10 @@
             modal = document.createElement('div');
             modal.className = 'modal';
             modal.id = 'ds-confirm-modal';
+            modal.setAttribute('role', 'alertdialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-labelledby', 'ds-confirm-title');
+            modal.setAttribute('aria-describedby', 'ds-confirm-message');
             modal.innerHTML =
                 '<div class="modal-box" style="max-width:480px">' +
                 '<div class="modal-header"><h3 id="ds-confirm-title"></h3>' +
@@ -318,11 +354,13 @@
         const okBtn = modal.querySelector('[data-ds-confirm="ok"]');
         okBtn.textContent = opts.confirmLabel || 'Confirm';
         okBtn.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+        const returnFocus = document.activeElement;
         modal.classList.add('modal-open');
-        okBtn.focus();
+        (danger ? modal.querySelector('.modal-footer [data-ds-confirm="cancel"]') : okBtn).focus();
         return new Promise(resolve => {
             function done(ok) {
                 modal.classList.remove('modal-open');
+                if (returnFocus && returnFocus.focus && document.contains(returnFocus)) returnFocus.focus();
                 modal.removeEventListener('click', onClick);
                 document.removeEventListener('keydown', onKey, true);
                 resolve(ok);
@@ -352,6 +390,9 @@
             modal = document.createElement('div');
             modal.className = 'modal';
             modal.id = 'ds-prompt-modal';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-labelledby', 'ds-prompt-title');
             modal.innerHTML =
                 '<div class="modal-box" style="max-width:480px">' +
                 '<div class="modal-header"><h3 id="ds-prompt-title"></h3>' +
@@ -381,6 +422,7 @@
         const okBtn = modal.querySelector('[data-ds-prompt="ok"]');
         okBtn.textContent = opts.confirmLabel || 'OK';
         okBtn.className = 'btn ' + (opts.danger ? 'btn-danger' : 'btn-primary');
+        const returnFocus = document.activeElement;
         modal.classList.add('modal-open');
         input.focus();
         input.select();
@@ -392,6 +434,7 @@
                 if (settled) return;
                 settled = true;
                 modal.classList.remove('modal-open');
+                if (returnFocus && returnFocus.focus && document.contains(returnFocus)) returnFocus.focus();
                 modal.removeEventListener('click', onClick);
                 document.removeEventListener('keydown', onKey, true);
                 resolve(ok ? input.value : null);
@@ -1272,16 +1315,71 @@
         box.dispatchEvent(new Event('change', { bubbles: true }));
     });
 
+    // ── Label association ──────────────────────────────────────────────────
+    // Most app forms write <div class="form-group"><label>…</label><input></div>
+    // with no for/id pair, so the label neither names the field for a screen
+    // reader nor focuses it on click. Conservative: only a group with exactly
+    // one bare label and exactly one text-like control (input, select,
+    // textarea — never checkbox/radio, whose groups are chip sets) is wired.
+    let labelSeq = 0;
+    global.dsEnhanceLabels = function dsEnhanceLabels(root) {
+        (root || document).querySelectorAll('.form-group').forEach(group => {
+            const labels = group.querySelectorAll('label');
+            if (labels.length !== 1) return;
+            const label = labels[0];
+            if (label.htmlFor || label.querySelector('input, select, textarea')) return;
+            const controls = group.querySelectorAll(
+                'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="file"]), select, textarea');
+            if (controls.length !== 1) return;
+            const control = controls[0];
+            if (!control.id) {
+                let id;
+                do { id = 'ds-field-' + (++labelSeq); } while (document.getElementById(id));
+                control.id = id;
+            }
+            label.htmlFor = control.id;
+        });
+    };
+
+    // aria-current on the active nav link and a name + state on the mobile
+    // menu button — layouts that already set them are left alone.
+    function enhanceChrome() {
+        document.querySelectorAll('.nav-link.active:not([aria-current])').forEach(a => a.setAttribute('aria-current', 'page'));
+        const btn = document.getElementById('mobileMenuBtn');
+        if (btn) {
+            if (!btn.hasAttribute('aria-label') && !btn.hasAttribute('aria-labelledby')) btn.setAttribute('aria-label', 'Menu');
+            const sidebar = document.querySelector('.sidebar');
+            if (!btn.hasAttribute('aria-expanded')) btn.setAttribute('aria-expanded', sidebar && sidebar.classList.contains('open') ? 'true' : 'false');
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => { enhanceChrome(); global.dsEnhanceLabels(); });
+    document.addEventListener('turbo:load', () => { enhanceChrome(); global.dsEnhanceLabels(); });
+
     // Mobile menu toggle / overlay / close-on-navigate. Delegated at the
     // document so Turbo body swaps (mealplanner, postings) don't orphan the
-    // handlers with the old <body>.
+    // handlers with the old <body>. Esc closes an open drawer.
+    function setMobileMenu(open) {
+        const sidebar = document.querySelector('.sidebar');
+        if (!sidebar) return;
+        const overlay = document.getElementById('mobileOverlay');
+        const btn = document.getElementById('mobileMenuBtn');
+        sidebar.classList.toggle('open', open);
+        if (overlay) overlay.classList.toggle('show', open);
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
     document.addEventListener('click', function (e) {
         if (!e.target.closest) return;
         const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('mobileOverlay');
         if (!sidebar) return;
-        const set = open => { sidebar.classList.toggle('open', open); if (overlay) overlay.classList.toggle('show', open); };
-        if (e.target.closest('#mobileMenuBtn')) { e.stopPropagation(); set(!sidebar.classList.contains('open')); }
-        else if (e.target.closest('#mobileOverlay') || e.target.closest('.nav-link')) set(false);
+        if (e.target.closest('#mobileMenuBtn')) { e.stopPropagation(); setMobileMenu(!sidebar.classList.contains('open')); }
+        else if (e.target.closest('#mobileOverlay') || e.target.closest('.nav-link')) setMobileMenu(false);
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        const sidebar = document.querySelector('.sidebar.open');
+        if (!sidebar || document.querySelector('.modal.modal-open')) return;
+        setMobileMenu(false);
+        const btn = document.getElementById('mobileMenuBtn');
+        if (btn) btn.focus();
     });
 })(window);
