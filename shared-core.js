@@ -13,7 +13,9 @@
                                         .status, .data and .serverMessage. options:
                                         accept ('json'), csrf (false to skip),
                                         serverErrorMessage (true → error.message is
-                                        the server's message). Per-app default:
+                                        the server's message), busy (an element or
+                                        selector that carries aria-busy="true" while
+                                        the request is in flight). Per-app default:
                                         apiRequest.defaults.serverErrorMessage.
                                         (fitness + upkeep still override in their
                                         layouts until they adopt this.)
@@ -57,6 +59,10 @@
                                         success (default) | error | info | warning;
                                         all but error clear after ms (default 3000).
      - dsCopy(text)                     copy to the clipboard → Promise<boolean>.
+     - dsEmptyState(text, opts)         HTML string for an .empty-state block. opts:
+                                        icon (a NAV_ICONS name), action (trusted HTML
+                                        for a button/link), compact (one-line
+                                        variant). text is escaped.
      - initSettingsPanes(opts)          wires a .settings-pane section list: shows one
                                         .pane at a time, syncs the #hash for deep links
                                         and reload, marks the active .settings-nav link,
@@ -218,7 +224,14 @@
     //     in its layout (this is what fitness's override does today).
     const apiDefaults = { serverErrorMessage: false };
     global.apiRequest = async function apiRequest(url, options = {}) {
-        const { serverErrorMessage, accept, csrf, ...fetchOptions } = options || {};
+        const { serverErrorMessage, accept, csrf, busy, ...fetchOptions } = options || {};
+        // busy: an element (or selector) that is aria-busy for the life of
+        // the request — pairs with .skeleton placeholders.
+        let busyEl = null;
+        if (busy) {
+            try { busyEl = typeof busy === 'string' ? document.querySelector(busy) : busy; } catch (_) { busyEl = null; }
+            if (busyEl && busyEl.setAttribute) busyEl.setAttribute('aria-busy', 'true');
+        }
         const isForm = typeof FormData !== 'undefined' && fetchOptions.body instanceof FormData;
         const defaults = { headers: isForm ? {} : { 'Content-Type': 'application/json' } };
         const config = { ...defaults, ...fetchOptions };
@@ -275,6 +288,8 @@
         } catch (error) {
             console.error('API request failed:', error);
             throw error;
+        } finally {
+            if (busyEl && busyEl.removeAttribute) busyEl.removeAttribute('aria-busy');
         }
     };
     global.apiRequest.defaults = apiDefaults;
@@ -622,6 +637,25 @@
         briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
         users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
         search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'
+    };
+
+    function iconSvg(name) {
+        const body = NAV_ICONS[name];
+        return body
+            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>'
+            : '';
+    }
+
+    // Empty state markup for JS-rendered lists (the CSS documents the
+    // server-rendered form). The icon is inlined, so no renderNavIcons pass
+    // is needed after an innerHTML write.
+    global.dsEmptyState = function dsEmptyState(text, opts) {
+        opts = opts || {};
+        const icon = opts.icon ? iconSvg(opts.icon) : '';
+        return '<div class="empty-state' + (opts.compact ? ' empty-state--compact' : '') + '">' +
+            (icon ? '<span class="empty-state-icon">' + icon + '</span>' : '') +
+            '<p class="empty-state-text">' + global.escapeHtml(text) + '</p>' +
+            (opts.action || '') + '</div>';
     };
 
     global.renderNavIcons = function renderNavIcons(root) {

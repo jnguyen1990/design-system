@@ -5983,6 +5983,89 @@ tr[data-log-toggle] { cursor: pointer; }
 }
 
 /* ============================================================
+   Empty state (2026-11-23)
+   One line of copy, an optional icon tile and an optional action — no
+   illustration (brand guide: empty states). The tile is one of the four
+   places the app accent may tint. Server-rendered:
+     <div class="empty-state">
+       <span class="empty-state-icon"><span class="nav-ico" data-ico="inbox"></span></span>
+       <p class="empty-state-text">No transactions this month</p>
+       <a class="btn btn-sm" href="/import">Import CSV</a>
+     </div>
+   From JS: el.innerHTML = dsEmptyState('No transactions', {icon: 'inbox'}).
+   --compact puts it on one line for a table cell or a card that already
+   has a title.
+   ============================================================ */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+    color: var(--text-muted);
+}
+.empty-state-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--accent-soft);
+}
+.empty-state-icon .nav-ico,
+.empty-state-icon > svg { width: 20px; height: 20px; color: var(--accent-text); }
+.empty-state-text {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    max-width: 44ch;
+    text-wrap: balance;
+}
+.empty-state--compact {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-3) 0;
+    text-align: left;
+}
+.empty-state--compact .empty-state-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); }
+.empty-state--compact .empty-state-icon .nav-ico,
+.empty-state--compact .empty-state-icon > svg { width: 16px; height: 16px; }
+
+/* ============================================================
+   Skeleton loading (2026-11-23)
+   Placeholder shapes while a fetch is in flight, in place of "Loading…".
+     <div aria-busy="true"><div class="skeleton skeleton-text"></div>
+       <div class="skeleton skeleton-text" style="--w: 60%"></div></div>
+   .skeleton-row is a table-row-height bar, .skeleton-block a card-body
+   block (set its height). apiRequest(url, {busy: el}) toggles aria-busy on
+   el for the life of the request; a busy container dims its non-skeleton
+   content so stale data reads as stale.
+   ============================================================ */
+.skeleton {
+    display: block;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(90deg, var(--panel) 0%, var(--panel-hover) 50%, var(--panel) 100%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.skeleton-text  { height: 0.9em; width: var(--w, 100%); margin: 0.35em 0; }
+.skeleton-row   { height: var(--row-h-default); width: var(--w, 100%); margin-bottom: var(--space-1); }
+.skeleton-block { height: var(--h, 96px); width: var(--w, 100%); border-radius: var(--radius-md); }
+[aria-busy="true"] { cursor: progress; }
+[aria-busy="true"] > :not(.skeleton):not(:has(.skeleton)) { opacity: 0.6; transition: opacity var(--motion-base); }
+@keyframes skeleton-shimmer {
+    from { background-position: 100% 0; }
+    to   { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .skeleton { animation: none; background: var(--panel); }
+}
+
+/* ============================================================
    Layout & utility classes (kept from v2.1)
    ============================================================ */
 .d-flex          { display: flex; }
