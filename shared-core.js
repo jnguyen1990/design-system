@@ -114,6 +114,19 @@
                                         Applied automatically whenever the `open`
                                         class lands on a .dropdown-menu — pages keep
                                         their own toggle functions and call nothing.
+     - dsListKeys(container, opts)      keyboard for a list or table: j/k (and
+                                        ↓/↑ with opts.arrows) move a focus row,
+                                        Enter opens it, Esc clears, "/" focuses
+                                        opts.search, and opts.keys maps more keys to
+                                        row actions ({c: row => …}). Rows are
+                                        opts.rows (default 'tbody tr, .list-row,
+                                        [data-key-row]') re-queried on every key, so
+                                        re-rendered lists keep working. Enter
+                                        defaults to opts.onEnter(row) or clicking the
+                                        row's [data-row-open] / first a[href]. Quiet
+                                        while typing, while a modal or dropdown is
+                                        open, and with ⌘/Ctrl/Alt held. Returns
+                                        {focus(i), current(), clear(), destroy()}.
      - installNavHotkeys(opts)          ⌘1..⌘9 sidebar nav; call once per page.
                                         opts.allowCtrl — also respond to Ctrl (default
                                         false: Mac-only Meta, so Ctrl+1..9 tab switching
@@ -586,6 +599,88 @@
             if (ok) e.target.submit();
         });
     }, true);
+
+    // ── List keyboard helper ───────────────────────────────────────────────
+    // One implementation of the j/k list pattern (Linear, Gmail) so ledgers,
+    // inboxes and reminder lists move the same way in every app. The focus
+    // row is a class (.is-key-focus), not DOM focus, so typing elsewhere and
+    // screen-reader focus are left alone; aria-current marks it for AT.
+    global.dsListKeys = function dsListKeys(container, opts) {
+        opts = opts || {};
+        const root = typeof container === 'string' ? document.querySelector(container) : container;
+        if (!root) return null;
+        const rowSel = opts.rows || 'tbody tr, .list-row, [data-key-row]';
+        const keys = opts.keys || {};
+        let index = -1;
+        const rows = () => Array.prototype.filter.call(root.querySelectorAll(rowSel),
+            r => !r.hidden && r.offsetParent !== null && !r.hasAttribute('data-key-skip'));
+        function paint(list) {
+            list = list || rows();
+            root.querySelectorAll('.is-key-focus').forEach(r => { r.classList.remove('is-key-focus'); r.removeAttribute('aria-current'); });
+            const row = list[index];
+            if (!row) return null;
+            row.classList.add('is-key-focus');
+            row.setAttribute('aria-current', 'true');
+            try { row.scrollIntoView({ block: 'nearest' }); } catch (_) { /* old engines */ }
+            if (typeof opts.onFocus === 'function') opts.onFocus(row, index);
+            return row;
+        }
+        function focus(i) {
+            const list = rows();
+            if (!list.length) { index = -1; return null; }
+            index = Math.max(0, Math.min(i, list.length - 1));
+            return paint(list);
+        }
+        function current() { const list = rows(); return list[index] || null; }
+        function clear() { index = -1; paint([]); }
+        function open(row) {
+            if (typeof opts.onEnter === 'function') return opts.onEnter(row);
+            const target = row.querySelector('[data-row-open]') || row.querySelector('a[href]');
+            if (target) target.click();
+        }
+        function typing(t) {
+            if (!t || !t.tagName) return false;
+            const tag = t.tagName.toLowerCase();
+            return tag === 'input' || tag === 'textarea' || tag === 'select' || t.isContentEditable;
+        }
+        function onKey(e) {
+            if (!document.contains(root) || root.offsetParent === null) return;
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            if (document.querySelector('.modal.modal-open, .dropdown-menu.open')) return;
+            if (typing(e.target)) {
+                if (e.key === 'Escape' && opts.search && e.target.matches(opts.search)) e.target.blur();
+                return;
+            }
+            const k = e.key;
+            if (k === '/' && opts.search) {
+                const box = document.querySelector(opts.search);
+                if (box) { e.preventDefault(); box.focus(); if (box.select) box.select(); }
+                return;
+            }
+            if (k === 'j' || (opts.arrows && k === 'ArrowDown')) { e.preventDefault(); focus(index + 1); return; }
+            if (k === 'k' || (opts.arrows && k === 'ArrowUp')) { e.preventDefault(); focus(index < 0 ? 0 : index - 1); return; }
+            if (k === 'Escape' && index >= 0) { clear(); return; }
+            const row = current();
+            if (!row) return;
+            if (k === 'Enter') { e.preventDefault(); open(row); return; }
+            const fn = keys[k];
+            if (typeof fn === 'function') { e.preventDefault(); fn(row, index); }
+        }
+        // A click inside a row moves the focus row there, so j/k continue
+        // from where the mouse was.
+        function onClick(e) {
+            const row = e.target.closest && e.target.closest(rowSel);
+            if (!row || !root.contains(row)) return;
+            const i = rows().indexOf(row);
+            if (i !== -1) { index = i; paint(); }
+        }
+        document.addEventListener('keydown', onKey);
+        root.addEventListener('click', onClick);
+        return {
+            focus: focus, current: current, clear: clear,
+            destroy() { document.removeEventListener('keydown', onKey); root.removeEventListener('click', onClick); clear(); },
+        };
+    };
 
     // ⌘1..⌘9 — jump to the matching sidebar link. Skip when the user is typing.
     global.installNavHotkeys = function installNavHotkeys(opts = {}) {

@@ -6113,6 +6113,17 @@ tr[data-log-toggle] { cursor: pointer; }
 }
 
 /* ============================================================
+   Keyboard focus row (dsListKeys) — the row j/k has landed on. An inset
+   accent bar plus the hover tint, so it reads in a table and in a list.
+   ============================================================ */
+.is-key-focus,
+tbody tr.is-key-focus {
+    background: var(--panel);
+    box-shadow: inset 2px 0 0 var(--focus-ring);
+}
+tbody tr.is-key-focus > td { background: transparent; }
+
+/* ============================================================
    Layout & utility classes (kept from v2.1)
    ============================================================ */
 .d-flex          { display: flex; }
