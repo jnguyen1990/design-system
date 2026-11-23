@@ -137,6 +137,7 @@
      - applies the saved theme from localStorage immediately (before first paint);
        with nothing saved, follows the OS (prefers-color-scheme), dark when the
        OS states no preference, and keeps following it until the user toggles
+     - prints in the light theme (beforeprint/afterprint swap)
      - aria-current="page" on .nav-link.active; aria-label / aria-expanded on
        the mobile menu button (#mobileMenuBtn) when the layout set none
      - wires the mobile menu toggle / overlay / nav-link close (delegated, Turbo-safe)
@@ -176,6 +177,16 @@
         document.dispatchEvent(new CustomEvent('ds:themechange', { detail: { theme: theme } }));
     }
     applyTheme(readSavedTheme() || systemTheme());
+    // Print light whatever the screen theme (the Radix dark scales key on
+    // the .dark class, which CSS alone cannot drop), then put it back.
+    let printRestore = null;
+    global.addEventListener('beforeprint', () => {
+        const t = document.documentElement.getAttribute('data-theme');
+        if (t === 'dark') { printRestore = t; applyTheme('light'); }
+    });
+    global.addEventListener('afterprint', () => {
+        if (printRestore) { applyTheme(printRestore); printRestore = null; }
+    });
     // Until the user picks a theme, follow the OS when it changes.
     try {
         global.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {

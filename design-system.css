@@ -6487,6 +6487,60 @@ tbody tr.is-key-focus > td { background: transparent; }
 }
 
 /* ============================================================
+   Print (2026-11-23) — budgeter reports, recipes, the grocery list.
+   Chrome and controls go; the page prints light whatever the theme; cards
+   become hairline boxes that do not split across pages; tables print in
+   full instead of scrolling. .no-print hides anything else; .print-only
+   shows something only on paper. shared-core.js also switches a dark page
+   to the light theme for the print itself (beforeprint / afterprint), so
+   chips and amounts print in their light-theme colours; the token block
+   below is the fallback for a print that skips those events.
+   ============================================================ */
+.print-only { display: none; }
+
+@media print {
+    :root, [data-theme="dark"], .dark {
+        color-scheme: light;
+        --bg: #fff;
+        --bg-subtle: #fff;
+        --card: #fff;
+        --panel: #f4f4f6;
+        --card-border: #d4d4d8;
+        --border: #d4d4d8;
+        --text: #111113;
+        --text-muted: #45474d;
+        --text-faint: #5c5f66;
+        --shadow-card: none;
+        --shadow-floating: none;
+    }
+    @page { margin: 14mm 12mm; }
+    body { background: #fff; color: var(--text); font-size: 11pt; }
+
+    .sidebar, .mobile-menu-toggle, .mobile-overlay, .header-actions,
+    .status-message, .modal, .dropdown-menu, .app-dock, .skip-link,
+    .row-actions, .td-actions, .toolbar, .filter-tags, .no-print { display: none !important; }
+    .print-only { display: block; }
+    .card:has(> .toolbar:only-child) { display: none; }  /* a filter card is empty once its controls go */
+
+    .main-content { margin-left: 0; min-height: 0; }
+    .page-header { position: static; padding: 0 0 var(--space-3); border-bottom: 1px solid var(--border); }
+    .content { padding: var(--space-4) 0 0; max-width: none; }
+
+    .card, .stat-card {
+        box-shadow: none;
+        border: 1px solid var(--card-border);
+        break-inside: avoid;
+    }
+    .table-responsive { overflow: visible; }
+    table { width: 100%; }
+    thead { display: table-header-group; }   /* repeat the header on every page */
+    tr, img, svg, canvas { break-inside: avoid; }
+    h1, h2, h3, h4 { break-after: avoid; }
+    a { color: inherit; text-decoration: none; }
+    tbody tr:hover, .is-key-focus { background: none; box-shadow: none; }
+}
+
+/* ============================================================
    Reduced motion
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
