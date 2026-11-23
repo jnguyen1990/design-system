@@ -46,7 +46,7 @@ Set `data-app` on `<html>` to pick the per-app accent:
 | `upkeep` | Upkeep | blue |
 | `postings` | Postings | crimson |
 
-For local dev against the un-published version of these files, run a static server inside this repo (e.g. `python3 -m http.server 8765`; the webfonts load cross-origin, so a server that sends `Access-Control-Allow-Origin` is needed for Inter and Geist Mono to render — without it the system fallback fonts show) and point your app's stylesheet/script tags to `http://localhost:8765/...`. All six Rails layouts support this via the `DS_BASE` env var (`DS_BASE=http://localhost:8765 bin/rails server`); unset, they default to the CDN.
+For local dev against the un-published version of these files, run `python3 scripts/serve.py 8765` in this repo. Not plain `python3 -m http.server`: the self-hosted fonts load cross-origin from the app's port, and that server sends no `Access-Control-Allow-Origin`, so Inter and Geist Mono are refused and the system fallback fonts show; `serve.py` is the same server plus that header and point your app's stylesheet/script tags to `http://localhost:8765/...`. All six Rails layouts support this via the `DS_BASE` env var (`DS_BASE=http://localhost:8765 bin/rails server`); unset, they default to the CDN.
 
 ## Publishing changes
 
