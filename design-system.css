@@ -1978,6 +1978,7 @@ body {
     color: var(--text);
     background: var(--bg);
     min-height: 100vh;
+    min-height: 100dvh;  /* the visible height on mobile, not the toolbar-hidden one */
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -2100,6 +2101,7 @@ label {
 .main-content {
     margin-left: var(--sidebar-width);
     min-height: 100vh;
+    min-height: 100dvh;
     background: var(--bg);
     display: flex;
     flex-direction: column;
@@ -3082,6 +3084,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     width: 100%;
     max-width: 640px;
     max-height: calc(100vh - 2 * var(--space-4));
+    max-height: calc(100dvh - 2 * var(--space-4));
     overflow-y: auto;
     box-shadow: var(--shadow-floating);
     z-index: 1;
@@ -3313,8 +3316,8 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     z-index: 101;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: var(--control-h);   /* 36px, 44px under pointer: coarse */
+    height: var(--control-h);
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -3409,7 +3412,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
    ============================================================ */
 .status-message {
     position: fixed;
-    bottom: var(--space-6);
+    bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));  /* clear the iOS home indicator */
     left: 50%;
     transform: translateX(-50%);
     /* Above .modal (200): a validation message raised while a modal is open
@@ -5880,6 +5883,7 @@ tr[data-log-toggle] { cursor: pointer; }
     min-width: 200px;
     max-width: min(300px, calc(100vw - var(--space-4) * 2));
     max-height: calc(100vh - var(--space-5) * 2);
+    max-height: calc(100dvh - var(--space-5) * 2);
     overflow-y: auto;
     background: var(--card);
     border: 1px solid var(--card-border);
@@ -6153,7 +6157,7 @@ tr[data-log-toggle] { cursor: pointer; }
 
     .page-header {
         padding: var(--space-3) var(--space-4);
-        padding-left: calc(var(--space-3) + 36px + var(--space-2));
+        padding-left: calc(var(--space-3) + var(--control-h) + var(--space-2));  /* clears the hamburger */
     }
 
     .page-title { font-size: var(--text-lg); }
@@ -6164,6 +6168,60 @@ tr[data-log-toggle] { cursor: pointer; }
 
 @media (max-width: 480px) {
     .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   Mobile floor (2026-11-23)
+   ============================================================ */
+
+/* iOS Safari zooms the page when a focused field's text is under 16px.
+   Every text-like control goes to 16px on narrow screens. */
+@media (max-width: 768px) {
+    input[type="text"], input[type="email"], input[type="password"],
+    input[type="number"], input[type="date"], input[type="time"],
+    input[type="datetime-local"], input[type="month"], input[type="week"],
+    input[type="url"], input[type="search"], input[type="tel"], input:not([type]),
+    textarea, select, .form-control, .filter-tags > input {
+        font-size: var(--text-md);
+    }
+}
+
+/* Touch: lift controls to the 44px floor. Every .btn, input and select
+   reads its height from these tokens, so one block moves all six apps. */
+@media (pointer: coarse) {
+    :root {
+        --control-h-sm: 40px;
+        --control-h:    44px;
+        --control-h-lg: 48px;
+    }
+    .modal-close { width: 44px; height: 44px; }
+    .nav-link { min-height: 44px; }
+    /* Boxes grow to 20px; the row or label around them carries the rest
+       of the target. */
+    input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; }
+    input[type="checkbox"]:checked::after { left: 6px; top: 2px; width: 6px; height: 11px; }
+    /* The dock has six apps and a toggle in a 240px rail: 36px is what fits. */
+    .app-dock { flex-wrap: wrap; gap: var(--space-1); }
+    .app-dock .dock-app { padding: 6px; }
+    .dock-theme { width: 36px; height: 36px; }
+}
+
+/* Notches and the home indicator. Only takes effect where a layout opts in
+   with <meta name="viewport" content="…, viewport-fit=cover">. */
+@supports (padding: env(safe-area-inset-left)) {
+    .sidebar { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    @media (max-width: 768px) {
+        .mobile-menu-toggle {
+            top: calc(var(--space-3) + env(safe-area-inset-top, 0px));
+            left: calc(var(--space-3) + env(safe-area-inset-left, 0px));
+        }
+        .page-header { padding-top: calc(var(--space-3) + env(safe-area-inset-top, 0px)); }
+        .content {
+            padding-left: calc(var(--space-4) + env(safe-area-inset-left, 0px));
+            padding-right: calc(var(--space-4) + env(safe-area-inset-right, 0px));
+            padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+        }
+    }
 }
 
 /* ============================================================

@@ -123,11 +123,22 @@ Apps that share this system also share a set of layout/markup/copy conventions s
 ## Mobile Design Rules
 
 All pages must render at **375px wide (iPhone SE)** with **zero horizontal
-scrolling at the page level**. A rule-of-thumb check in the browser console:
+scrolling at the page level**. The check, in the browser console:
 
 ```js
-document.documentElement.scrollWidth === document.documentElement.clientWidth
+document.body.scrollWidth <= window.innerWidth
 ```
+
+Measure `body`, not `documentElement`: the design system sets
+`html, body { overflow-x: hidden }` under 768px, which clips the overflow
+and makes `documentElement.scrollWidth === clientWidth` true even when half
+the content is unreachable. For a stricter check, list elements whose
+`getBoundingClientRect().right` exceeds `window.innerWidth` outside a
+`.table-responsive`. `scripts/check.mjs` does both for the kits.
+
+Also under 768px: text-like inputs are 16px (iOS zooms on anything
+smaller), and under `(pointer: coarse)` controls are 44px tall
+(`--control-h`), so never hard-code a control height.
 
 ### The rules
 
