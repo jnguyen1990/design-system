@@ -1671,6 +1671,9 @@
     --control-h:      36px;
     --row-h-default:  36px;
     --row-h-spacious: 40px;
+    --cell-pad-y:     8px;    /* table cells (vertical) */
+    --card-pad-top:    var(--space-5);
+    --card-pad-bottom: var(--space-6);
     --sidebar-width:  240px;
 
     /* ----- Shadows ----- */
@@ -2452,7 +2455,7 @@ label {
     border: 0;
     border-top: 1px solid var(--border);
     border-radius: 0;
-    padding: var(--space-5) 0 var(--space-6);
+    padding: var(--card-pad-top) 0 var(--card-pad-bottom);
     box-shadow: none;
 }
 
@@ -3006,7 +3009,7 @@ tbody tr:has(input[type="checkbox"][data-row-select]):hover { background: var(--
 tbody tr:has(input[type="checkbox"][data-row-select]) { cursor: pointer; }
 
 :where(tbody td) {
-    padding: 8px 12px;
+    padding: var(--cell-pad-y) 12px;
     height: var(--row-h-default);
     color: var(--text);
     vertical-align: middle;
@@ -5107,7 +5110,7 @@ tr[data-log-toggle] { cursor: pointer; }
 .ledger { width: 100%; table-layout: fixed; }
 
 .ledger th, .ledger td { padding: 0 12px; }
-.ledger tbody td { height: 40px; }
+.ledger tbody td { height: var(--row-h-spacious); }
 .ledger th.text-right { text-align: right; }
 
 @media (max-width: 768px) {
@@ -6201,6 +6204,23 @@ tbody tr.is-key-focus > td { background: transparent; }
         width: max(100%, 44px);
         height: max(100%, 44px);
         transform: translate(-50%, -50%);
+    }
+}
+
+/* Compact density (PLAT-16): shorter controls and rows, tighter cards, for
+   anyone who wants more on screen. <html data-density="compact">, set by
+   shared-core's toggleDensity() (the palette's "Compact density" action)
+   and stored beside the theme (dsPrefs: localStorage + the .joenguyen.ca
+   cookie). Mouse and trackpad only: under touch the 44px floor stands. */
+@media (pointer: fine) {
+    :root[data-density="compact"] {
+        --control-h-sm:    28px;
+        --control-h:       32px;
+        --row-h-default:   30px;
+        --row-h-spacious:  34px;
+        --cell-pad-y:      4px;
+        --card-pad-top:    var(--space-4);
+        --card-pad-bottom: var(--space-4);
     }
 }
 

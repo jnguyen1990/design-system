@@ -42,6 +42,11 @@
                                         and redraws every chart. Series colours are
                                         the page's: re-read palette on
                                         "ds:themechange" if datasets hold them.
+     - toggleDensity()                  flips <html data-density="compact"> on/off (PLAT-16),
+                                        persisted like the theme; the palette lists it
+     - dsPrefs.read(name, allowed) / .write(name, value)
+                                        a display preference: the .joenguyen.ca cookie
+                                        ds_<name> first, then localStorage (PLAT-10)
      - toggleTheme()                    flips data-theme, persists it (localStorage, and the
                                         .joenguyen.ca cookie ds_theme on those hosts)
                                         (the apps dock's button calls it and
@@ -222,6 +227,13 @@
         document.dispatchEvent(new CustomEvent('ds:themechange', { detail: { theme: theme } }));
     }
     applyTheme(readSavedTheme() || systemTheme());
+    // Density (PLAT-16): "compact" sets <html data-density="compact">; the
+    // design system shrinks controls, rows and card padding (pointer: fine).
+    function applyDensity(d) {
+        if (d === 'compact') document.documentElement.setAttribute('data-density', 'compact');
+        else document.documentElement.removeAttribute('data-density');
+    }
+    applyDensity(readPref('density', ['compact', 'comfortable']));
     // Print light whatever the screen theme (the Radix dark scales key on
     // the .dark class, which CSS alone cannot drop), then put it back.
     let printRestore = null;
@@ -475,6 +487,14 @@
         if (!dateString) return '';
         const date = new Date(dateString + 'T00:00:00');
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    global.toggleDensity = function toggleDensity() {
+        const next = document.documentElement.getAttribute('data-density') === 'compact' ? 'comfortable' : 'compact';
+        applyDensity(next);
+        writePref('density', next);
+        document.dispatchEvent(new CustomEvent('ds:densitychange', { detail: { density: next } }));
+        return next;
     };
 
     global.toggleTheme = function toggleTheme() {
@@ -2232,6 +2252,14 @@
     });
     // Shell default actions.
     global.dsCommands.register({ label: 'Switch theme', icon: 'moon', keywords: 'dark light mode', run: () => global.toggleTheme && global.toggleTheme() });
+    // Density only changes anything under a fine pointer, so touch devices don't list it.
+    let coarse = false;
+    try { coarse = global.matchMedia('(pointer: coarse)').matches; } catch (_) { /* old browser */ }
+    if (!coarse) global.dsCommands.register({
+        get label() { return document.documentElement.getAttribute('data-density') === 'compact' ? 'Comfortable density' : 'Compact density'; },
+        icon: 'list', keywords: 'density compact comfortable dense spacing rows',
+        run: () => global.toggleDensity(),
+    });
 
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;

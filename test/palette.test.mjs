@@ -55,7 +55,7 @@ test('⌘K opens the dialog with "Go to" from the sidebar and the shell actions;
     const groups = [...pal.querySelectorAll('.palette-group')].map(g => g.textContent);
     assert.deepEqual(groups, [ 'Go to', 'Actions' ]);
     const titles = [...pal.querySelectorAll('.palette-title')].map(t => t.textContent);
-    assert.deepEqual(titles, [ 'Dashboard', 'All transactions', 'Settings', 'Switch theme' ]);
+    assert.deepEqual(titles, [ 'Dashboard', 'All transactions', 'Settings', 'Switch theme', 'Compact density' ]);
     assert.equal(pal.querySelector('.palette-end .kbd').textContent, '⌘1');
     assert.equal(d.activeElement.getAttribute('aria-activedescendant'), 'ds-palette-o0');
 });
@@ -96,7 +96,7 @@ test('arrow keys move the selection; Enter on a page navigates', async () => {
     assert.equal(d.activeElement.getAttribute('aria-activedescendant'), 'ds-palette-o1');
     assert.equal(d.getElementById('ds-palette-o1').getAttribute('aria-selected'), 'true');
     key('ArrowUp'); key('ArrowUp');
-    assert.equal(d.activeElement.getAttribute('aria-activedescendant'), 'ds-palette-o3', 'wraps to the last');
+    assert.equal(d.activeElement.getAttribute('aria-activedescendant'), 'ds-palette-o4', 'wraps to the last');
     key('ArrowDown'); key('ArrowDown');
     key('Enter');
     assert.equal(went, '/transactions');

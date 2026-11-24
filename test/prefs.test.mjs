@@ -40,3 +40,26 @@ test('a junk cookie value is ignored', () => {
     const w = loadSharedCore({ url: 'https://upkeep.joenguyen.ca/', cookieJar: jar, before: (w) => w.localStorage.setItem('theme', 'light') });
     assert.equal(theme(w), 'light');
 });
+
+test('compact density: toggled, stored beside the theme, applied at boot, labelled in the palette (PLAT-16)', () => {
+    const jar = new CookieJar();
+    const a = loadSharedCore({ url: 'https://budgeter.joenguyen.ca/', cookieJar: jar });
+    const html = a.document.documentElement;
+    const label = () => a.dsCommands.list().find(c => /density/.test(c.label)).label;
+    assert.equal(html.getAttribute('data-density'), null);
+    assert.equal(label(), 'Compact density');
+    assert.equal(a.toggleDensity(), 'compact');
+    assert.equal(html.getAttribute('data-density'), 'compact');
+    assert.equal(a.localStorage.getItem('density'), 'compact');
+    assert.match(a.document.cookie, /ds_density=compact/);
+    assert.equal(label(), 'Comfortable density');
+    const b = loadSharedCore({ url: 'https://base.joenguyen.ca/', cookieJar: jar });
+    assert.equal(b.document.documentElement.getAttribute('data-density'), 'compact');
+    a.toggleDensity();
+    assert.equal(html.getAttribute('data-density'), null);
+});
+
+test('touch devices do not list the density action', () => {
+    const w = loadSharedCore({ before: (w) => { w.matchMedia = (q) => ({ matches: q === '(pointer: coarse)', addEventListener() {}, removeEventListener() {} }); } });
+    assert.equal(w.dsCommands.list().some(c => /density/.test(c.label)), false);
+});
