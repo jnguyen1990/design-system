@@ -62,10 +62,13 @@ Set it up once per clone:
 scripts/install-hooks.sh     # core.hooksPath=.githooks + npm install (dev tooling only)
 ```
 
-`git push --no-verify` skips it, knowingly. To run the pieces by hand:
+`git push --no-verify` skips it, knowingly. GitHub Actions (`.github/workflows/ci.yml`)
+runs the unit tests and the kit check (invariants only, see below) on every
+push, so a push made without the hook still goes red — after the fact,
+since Cloudflare has already deployed it. To run the pieces by hand:
 
 ```bash
-/usr/local/bin/mise exec node@22 -- node --test test/                         # unit tests (shared-core.js)
+/usr/local/bin/mise exec node@22 -- node --test test/*.test.mjs               # unit tests: filter-tag parser + matcher, apiRequest
 /usr/local/bin/mise exec node@22 -- node scripts/check.mjs                    # every kit, compared with baselines
 /usr/local/bin/mise exec node@22 -- node scripts/check.mjs budgeter           # kits whose path matches
 /usr/local/bin/mise exec node@22 -- node scripts/check.mjs --update-baselines # after an intended visual change

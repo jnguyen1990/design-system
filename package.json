@@ -4,7 +4,7 @@
   "description": "Dev tooling only (tests, kit check, release). Never published: .assetsignore keeps package.json and node_modules off the CDN.",
   "type": "module",
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test test/*.test.mjs",
     "check": "node scripts/check.mjs",
     "release": "node scripts/release.mjs"
   },

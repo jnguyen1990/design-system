@@ -8,6 +8,6 @@ cd "$(git rev-parse --show-toplevel)"
 NODE=(/usr/local/bin/mise exec node@22 -- node)
 command -v /usr/local/bin/mise >/dev/null || NODE=(node)
 [ -d node_modules ] || { echo "pre-push: run \`mise exec node@22 -- npm install\` first (or git push --no-verify)"; exit 1; }
-if [ -d test ]; then echo "pre-push: unit tests"; "${NODE[@]}" --test test/; fi
+if [ -d test ]; then echo "pre-push: unit tests"; "${NODE[@]}" --test test/*.test.mjs; fi
 echo "pre-push: kit check (≈70s)"
 "${NODE[@]}" scripts/check.mjs

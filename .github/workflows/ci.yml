@@ -1,0 +1,42 @@
+name: CI
+
+# The design system has no build: Cloudflare deploys the repo root on every
+# push to main. This runs the same checks as the local pre-push hook so a
+# push made without the hook is still caught (after the fact — a red run
+# here means revert, see README "Rolling back a release").
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Unit tests (shared-core.js)
+        run: npm test
+      - name: Install Chromium for the kit check
+        run: npx playwright-core install --with-deps chromium
+      # Baselines are macOS Chrome renders; Linux Chromium rasterises text
+      # differently, so CI checks the invariants only.
+      - name: Kit check (invariants)
+        run: node scripts/check.mjs --no-baseline
+        env:
+          CHROME_PATH: /nonexistent
+          CHECK_OUT: ${{ runner.temp }}/ds-check
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds-check
+          path: ${{ runner.temp }}/ds-check
+          retention-days: 7
