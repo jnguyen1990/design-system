@@ -42,7 +42,8 @@
                                         and redraws every chart. Series colours are
                                         the page's: re-read palette on
                                         "ds:themechange" if datasets hold them.
-     - toggleTheme()                    flips data-theme, persists to localStorage
+     - toggleTheme()                    flips data-theme, persists it (localStorage, and the
+                                        .joenguyen.ca cookie ds_theme on those hosts)
                                         (the apps dock's button calls it and
                                         draws its own glyph), then dispatches
                                         "ds:themechange" on document
@@ -141,7 +142,8 @@
                                         opts.allowComma — also handle "," (⌘, settings).
 
    Also runs on load:
-     - applies the saved theme from localStorage immediately (before first paint);
+     - applies the saved theme immediately (before first paint): the shared
+       ds_theme cookie on *.joenguyen.ca, else this address's localStorage;
        with nothing saved, follows the OS (prefers-color-scheme), dark when the
        OS states no preference, and keeps following it until the user toggles
      - prints in the light theme (beforeprint/afterprint swap)
@@ -164,11 +166,47 @@
     if (global.__sharedCoreInstalled) return;
     global.__sharedCoreInstalled = true;
 
+    // Display preferences (theme, density) follow you across the apps
+    // (PLAT-10). On a *.joenguyen.ca host a choice is written to a cookie on
+    // .joenguyen.ca as well as localStorage, and the cookie is read first, so
+    // toggling in one app moves all six. Elsewhere (localhost, the tailnet's
+    // *.ts.net names, a bare IP) there is no shared parent domain: localStorage
+    // only, per address, as before.
+    const PREF_DOMAIN = 'joenguyen.ca';
+    function prefCookieDomain() {
+        const h = (global.location && global.location.hostname) || '';
+        return h === PREF_DOMAIN || h.endsWith('.' + PREF_DOMAIN) ? PREF_DOMAIN : null;
+    }
+    function readPref(name, allowed) {
+        let v = null;
+        if (prefCookieDomain()) {
+            try {
+                const m = document.cookie.match(new RegExp('(?:^|;\\s*)ds_' + name + '=([^;]*)'));
+                if (m) v = decodeURIComponent(m[1]);
+            } catch (_) { /* cookies blocked */ }
+        }
+        if (!allowed.includes(v)) {
+            try { v = localStorage.getItem(name); } catch (_) { v = null; }
+        }
+        return allowed.includes(v) ? v : null;
+    }
+    function writePref(name, value) {
+        try { localStorage.setItem(name, value); } catch (_) { /* private mode */ }
+        const domain = prefCookieDomain();
+        if (!domain) return;
+        try {
+            document.cookie = 'ds_' + name + '=' + encodeURIComponent(value) + '; Domain=.' + domain +
+                '; Path=/; Max-Age=31536000; SameSite=Lax' + (global.location.protocol === 'https:' ? '; Secure' : '');
+        } catch (_) { /* cookies blocked */ }
+    }
+    global.dsPrefs = { read: readPref, write: writePref, cookieDomain: prefCookieDomain };
+
     // Apply the theme immediately so there's no light/dark flash. A saved
-    // choice wins; otherwise the OS preference, and dark when the OS states
-    // none (the apps' historical default).
+    // choice wins (the shared cookie, then this address's localStorage);
+    // otherwise the OS preference, and dark when the OS states none (the
+    // apps' historical default).
     function readSavedTheme() {
-        try { return localStorage.getItem('theme'); } catch (_) { return null; }
+        return readPref('theme', ['light', 'dark']);
     }
     function systemTheme() {
         try { return global.matchMedia && global.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
@@ -443,7 +481,7 @@
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         applyTheme(newTheme);
-        try { localStorage.setItem('theme', newTheme); } catch (_) { /* private mode */ }
+        writePref('theme', newTheme);
         announceTheme(newTheme);
     };
 
