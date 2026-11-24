@@ -226,7 +226,7 @@ Each app has a **single-glyph logo** rendered as inline SVG using its accent col
    ```html
    <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
    ```
-   Set `<html data-app="budgeter">` to choose the accent (`base`, `budgeter`, `fitness`, `mealplanner`, `upkeep`, `postings`). Load `shared-core.js` after the stylesheet and it applies the saved theme; a page without it sets `class="dark" data-theme="dark"` itself.
+   Set `<html data-app="budgeter">` to choose the accent (`base`, `budgeter`, `fitness`, `mealplanner`, `upkeep`, `postings`). Load `shared-core.js` after the stylesheet and it applies the saved theme; a page without it sets `data-theme="dark"` itself.
 2. **Reach for tokens, not raw Radix:** use `var(--text)` / `var(--panel)` / `var(--border)` / `var(--focus-ring)` — not `var(--slate-12)` directly. The semantic layer is what makes light/dark parity and per-app accent automatic.
 3. **One accent per app.** Don't mix per-app accents into shared chrome.
 4. **Categorical color comes from chips/dots, not surfaces.** A red row background is wrong; a red dot in a row is right.

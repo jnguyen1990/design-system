@@ -63,7 +63,7 @@ The stylesheet's `@font-face` rules use relative URLs, so the fonts come from wh
 
 Use **Radix Colors** as the source of truth. 12-step scales, paired light + dark, accessible by step.
 
-The scales are **inlined at the top of `design-system.css`** — the verbatim contents of `@radix-ui/colors@3.0.0`, one commented block per source file — so the stylesheet makes no colour requests to a CDN. To upgrade, replace each block with the same file from the new version. The dark scales gate on the `.dark` class alone, which is why a static page that does not load `shared-core.js` needs `class="dark"` as well as `data-theme="dark"` on `<html>`.
+The scales are **inlined at the top of `design-system.css`** — the verbatim contents of `@radix-ui/colors@3.0.0`, one commented block per source file — so the stylesheet makes no colour requests to a CDN. To upgrade, replace each block with the same file from the new version. One deliberate selector edit: each dark block also answers `[data-theme="dark"]` (2026-11-24), so `data-theme="dark"` on `<html>` is all a static page needs. Every other dark rule keys on `[data-theme="dark"]` alone — write new dark-only rules that way, never on `.dark`. `shared-core.js` still sets both the attribute and the class; keep the added selector when upgrading the scales.
 
 Step intent (memorize):
 ```
