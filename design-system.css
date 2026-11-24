@@ -2090,6 +2090,24 @@ label {
     width: 100%;
 }
 
+/* Page-to-page navigation (PLAT-15): a same-origin link cross-fades the
+   content while the sidebar, the page header and the phone tab bar stay put
+   (each is its own named group, so only what changed inside it fades).
+   Browsers without cross-document view transitions just load the page.
+   Off for anyone who asks for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition { navigation: auto; }
+    .sidebar { view-transition-name: ds-sidebar; }
+    .page-header { view-transition-name: ds-page-header; }
+    .tab-bar { view-transition-name: ds-tab-bar; }
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation-duration: 160ms;
+        animation-timing-function: cubic-bezier(0.2, 0, 0, 1);  /* --motion-base */
+    }
+}
+
 /* The gem's inline header (PLAT-09): title + badge and the actions share the
    first row, the subtitle runs full width under them. A grid, so that on a
    phone the areas reorder to title, subtitle, actions and the actions wrap
