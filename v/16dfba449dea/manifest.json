@@ -1,0 +1,14 @@
+{
+  "sha": "16dfba449dea",
+  "commit": "16dfba449dea300746dec2bec337b4e833d00afc",
+  "date": "2026-11-24T13:06:44-05:00",
+  "base": "/v/16dfba449dea/",
+  "files": {
+    "design-system.css": "sha384-RdmlJ6kZnR4iHa+IKZ8YW8xYvAn7dlxdv94iTpRlnItr9TjNrM4uHIqYV9rBFn62",
+    "shared-core.js": "sha384-QKPBgAz9gVdEK8nnx3CqHHNkMQ4IMXatU/8eUGMkIRFSeCDotivYJykow4B5IZrC",
+    "modal-keys.js": "sha384-4eoxoAfvmR+7uLu2uIbeJiXpqFzggpmwNHJJqEYINfuMzcUvMNsSE0iEZT1Y4qgM",
+    "apps-launcher.js": "sha384-8ZyGWoSvRWnEzU0RiBvAxwVrryPMVkTYiQgLJyeOBsCoMioiWC542HqLYYi2x1d7",
+    "session-render.js": "sha384-sEAgecH5fHFHafQlJFyClBEHdqIAiVdB+R0bQQEHVNhaVG6rkZZlF59eNeQybdgg",
+    "goal-render.js": "sha384-3+hzuNhrUckrtsTxg2w7d1QC9cwfBI7n8s6lAhXcuPl164zMvO4iYHYCc5cQvdg+"
+  }
+}
