@@ -24,14 +24,15 @@ jobs:
       - run: npm ci
       - name: Unit tests (shared-core.js)
         run: npm test
-      - name: Install Chromium for the kit check
-        run: npx playwright-core install --with-deps chromium
-      # Baselines are macOS Chrome renders; Linux Chromium rasterises text
+      # The runner image ships Google Chrome; Playwright's own browser download
+      # refuses newer Ubuntu images (ubuntu-latest became 26.04 in Nov 2026).
+      - name: Find the runner's Chrome
+        run: echo "CHROME_PATH=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)" >> "$GITHUB_ENV"
+      # Baselines are macOS Chrome renders; Linux Chrome rasterises text
       # differently, so CI checks the invariants only.
       - name: Kit check (invariants)
         run: node scripts/check.mjs --no-baseline
         env:
-          CHROME_PATH: /nonexistent
           CHECK_OUT: ${{ runner.temp }}/ds-check
       - name: Keep the screenshots
         if: always()
