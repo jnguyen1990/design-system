@@ -125,3 +125,15 @@ test('suggestions are a listbox the input points into with aria-activedescendant
     assert.equal(input.getAttribute('aria-expanded'), 'false');
     assert.equal(input.hasAttribute('aria-activedescendant'), false);
 });
+
+test('Shift+Tab out of the input is never swallowed by the Tab-accepts rule', () => {
+    const { w } = parser();
+    const input = w.document.querySelector('.filter-tags input');
+    input.dispatchEvent(new w.Event('focus'));
+    const ev = new w.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+    input.dispatchEvent(ev);
+    assert.equal(ev.defaultPrevented, false);
+    const tab = new w.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    input.dispatchEvent(tab);
+    assert.equal(tab.defaultPrevented, true, 'plain Tab still accepts the suggestion');
+});

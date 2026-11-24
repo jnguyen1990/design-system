@@ -1408,7 +1408,9 @@
                 syncActive();
                 return;
             }
-            if (e.key === 'Tab' && menu.classList.contains('open') && cur >= 0) { e.preventDefault(); applySuggestion(opts_[cur].dataset.insert); return; }
+            // Tab accepts the highlighted suggestion; Shift+Tab is always focus moving back
+            // (to the tags' remove buttons), never swallowed.
+            if (e.key === 'Tab' && !e.shiftKey && menu.classList.contains('open') && cur >= 0) { e.preventDefault(); applySuggestion(opts_[cur].dataset.insert); return; }
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const term = parseTerm(input.value);
