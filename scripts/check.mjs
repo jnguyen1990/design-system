@@ -202,6 +202,35 @@ async function invariants(page, { width, theme }) {
             const r = ratio(s.color, s.backgroundColor);
             if (r < 4.5) fails.push(`${id} text contrast ${r.toFixed(2)} < 4.5`);
         }
+        // PLAT-G (round three): link, chip, toast text >= 4.5; form-control and
+        // checkbox outlines (and an invalid field's) >= 3 against the sheet and
+        // the field fill. Elements are built here and removed, so screenshots
+        // are untouched. Alpha tints are composited over the sheet first.
+        {
+            const sheet = tok('--sheet') || card;
+            const over = (c, base) => { ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = base; ctx.fillRect(0, 0, 1, 1); ctx.fillStyle = c; ctx.fillRect(0, 0, 1, 1); const d = ctx.getImageData(0, 0, 1, 1).data; return `rgb(${d[0]},${d[1]},${d[2]})`; };
+            const probe = document.createElement('div');
+            probe.innerHTML = ['red', 'orange', 'amber', 'green', 'teal', 'blue', 'indigo', 'purple', 'pink', 'slate'].map(h => `<span class="badge badge--${h}">x</span>`).join('')
+                + ['success', 'warning', 'error', 'info', 'secondary'].map(t => `<span class="badge badge-${t}">x</span>`).join('')
+                + ['success', 'warning', 'error', 'info'].map(t => `<div class="status-message status-${t}" style="position:static;animation:none">x</div>`).join('')
+                + '<input type="text" class="form-control" data-probe="field"><input type="checkbox" data-probe="check"><input type="text" class="form-control" aria-invalid="true" data-probe="invalid">';
+            document.body.append(probe);
+            const link = ratio(tok('--color-link'), sheet);
+            if (link < 4.5) fails.push(`--color-link on the sheet ${link.toFixed(2)} < 4.5`);
+            probe.querySelectorAll('.badge, .status-message').forEach(el => {
+                const s = cs(el); const bg = over(s.backgroundColor, sheet);
+                const r = ratio(over(s.color, bg), bg);
+                if (r < 4.5) fails.push(`.${[...el.classList].join('.')} text ${r.toFixed(2)} < 4.5`);
+            });
+            for (const k of ['field', 'check', 'invalid']) {
+                const s = cs(probe.querySelector(`[data-probe="${k}"]`));
+                const fill = over(s.backgroundColor, sheet);
+                const edge = over(s.borderTopColor, sheet);
+                const r = Math.min(ratio(edge, sheet), ratio(edge, fill));
+                if (r < 3) fails.push(`${k} outline ${r.toFixed(2)} < 3 (sheet/fill)`);
+            }
+            probe.remove();
+        }
         const faint = ratio(tok('--text-faint'), card);
         if (faint < 4.5) fails.push(`--text-faint on card ${faint.toFixed(2)} < 4.5`);
         const ring = ratio(tok('--focus-ring'), card);

@@ -1702,6 +1702,12 @@
     --panel-active: var(--slate-5);
     --border:       var(--slate-6);
     --border-hover: var(--slate-7);
+    /* Form-control outlines (inputs, selects, textareas, checkboxes, radios):
+       an empty field must be findable — non-text contrast 3:1 against the
+       sheet and the field fill. --border (slate-6) measured 1.4:1. Cards and
+       hairlines keep --border. Slate steps flip with the theme. */
+    --border-control:       var(--slate-9);
+    --border-control-hover: var(--slate-10);
     /* Step 11 of the app accent (= --accent-text): 4.5-6.1:1 on a light
        card, 8.4+ on a dark one. Step 7 measured 1.6-1.9:1, and the 30% mix
        on inputs 1.1-1.2:1. Use it at full strength. */
@@ -1741,7 +1747,9 @@
     --color-pending:  var(--amber-9);
     --color-success:  var(--green-9);
     --color-info:     var(--teal-9);
-    --color-link:     var(--blue-9);
+    /* Text links: blue-11 in light (4.5:1+ on the sheet; blue-9 measured
+       3.26:1), blue-9 in dark, where it already reads at 5.4:1+. */
+    --color-link:     var(--blue-11);
 
     /* ----- Data viz (2026-11-23) — read by dsChartTheme() for Chart.js ----
        Categorical series in this FIXED order; never cycle past 8 (fold the
@@ -1896,6 +1904,7 @@
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.24);
     /* v4 dark surfaces: page drops to slate-1, cards float at slate-2 */
     --bg:   var(--slate-1);
+    --color-link: var(--blue-9);
     --card: var(--slate-2);
     --sheet: var(--bg);
     --sidebar-bg: var(--card);
@@ -2686,6 +2695,17 @@ label {
 .badge--pink   { background: var(--pink-a3);   color: var(--pink-11); }
 .badge--slate  { background: var(--slate-a3);  color: var(--slate-11); }
 
+/* Light mode only: on their a3 tint, step-11 text for these five hues measured
+   3.99-4.25:1 (AA is 4.5). Halfway to step 12 clears it (6-7:1) and keeps the
+   hue; full step 12 read near-black next to the other chips. Dark is 7+:1. */
+:root:not([data-theme="dark"]) :is(.badge--orange, .badge--amber, .badge--green, .badge--teal, .badge--blue,
+    .badge-success, .badge-warning, .badge-info) { color: var(--badge-text-strong); }
+:root:not([data-theme="dark"]) .badge--orange { --badge-text-strong: color-mix(in srgb, var(--orange-11), var(--orange-12)); }
+:root:not([data-theme="dark"]) :is(.badge--amber, .badge-warning) { --badge-text-strong: color-mix(in srgb, var(--amber-11), var(--amber-12)); }
+:root:not([data-theme="dark"]) :is(.badge--green, .badge-success) { --badge-text-strong: color-mix(in srgb, var(--green-11), var(--green-12)); }
+:root:not([data-theme="dark"]) :is(.badge--teal, .badge-info) { --badge-text-strong: color-mix(in srgb, var(--teal-11), var(--teal-12)); }
+:root:not([data-theme="dark"]) .badge--blue { --badge-text-strong: color-mix(in srgb, var(--blue-11), var(--blue-12)); }
+
 .badge-success .color-dot, .badge-warning .color-dot, .badge-error .color-dot,
 .badge-info .color-dot, .badge-secondary .color-dot, .badge-accent .color-dot,
 [class*="badge--"] .color-dot { display: none; }
@@ -2715,7 +2735,7 @@ label {
     font-weight: var(--weight-regular);
     color: var(--text);
     background: var(--bg);  /* v4: inset field — page tint on the elevated card */
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-control);
     border-radius: var(--radius-sm);
     transition: border-color var(--motion-fast), outline-color var(--motion-fast);
     outline: none;
@@ -2724,7 +2744,7 @@ label {
 
 .form-control::placeholder { color: var(--text-faint); }
 
-.form-control:hover { border-color: var(--border-hover); }
+.form-control:hover { border-color: var(--border-control-hover); }
 
 .form-control:focus {
     border-color: var(--focus-ring);
@@ -2807,7 +2827,7 @@ textarea, select) {
     font-weight: var(--weight-regular);
     color: var(--text);
     background: var(--bg);  /* v4: inset field — page tint on the elevated card */
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-control);
     border-radius: var(--radius-sm);
     transition: border-color var(--motion-fast), outline-color var(--motion-fast);
     outline: none;
@@ -2842,7 +2862,7 @@ select.form-control {
 :where(input:hover:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
 textarea:hover,
 select:hover) {
-    border-color: var(--border-hover);
+    border-color: var(--border-control-hover);
 }
 
 input:focus, textarea:focus, select:focus {
@@ -2851,8 +2871,10 @@ input:focus, textarea:focus, select:focus {
     outline-offset: 0;
 }
 
+/* red-9: an invalid field's outline must read at least as strongly as a
+   normal one (--border-control, 3:1+); red-7 fell to ~1.6:1 beside it. */
 input[aria-invalid="true"], .form-control[aria-invalid="true"] {
-    border-color: var(--red-7);
+    border-color: var(--red-9);
 }
 input[aria-invalid="true"]:focus, .form-control[aria-invalid="true"]:focus {
     border-color: var(--red-11);
@@ -2873,7 +2895,7 @@ input[type="checkbox"], input[type="radio"] {
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-control);
     background: var(--bg-subtle);
     vertical-align: middle;
     position: relative;
@@ -2885,7 +2907,7 @@ input[type="checkbox"] { border-radius: 4px; } /* 16px box — full radius-sm wo
 input[type="radio"]    { border-radius: var(--radius-full); }
 
 input[type="checkbox"]:hover, input[type="radio"]:hover {
-    border-color: var(--border-hover);
+    border-color: var(--border-control-hover);
 }
 
 input[type="checkbox"]:checked, input[type="radio"]:checked {
@@ -3541,6 +3563,14 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     border-left-color: var(--teal-9);
     color: var(--teal-11);
 }
+
+/* Light mode only: step-11 text on the step-3 toast measured 4.1-4.25:1 for
+   success, warning and info; halfway to step 12 clears AA. Error (4.54) and
+   dark (7+) pass. */
+:root:not([data-theme="dark"]) .status-success { color: color-mix(in srgb, var(--green-11), var(--green-12)); }
+:root:not([data-theme="dark"]) .status-warning { color: color-mix(in srgb, var(--amber-11), var(--amber-12)); }
+:root:not([data-theme="dark"]) .status-info    { color: color-mix(in srgb, var(--teal-11), var(--teal-12)); }
+
 
 /* ============================================================
    Settings panes — section list on the left, one pane at a time
