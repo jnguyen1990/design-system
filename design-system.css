@@ -2361,6 +2361,15 @@ label {
 }
 .page-header > * { max-width: 1200px; }
 
+/* Narrow pages (PLAT-22): settings and single-form pages read better at
+   about 720px than stretched to 1200. The gem's shell adds .content-narrow
+   (config.narrow_pages, or content_for :content_width). On a settings page
+   the 720px is the pane beside the 190px section list. The header lines up. */
+.content.content-narrow { max-width: calc(720px + 2 * var(--space-8)); }
+.content.content-narrow:has(.settings-pane) { max-width: calc(190px + var(--space-6) + 720px + 2 * var(--space-8)); }
+.main-content:has(> .content-narrow) > .page-header > * { max-width: 720px; }
+.main-content:has(> .content-narrow .settings-pane) > .page-header > * { max-width: calc(190px + var(--space-6) + 720px); }
+
 /* ============================================================
    Navigation — Things 3 sidebar items
    ============================================================ */
