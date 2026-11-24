@@ -52,18 +52,26 @@ For local dev against the un-published version of these files, run `python3 scri
 
 Push to `main`. Cloudflare Workers Static Assets auto-deploys the repo root (configured in `wrangler.jsonc`). `_headers` sets `Cache-Control: public, no-cache` for all paths: browsers keep a cached copy but revalidate on every use via ETag (Workers Static Assets serves strong ETags, so unchanged files are cheap 304s). Changes propagate to all apps on the next page load — no manual cache purge, no version param, no hard refresh. Was `max-age=43200` until 2026-08-21, which left up to a 12h stale window after a push (bit the mealplanner `.cal-*` rollout). Migrated off jsDelivr on 2026-05-07 (jsDelivr's 7-day `@main` cache was blocking propagation).
 
-### Before you push: `scripts/check.mjs`
+### Before you push: the pre-push hook
 
-There is no CI between `main` and six production apps, so run the check by
-hand before every push (the repo has no git-hooks convention, so it is not
-installed as a hook):
+Every push to `main` is a production deploy to six apps. A tracked git hook
+runs the unit tests and the kit check before any push leaves the machine.
+Set it up once per clone:
 
 ```bash
-/usr/local/bin/mise exec node@22 -- node scripts/check.mjs           # every kit
-/usr/local/bin/mise exec node@22 -- node scripts/check.mjs budgeter  # kits whose path matches
+scripts/install-hooks.sh     # core.hooksPath=.githooks + npm install (dev tooling only)
 ```
 
-It renders each `claude-design-export/ui_kits/*/*.html` from the working
+`git push --no-verify` skips it, knowingly. To run the pieces by hand:
+
+```bash
+/usr/local/bin/mise exec node@22 -- node --test test/                         # unit tests (shared-core.js)
+/usr/local/bin/mise exec node@22 -- node scripts/check.mjs                    # every kit, compared with baselines
+/usr/local/bin/mise exec node@22 -- node scripts/check.mjs budgeter           # kits whose path matches
+/usr/local/bin/mise exec node@22 -- node scripts/check.mjs --update-baselines # after an intended visual change
+```
+
+`scripts/check.mjs` renders each `claude-design-export/ui_kits/*/*.html` from the working
 tree (CDN URLs are answered from local files) in light and dark at 1440px
 and 375px, writes a screenshot per render (`$TMPDIR/ds-check`, or
 `CHECK_OUT=…`), and fails on any broken invariant: theme boot and
@@ -74,13 +82,23 @@ contrast for primary/danger buttons, `--text-faint` and the focus ring,
 `.sr-only`, label association, `aria-current` on the active nav link, the
 self-hosted fonts loading with no Google Fonts / jsDelivr request, and at
 375px: 16px inputs, 44px controls under touch, and nothing past the
-viewport outside `.table-responsive`. Exit code 0 is a pass. It needs
-Google Chrome and `playwright-core` (it uses `~/Repos/mini/browser_sweep`'s
-copy, or `PLAYWRIGHT_CORE=…`). Add an invariant whenever a regression slips
+viewport outside `.table-responsive`. Add an invariant whenever a regression slips
 through.
 
-`.assetsignore` keeps `tmp/`, docs, `scripts/`, the scraps and the Claude
-config off the CDN.
+**Baseline screenshots.** Each render is also compared pixel by pixel with
+`scripts/baselines/<kit>--<theme>-<width>.png` (pngjs + pixelmatch). Two
+renders of one tree match exactly, so more than 0.01% of pixels changed
+(`CHECK_MAX_DIFF`), or a different page height, fails and writes a
+`.diff.png` beside the screenshot. When the change is intended: look at the
+diffs, run `--update-baselines`, and commit the new PNGs in the same commit
+as the CSS. Baselines are rendered by macOS Google Chrome; a Chrome update
+that shifts antialiasing shows up as a failure on every kit at once — check
+one diff, then regenerate. CI renders with Linux Chromium and therefore runs
+`--no-baseline` (invariants only).
+
+`package.json` holds dev tooling only (playwright-core, pngjs, pixelmatch,
+jsdom). `.assetsignore` keeps it, `node_modules`, `test/`, `tmp/`, docs,
+`scripts/`, the scraps and the Claude config off the CDN.
 
 ## Apps using this system
 

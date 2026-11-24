@@ -10,16 +10,29 @@
 //   mise exec node@22 -- node scripts/check.mjs            # all kits
 //   mise exec node@22 -- node scripts/check.mjs budgeter   # kits whose path matches
 //   CHECK_OUT=/some/dir … (screenshots; default: $TMPDIR/ds-check)
+//   … --update-baselines   rewrite scripts/baselines/*.png from this tree
+//   … --no-baseline        invariants only, no screenshot comparison (CI)
 //
-// Needs playwright-core and Google Chrome. playwright-core is resolved from
-// PLAYWRIGHT_CORE (a path to the package), then ./node_modules, then
-// ~/Repos/mini/browser_sweep/node_modules — the repo has no package.json on
-// purpose (the Worker publishes the repo root).
+// Every render is also compared pixel by pixel with its committed baseline
+// in scripts/baselines/ (pngjs + pixelmatch); more than CHECK_MAX_DIFF of the
+// pixels changed (default 0.0001 = 0.01%; clean re-renders differ by 0), or a changed page height, fails and
+// writes <name>.diff.png beside the screenshot. Baselines are rendered with
+// macOS Google Chrome: Linux Chromium rasterises text differently, so CI
+// runs --no-baseline. After an intended visual change, look at the diffs,
+// then --update-baselines and commit the new PNGs with the change.
 //
-// Exit 0 = every invariant held; 1 = at least one failed (each is printed).
+// Needs playwright-core and Google Chrome (CHROME_PATH; without either,
+// playwright's own Chromium, as installed in CI). playwright-core, pngjs and
+// pixelmatch come from ./node_modules (`npm install`; package.json is dev
+// tooling only and .assetsignore keeps it off the CDN), else PLAYWRIGHT_CORE
+// or ~/Repos/mini/browser_sweep/node_modules for playwright-core.
+//
+// Installed as the pre-push hook by scripts/install-hooks.sh.
+//
+// Exit 0 = every invariant held and every render matched; 1 = a failure (each is printed).
 
 import { createRequire } from 'node:module';
-import { readFile, mkdir, readdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -31,6 +44,12 @@ const OUT = process.env.CHECK_OUT || path.join(os.tmpdir(), 'ds-check');
 const CHROME = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const CDN = 'https://design-system.joenguyen.ca/';
 const KIT_ORIGIN = 'https://ds-check.test/';
+const BASELINES = path.join(ROOT, 'scripts', 'baselines');
+const ARGS = process.argv.slice(2);
+const UPDATE = ARGS.includes('--update-baselines');
+const COMPARE = !UPDATE && !ARGS.includes('--no-baseline');
+const FILTER = ARGS.find(a => !a.startsWith('--'));
+const MAX_DIFF = Number(process.env.CHECK_MAX_DIFF || 0.0001);
 
 function loadPlaywright() {
     const candidates = [
@@ -44,6 +63,37 @@ function loadPlaywright() {
     }
     console.error('playwright-core not found. Set PLAYWRIGHT_CORE=/path/to/node_modules/playwright-core');
     process.exit(2);
+}
+
+// Pixel comparison against scripts/baselines/<name>.png. Returns failures.
+let png = null;
+async function loadPng() {
+    if (png) return png;
+    try {
+        const require = createRequire(import.meta.url);
+        const { PNG } = require(path.join(ROOT, 'node_modules', 'pngjs'));
+        const { default: pixelmatch } = await import(path.join(ROOT, 'node_modules', 'pixelmatch', 'index.js'));
+        return (png = { PNG, pixelmatch });
+    } catch (e) {
+        console.error('pngjs/pixelmatch not found — run `mise exec node@22 -- npm install` (or pass --no-baseline)');
+        process.exit(2);
+    }
+}
+async function compareBaseline(name, shot) {
+    const file = path.join(BASELINES, name);
+    if (UPDATE) { await writeFile(file, shot); return []; }
+    if (!COMPARE) return [];
+    if (!existsSync(file)) return [`no baseline ${path.relative(ROOT, file)} (run --update-baselines)`];
+    const { PNG, pixelmatch } = await loadPng();
+    const a = PNG.sync.read(await readFile(file)), b = PNG.sync.read(shot);
+    if (a.width !== b.width || a.height !== b.height) return [`page is ${b.width}x${b.height}, baseline ${a.width}x${a.height}`];
+    const diff = new PNG({ width: a.width, height: a.height });
+    const n = pixelmatch(a.data, b.data, diff.data, a.width, a.height, { threshold: 0.1 });
+    const share = n / (a.width * a.height);
+    if (share <= MAX_DIFF) return [];
+    const out = path.join(OUT, name.replace(/\.png$/, '.diff.png'));
+    await writeFile(out, PNG.sync.write(diff));
+    return [`${n} pixels (${(share * 100).toFixed(2)}%) differ from the baseline — ${out}`];
 }
 
 const TYPES = { '.css': 'text/css', '.js': 'text/javascript', '.html': 'text/html', '.svg': 'image/svg+xml',
@@ -276,9 +326,10 @@ async function listKits(filter) {
 }
 
 const { chromium } = loadPlaywright();
-const kits = await listKits(process.argv[2]);
+const kits = await listKits(FILTER);
 await mkdir(OUT, { recursive: true });
-const browser = await chromium.launch({ executablePath: CHROME, headless: true });
+if (UPDATE) await mkdir(BASELINES, { recursive: true });
+const browser = await chromium.launch({ executablePath: existsSync(CHROME) ? CHROME : undefined, headless: true });
 let failed = 0;
 const combos = [];
 for (const kit of kits) for (const theme of ['light', 'dark']) for (const width of [1440, 375]) combos.push({ kit, theme, width });
@@ -309,7 +360,10 @@ for (const { kit, theme, width } of combos) {
     const label = `${kit} ${theme} ${width}`;
     try {
         await page.goto(KIT_ORIGIN + 'claude-design-export/ui_kits/' + kit, { waitUntil: 'networkidle', timeout: 30000 });
-        await page.screenshot({ path: path.join(OUT, `${kit.replace(/[/.]/g, '-')}--${theme}-${width}.png`), fullPage: true });
+        const shotName = `${kit.replace(/[/.]/g, '-')}--${theme}-${width}.png`;
+        // Freeze carets and transitions so two renders of one tree match.
+        const shot = await page.screenshot({ path: path.join(OUT, shotName), fullPage: true, animations: 'disabled', caret: 'hide' });
+        const visual = await compareBaseline(shotName, shot);
         // A fullPage screenshot resets the device emulation, which drops
         // (pointer: coarse); put touch back before measuring tap targets.
         if (mobile) await (await context.newCDPSession(page)).send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
@@ -319,7 +373,7 @@ for (const { kit, theme, width } of combos) {
             // Re-run the label enhancer for the injected fixture, if present.
             if (window.dsEnhanceLabels) window.dsEnhanceLabels(host);
         }, FIXTURE);
-        const fails = [...errors, ...await invariants(page, { width, theme }), ...await hoverInvariant(page)];
+        const fails = [...errors, ...visual, ...await invariants(page, { width, theme }), ...await hoverInvariant(page)];
         if (fails.length) { failed++; console.log(`FAIL ${label}`); fails.forEach(f => console.log(`     - ${f}`)); }
         else console.log(`ok   ${label}`);
     } catch (e) {
@@ -328,5 +382,6 @@ for (const { kit, theme, width } of combos) {
     await context.close();
 }
 await browser.close();
-console.log(`\n${combos.length - failed}/${combos.length} renders passed · screenshots in ${OUT}`);
+console.log(`\n${combos.length - failed}/${combos.length} renders passed · screenshots in ${OUT}`
+    + (UPDATE ? ` · baselines rewritten in ${path.relative(ROOT, BASELINES)}/` : COMPARE ? ' · compared with baselines' : ' · baselines not compared'));
 process.exit(failed ? 1 : 0);

@@ -10,3 +10,10 @@ scripts
 tmp
 *.md
 claude-design-export/scraps
+# Dev tooling (tests, kit check, hooks): never published.
+node_modules
+package.json
+package-lock.json
+test
+.githooks
+.github

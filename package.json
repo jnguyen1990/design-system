@@ -1,0 +1,17 @@
+{
+  "name": "design-system",
+  "private": true,
+  "description": "Dev tooling only (tests, kit check, release). Never published: .assetsignore keeps package.json and node_modules off the CDN.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/",
+    "check": "node scripts/check.mjs",
+    "release": "node scripts/release.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0",
+    "pixelmatch": "7.1.0",
+    "playwright-core": "1.56.1",
+    "pngjs": "7.0.0"
+  }
+}
