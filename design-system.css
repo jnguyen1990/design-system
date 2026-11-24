@@ -5858,8 +5858,15 @@ tr[data-log-toggle] { cursor: pointer; }
 /* Backspace on an empty box selects the last tag before removing it. */
 .filter-tag.is-focused { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
 
-.filter-tag-x { cursor: pointer; opacity: 0.6; }
-.filter-tag-x:hover { opacity: 1; }
+/* A real <button> since round three (PLAT-05), so Tab reaches it and Enter
+   removes the tag; reset to look like the glyph it was. */
+.filter-tag-x {
+    cursor: pointer; opacity: 0.6;
+    border: 0; background: transparent; color: inherit; font: inherit;
+    padding: 0; margin: 0; line-height: inherit; border-radius: var(--radius-sm);
+}
+.filter-tag-x:hover, .filter-tag-x:focus-visible { opacity: 1; }
+.filter-tag-x:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
 
 .filter-tags-menu {
     position: absolute;

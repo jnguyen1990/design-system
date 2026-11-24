@@ -231,6 +231,28 @@ async function invariants(page, { width, theme }) {
             }
             probe.remove();
         }
+        // PLAT-04/05: a dropdown opened by toggling .open moves focus to its first
+        // item and marks the trigger expanded; Escape returns focus; filter-tag
+        // remove controls are buttons.
+        {
+            const dd = document.createElement('div');
+            dd.className = 'dropdown';
+            dd.innerHTML = '<button class="btn btn-ghost btn-sm" id="fx-dd">⋮</button><div class="dropdown-menu" id="fx-dd-menu"><a class="dropdown-item">One</a><a class="dropdown-item">Two</a></div>';
+            document.body.append(dd);
+            const t = dd.querySelector('button'), mnu = dd.querySelector('.dropdown-menu');
+            // Let the dsConfirm check above finish restoring its focus first.
+            await new Promise(r => setTimeout(r, 150));
+            t.focus(); mnu.classList.add('open');
+            // Focus lands a frame or two after .open (the menu fades in); poll.
+            for (let n = 0; n < 30 && document.activeElement !== mnu.querySelector('.dropdown-item'); n++) await new Promise(r => setTimeout(r, 20));
+            if (t.getAttribute('aria-haspopup') !== 'menu' || t.getAttribute('aria-expanded') !== 'true') fails.push('dropdown trigger lacks aria-haspopup/aria-expanded when open');
+            if (document.activeElement !== mnu.querySelector('.dropdown-item')) { const a = document.activeElement; fails.push(`opening a dropdown did not focus its first item (focus on <${a && a.tagName.toLowerCase()} id="${a && a.id}" class="${a && a.className}">, menu open=${mnu.classList.contains('open')}, visibility=${getComputedStyle(mnu).visibility})`); }
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            await new Promise(r => setTimeout(r, 30));
+            if (document.activeElement !== t) fails.push('Escape did not return focus to the dropdown trigger');
+            dd.remove();
+            document.querySelectorAll('.filter-tag-x').forEach(x => { if (x.tagName !== 'BUTTON') fails.push('.filter-tag-x is not a <button>'); });
+        }
         const faint = ratio(tok('--text-faint'), card);
         if (faint < 4.5) fails.push(`--text-faint on card ${faint.toFixed(2)} < 4.5`);
         const ring = ratio(tok('--focus-ring'), card);

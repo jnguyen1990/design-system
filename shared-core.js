@@ -1113,6 +1113,7 @@
     }
     global.filterTagsMatch = filterTagsMatch;
 
+    let ftSeq = 0;
     function installFilterTags(root, opts) {
         if (!root) return null;
         const fields = opts.fields || {};
@@ -1131,6 +1132,23 @@
         const input = root.querySelector('input');
         const menu = root.querySelector('.filter-tags-menu');
         input.placeholder = opts.placeholder || 'Filter or search…';
+        // A combobox over a listbox of suggestions (PLAT-05): the input owns
+        // the focus, the highlighted option is aria-activedescendant.
+        const menuId = 'ds-ft-menu-' + (++ftSeq);
+        menu.id = menuId;
+        menu.setAttribute('role', 'listbox');
+        input.setAttribute('role', 'combobox');
+        input.setAttribute('aria-autocomplete', 'list');
+        input.setAttribute('aria-controls', menuId);
+        input.setAttribute('aria-expanded', 'false');
+        if (!input.hasAttribute('aria-label')) input.setAttribute('aria-label', opts.label || 'Filter');
+        function syncActive() {
+            const open = menu.classList.contains('open');
+            input.setAttribute('aria-expanded', open ? 'true' : 'false');
+            const sel = open && menu.querySelector('.filter-tags-opt.is-sel');
+            menu.querySelectorAll('.filter-tags-opt[role="option"]').forEach(o => o.setAttribute('aria-selected', o === sel ? 'true' : 'false'));
+            if (sel) input.setAttribute('aria-activedescendant', sel.id); else input.removeAttribute('aria-activedescendant');
+        }
 
         // ── Parse exactly one term; precision here is what lets Enter refuse ──
         function parseTerm(text) {
@@ -1204,7 +1222,9 @@
                 const el = document.createElement('span');
                 el.className = 'filter-tag' + (t.field === (opts.textField || 'keyword') ? ' filter-tag--text' : '')
                     + (i === focused ? ' is-focused' : '');
-                el.innerHTML = escapeForTag(label(t)) + ' <span class="filter-tag-x" data-i="' + i + '" aria-label="Remove">&times;</span>';
+                // A real button (PLAT-05): reachable with Tab, pressed with Enter or Space.
+                el.innerHTML = escapeForTag(label(t)) + ' <button type="button" class="filter-tag-x" data-i="' + i
+                    + '" aria-label="Remove ' + escapeForTag(label(t)) + '">&times;</button>';
                 root.insertBefore(el, input);
             });
             root.classList.toggle('has-tags', tags.length > 0);
@@ -1247,14 +1267,15 @@
         function openMenu() {
             const s = suggest();
             if (!s) return closeMenu();
-            menu.innerHTML = '<div class="filter-tags-menu-head">' + s.head + '</div>' + s.items.map((it, i) =>
+            menu.innerHTML = '<div class="filter-tags-menu-head" role="presentation">' + s.head + '</div>' + s.items.map((it, i) =>
                 it.insert === null
-                    ? '<div class="filter-tags-opt is-static"><span class="k">' + escapeForTag(it.k) + '</span><span class="d">' + escapeForTag(it.d) + '</span></div>'
-                    : '<div class="filter-tags-opt' + (i === 0 ? ' is-sel' : '') + '" data-insert="' + escapeForTag(it.insert) + '">'
+                    ? '<div class="filter-tags-opt is-static" role="presentation"><span class="k">' + escapeForTag(it.k) + '</span><span class="d">' + escapeForTag(it.d) + '</span></div>'
+                    : '<div class="filter-tags-opt' + (i === 0 ? ' is-sel' : '') + '" role="option" id="' + menuId + '-o' + i + '" data-insert="' + escapeForTag(it.insert) + '">'
                       + '<span class="k">' + escapeForTag(it.k) + '</span><span class="d">' + escapeForTag(it.d) + '</span></div>').join('');
             menu.classList.add('open');
+            syncActive();
         }
-        const closeMenu = () => menu.classList.remove('open');
+        const closeMenu = () => { menu.classList.remove('open'); syncActive(); };
 
         function applySuggestion(ins) {
             const term = parseTerm(ins);
@@ -1287,6 +1308,7 @@
                 e.preventDefault();
                 opts_.forEach(o => o.classList.remove('is-sel'));
                 opts_[(cur + (e.key === 'ArrowDown' ? 1 : opts_.length - 1) + opts_.length) % opts_.length].classList.add('is-sel');
+                syncActive();
                 return;
             }
             if (e.key === 'Tab' && menu.classList.contains('open') && cur >= 0) { e.preventDefault(); applySuggestion(opts_[cur].dataset.insert); return; }
@@ -1305,6 +1327,14 @@
                 return;
             }
             if (e.key === 'Escape') closeMenu();
+        });
+        // Keyboard removal (Enter/Space on the button). Mouse removal happens on
+        // mousedown above, which also keeps the input focused.
+        root.addEventListener('click', e => {
+            const x = e.target.closest && e.target.closest('.filter-tag-x');
+            if (!x) return;
+            e.preventDefault();
+            tags.splice(+x.dataset.i, 1); focused = -1; render(); input.focus();
         });
         menu.addEventListener('mousedown', e => {
             const o = e.target.closest('.filter-tags-opt[data-insert]');
@@ -1539,7 +1569,7 @@
     window.addEventListener('resize', reflowOpenDropdowns);
 
     // Esc closes the top-most menu — a floating layer the keyboard cannot
-    // dismiss is a trap.
+    // dismiss is a trap. Focus goes back to the trigger (see below).
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
         var open = document.querySelectorAll('.dropdown-menu.open');
@@ -1547,6 +1577,113 @@
         e.stopPropagation();
         open.forEach(function (menu) { menu.classList.remove('open'); });
     });
+
+    // ── Dropdown keyboard + ARIA (round three, PLAT-04) ───────────────────
+    // Pages keep toggling .open themselves (toggleMenu()); everything here is
+    // driven by that class, so no page changes. A trigger gets
+    // aria-haspopup="menu", aria-controls and aria-expanded; the menu
+    // role="menu" and its .dropdown-item children role="menuitem" with a
+    // roving tabindex (most items are <a onclick> with no href, which a
+    // keyboard could not reach at all). Opening moves focus to the first item;
+    // Up / Down / Home / End move; Enter or Space activates an item that has
+    // no native activation; Tab closes and lets focus move on; closing with
+    // focus inside the menu puts it back on the trigger.
+    var dropdownSeq = 0;
+    var MENU_ITEM = '.dropdown-item:not([disabled]):not(.disabled):not([hidden])';
+    function dropdownTriggerOf(menu) {
+        var dropdown = menu.closest('.dropdown');
+        return dropdown ? dropdown.querySelector(':scope > button, :scope > .btn') : null;
+    }
+    function prepareDropdown(menu) {
+        if (!menu.id) menu.id = 'ds-menu-' + (++dropdownSeq);
+        menu.setAttribute('role', 'menu');
+        var trigger = dropdownTriggerOf(menu);
+        if (trigger) {
+            trigger.setAttribute('aria-haspopup', 'menu');
+            trigger.setAttribute('aria-controls', menu.id);
+            trigger.setAttribute('aria-expanded', menu.classList.contains('open') ? 'true' : 'false');
+        }
+        menu.querySelectorAll('.dropdown-item').forEach(function (item) {
+            item.setAttribute('role', 'menuitem');
+            if (!item.hasAttribute('tabindex')) item.setAttribute('tabindex', '-1');
+        });
+    }
+    function menuItems(menu) {
+        return Array.prototype.slice.call(menu.querySelectorAll(MENU_ITEM));
+    }
+    function onDropdownOpened(menu) {
+        prepareDropdown(menu);
+        // The menu fades in with a visibility transition, so at the moment .open
+        // lands it is still visibility:hidden and focus() would be ignored —
+        // focus on the next frame, once it is showing.
+        var focusFirst = function () {
+            if (!menu.classList.contains('open') || menu.contains(document.activeElement)) return;
+            var first = menuItems(menu)[0];
+            if (first) first.focus({ preventScroll: true });
+        };
+        // rAF can be throttled (a background tab, headless); timers back it up.
+        // focusFirst is idempotent: the first call that lands wins.
+        if (global.requestAnimationFrame) global.requestAnimationFrame(function () { global.requestAnimationFrame(focusFirst); });
+        setTimeout(focusFirst, 50);
+        setTimeout(focusFirst, 200);
+    }
+    function onDropdownClosed(menu) {
+        var trigger = dropdownTriggerOf(menu);
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        if (trigger && menu.contains(document.activeElement)) trigger.focus({ preventScroll: true });
+    }
+    global.dsPrepareDropdowns = function (root) {
+        (root || document).querySelectorAll('.dropdown-menu').forEach(prepareDropdown);
+    };
+    new MutationObserver(function (records) {
+        records.forEach(function (record) {
+            var el = record.target;
+            if (!el.classList || !el.classList.contains('dropdown-menu')) return;
+            var wasOpen = (record.oldValue || '').split(/\s+/).indexOf('open') !== -1;
+            var isOpen = el.classList.contains('open');
+            if (isOpen && !wasOpen) onDropdownOpened(el);
+            else if (!isOpen && wasOpen) onDropdownClosed(el);
+        });
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
+    // Menus rendered later (innerHTML rows) get their attributes the first
+    // time their trigger takes focus, before any screen reader announces it.
+    document.addEventListener('focusin', function (e) {
+        var dropdown = e.target.closest && e.target.closest('.dropdown');
+        if (!dropdown || e.target.closest('.dropdown-menu')) return;
+        var menu = dropdown.querySelector(':scope > .dropdown-menu');
+        if (menu) prepareDropdown(menu);
+    });
+    document.addEventListener('keydown', function (e) {
+        var target = e.target;
+        if (!target || !target.closest) return;
+        // ArrowDown on a closed trigger opens its menu (the page's own handler).
+        var dropdown = target.closest('.dropdown');
+        if (dropdown && !target.closest('.dropdown-menu') && e.key === 'ArrowDown') {
+            var closed = dropdown.querySelector(':scope > .dropdown-menu:not(.open)');
+            if (closed) { e.preventDefault(); target.click(); }
+            return;
+        }
+        var menu = target.closest('.dropdown-menu.open');
+        if (!menu) return;
+        var items = menuItems(menu);
+        var i = items.indexOf(target);
+        var next = null;
+        if (e.key === 'ArrowDown') next = items[(i + 1) % items.length];
+        else if (e.key === 'ArrowUp') next = items[(i - 1 + items.length) % items.length];
+        else if (e.key === 'Home') next = items[0];
+        else if (e.key === 'End') next = items[items.length - 1];
+        else if ((e.key === 'Enter' || e.key === ' ') && i !== -1) {
+            var native = target.tagName === 'BUTTON' || (target.tagName === 'A' && target.hasAttribute('href'));
+            if (!native || e.key === ' ') { e.preventDefault(); target.click(); }
+            return;
+        } else if (e.key === 'Tab') {
+            menu.classList.remove('open');
+            return;
+        }
+        if (next) { e.preventDefault(); next.focus({ preventScroll: true }); }
+    });
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { global.dsPrepareDropdowns(); });
+    else global.dsPrepareDropdowns();
 
     // ── Row-select tables ──────────────────────────────────────────────────
     // Clicking anywhere on a row toggles its selection checkbox — but only

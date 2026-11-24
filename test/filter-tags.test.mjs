@@ -88,3 +88,40 @@ test('filterTagsMatch: substrings, exact fields, numbers, dates and !=', () => {
     assert.deepEqual(pick('category!=rent'), [ 'Costco Wholesale' ]);
     assert.deepEqual(pick('amount:>100', 'imported:today'), [ 'Costco Wholesale' ]);
 });
+
+// PLAT-05: keyboard and screen-reader access.
+test('the remove control is a real button that Enter removes', () => {
+    const { w, f } = parser();
+    const el = w.document.querySelector('.filter-tags');
+    f.add('category:Rent'); f.add('amount:>50');
+    const x = el.querySelector('.filter-tag-x');
+    assert.equal(x.tagName, 'BUTTON');
+    assert.equal(x.getAttribute('type'), 'button');
+    assert.match(x.getAttribute('aria-label'), /^Remove category:rent/i);
+    x.click();                                   // keyboard activation dispatches click
+    assert.deepEqual(JSON.parse(JSON.stringify(f.tags.map(t => t.field))), [ 'amount' ]);
+    assert.equal(w.document.activeElement, el.querySelector('input'));
+});
+
+test('suggestions are a listbox the input points into with aria-activedescendant', () => {
+    const { w } = parser();
+    const el = w.document.querySelector('.filter-tags');
+    const input = el.querySelector('input');
+    const menu = el.querySelector('.filter-tags-menu');
+    assert.equal(input.getAttribute('role'), 'combobox');
+    assert.equal(menu.getAttribute('role'), 'listbox');
+    assert.equal(input.getAttribute('aria-controls'), menu.id);
+    assert.equal(input.getAttribute('aria-expanded'), 'false');
+    input.dispatchEvent(new w.Event('focus'));
+    assert.equal(input.getAttribute('aria-expanded'), 'true');
+    const opts = [ ...menu.querySelectorAll('[role="option"]') ];
+    assert.ok(opts.length > 1);
+    assert.equal(input.getAttribute('aria-activedescendant'), opts[0].id);
+    assert.equal(opts[0].getAttribute('aria-selected'), 'true');
+    input.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    assert.equal(input.getAttribute('aria-activedescendant'), opts[1].id);
+    assert.equal(opts[0].getAttribute('aria-selected'), 'false');
+    input.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    assert.equal(input.getAttribute('aria-expanded'), 'false');
+    assert.equal(input.hasAttribute('aria-activedescendant'), false);
+});
