@@ -4,7 +4,8 @@
    design-system.css; a rule moves here only when no other app, the gem's
    views or the shared scripts reference its classes. */
 
-/* --- from pages/budget.html.erb --- */.ledger col.c-cat { width: auto; }
+/* --- from pages/budget.html.erb --- */
+.ledger col.c-cat { width: auto; }
 .ledger col.c-num { width: 128px; }
 .ledger col.c-bar { width: 156px; }
 .ledger col.c-act { width: 44px; }
@@ -59,7 +60,8 @@
     .ledger tbody tr.row-section td[data-col="spent"]::after, .ledger tbody tr.row-total td[data-col="spent"]::after { content: ' of ' attr(data-of); color: var(--text-faint); }
     .ledger tbody tr.row-section > td, .ledger tbody tr.row-total > td { height: auto; border: none; }
 }
-/* --- from pages/dashboard.html.erb --- */.hero-figs {
+/* --- from pages/dashboard.html.erb --- */
+.hero-figs {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: var(--space-4);
@@ -104,7 +106,8 @@
 @media (max-width: 560px) {
     .cat-bar-row { grid-template-columns: minmax(0, 1fr) 84px 88px; }
 }
-/* --- from pages/settings.html.erb --- */.help-item { border-top: 1px solid var(--border); }
+/* --- from pages/settings.html.erb --- */
+.help-item { border-top: 1px solid var(--border); }
 .help-item:first-of-type { border-top: none; }
 .help-item > summary {
       cursor: pointer; list-style: none; padding: 11px 0;

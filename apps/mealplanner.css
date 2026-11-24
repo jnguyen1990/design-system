@@ -4,7 +4,8 @@
    design-system.css; a rule moves here only when no other app, the gem's
    views or the shared scripts reference its classes. */
 
-/* Recipe card */.r-card {
+/* Recipe card */
+.r-card {
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -30,7 +31,8 @@
     margin-top: auto;
     padding-top: var(--space-2);
 }
-/* Ingredient line: name left, quantity right. */.ingredient-row {
+/* Ingredient line: name left, quantity right. */
+.ingredient-row {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: var(--space-3);
@@ -40,7 +42,9 @@
 }
 .ingredient-row:last-child { border-bottom: none; }
 .ingredient-row .i-name { font-size: var(--text-sm); }
-/* Settings / label rows *//* Nutrition: one column per day of the week */.nutri-grid {
+/* Settings / label rows */
+/* Nutrition: one column per day of the week */
+.nutri-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: var(--space-2);
@@ -88,7 +92,8 @@
     color: var(--text-faint);
 }
 /* Macro split bar. Colours mirror Palette (app/models/palette.rb):
-   protein=red, carbs=amber, fat=purple. Keep the two in sync. */.macro-bar {
+   protein=red, carbs=amber, fat=purple. Keep the two in sync. */
+.macro-bar {
     display: flex;
     height: 6px;
     border-radius: 3px;
@@ -100,7 +105,8 @@
 .m-protein { background: var(--red-9); }
 .m-carbs   { background: var(--amber-9); }
 .m-fat     { background: var(--purple-9); }
-/* Day drawer (log / plan / edit) */.capture-day {
+/* Day drawer (log / plan / edit) */
+.capture-day {
     font-size: var(--text-lg);
     font-weight: 650;
     margin: 0 0 2px;
@@ -110,7 +116,8 @@
     grid-template-columns: 1fr 1fr;
     gap: var(--space-3);
 }
-/* Meal form */.meal-form { padding: var(--space-6); }
+/* Meal form */
+.meal-form { padding: var(--space-6); }
 .dish-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .dish-row {
     display: grid;
@@ -132,7 +139,8 @@
     color: var(--text-faint);
 }
 .dish-row .dish-remove:hover { color: var(--red-11); background: var(--red-3); }
-/* Sale cards (this week's flyers) */.sale-item {
+/* Sale cards (this week's flyers) */
+.sale-item {
     padding: var(--space-3);
     background: var(--bg-subtle);
     border: 1px solid var(--border);
@@ -174,7 +182,8 @@
     letter-spacing: 0.02em;
 }
 .sale-discount { font-weight: var(--weight-medium); }
-/* Recipe suggestions on the sales page */.recipe-suggest-card {
+/* Recipe suggestions on the sales page */
+.recipe-suggest-card {
     display: block;
     padding: var(--space-3);
     background: var(--bg-subtle);
@@ -197,9 +206,32 @@
     color: var(--text-muted);
     letter-spacing: 0.02em;
 }
-/* Products table: hidden rows stay scannable but recede. */tr.is-hidden-product td { color: var(--text-muted); }
+/* Products table: hidden rows stay scannable but recede. */
+tr.is-hidden-product td { color: var(--text-muted); }
 tr.is-hidden-product .badge { opacity: 0.55; }
 tr.product-row {
     content-visibility: auto;
     contain-intrinsic-size: auto 56px;
+}
+
+/* Phones: seven day columns cannot fit, so the week becomes a list: the day
+   on the left, the calories and target on one line, the macro bar and the
+   macro grams under them. (Was a sideways scroll.) */
+@media (max-width: 768px) {
+    .nutri-grid { grid-template-columns: minmax(0, 1fr); }
+    .n-day {
+        display: grid;
+        grid-template-columns: 5rem minmax(0, 1fr) auto;
+        align-items: baseline;
+        column-gap: var(--space-3);
+        row-gap: var(--space-1);
+        min-height: 0;
+        padding: var(--space-2) var(--space-3);
+    }
+    .n-day .nh { grid-column: 1; grid-row: 1 / span 3; flex-direction: column; align-items: flex-start; align-self: start; gap: 0; margin: 0; white-space: nowrap; }
+    .n-day .kcal { grid-column: 2; grid-row: 1; font-size: var(--text-md); }
+    .n-day .kcal + .target { grid-column: 3; grid-row: 1; text-align: right; }
+    .n-day .macro-bar { grid-column: 2 / 4; grid-row: 2; margin-top: 0; align-self: center; }
+    .n-day .target:last-child:not(.kcal + .target) { grid-column: 2 / 4; grid-row: 3; margin-top: 0; }
+    .table-responsive:has(> .nutri-grid) { overflow: visible; }
 }

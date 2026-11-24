@@ -150,7 +150,7 @@ def main():
         keep, move = [section[:banner_end]], []
         for kind, chunk in blocks(section[banner_end:]):
             if kind != "rule":
-                keep.append(chunk); move.append(chunk) if kind == "comment" else None; continue
+                keep.append(chunk); move.append(chunk + "\n") if kind == "comment" else None; continue
             if chunk.startswith("@"):
                 # Split an @media/@supports block rule by rule, so an app-only rule
                 # inside it moves with the base rule it overrides (keeping their order).

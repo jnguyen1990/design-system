@@ -4,7 +4,8 @@
    design-system.css; a rule moves here only when no other app, the gem's
    views or the shared scripts reference its classes. */
 
-/* --- from pages/reminders.html.erb --- */.rem-chips { display: flex; gap: 2px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+/* --- from pages/reminders.html.erb --- */
+.rem-chips { display: flex; gap: 2px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
 .rem-chips .label { font-size: var(--text-xs); color: var(--text-muted); margin-right: 6px; }
 .rem-group-h { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 4px; }
 .rem-group-h strong { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
@@ -18,7 +19,8 @@
 .rem-row .text.overdue { color: var(--red-11); }
 .rem-row .text.paused { color: var(--text-muted); }
 .rem-row .badge { justify-self: start; }
-/* a chip, not a full-width bar */.rem-row .due { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-muted); min-width: 80px; text-align: right; }
+/* a chip, not a full-width bar */
+.rem-row .due { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-muted); min-width: 80px; text-align: right; }
 .rem-row .row-actions { opacity: 0; transition: opacity 0.1s; }
 .rem-row:hover .row-actions { opacity: 1; }
 @media (max-width: 768px) {
@@ -28,7 +30,8 @@
     .rem-row .row-actions { grid-column: 1 / -1; opacity: 1; }
 }
 /* --- from pages/today.html.erb --- page-local hooks only; the layout
-   itself comes from .detail-columns, .list-row, .stats-grid and .meter. */.sched .row-lead { text-align: right; }
+   itself comes from .detail-columns, .list-row, .stats-grid and .meter. */
+.sched .row-lead { text-align: right; }
 #week-list .wk-done input[type="text"] { color: var(--text-muted); text-decoration: line-through; }
 .hero-count-of { font-size: 18px; color: var(--text-muted); font-weight: var(--weight-medium); }
 .sleep-fig { display: flex; align-items: baseline; gap: 10px; }
@@ -39,7 +42,8 @@
     .sleep-times { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
 .wm-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
-/* --- from pages/jobs.html.erb --- */.job-tile { cursor: pointer; }
+/* --- from pages/jobs.html.erb --- */
+.job-tile { cursor: pointer; }
 .job-tile:hover { border-color: var(--card-border-hover); }
 .job-tile .tile-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .job-tile .tile-name { font-size: var(--text-sm); font-weight: 600; flex: 1; }

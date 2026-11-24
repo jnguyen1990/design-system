@@ -4525,64 +4525,6 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
     letter-spacing: normal;
 }
 
-/* ── Month strip ──────────────────────────────────────────────
-   A rolling year, one cell per month. Sits beside .cal-grid as a
-   calendar-family component (from upkeep's maintenance seasons). */
-.month-strip {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: var(--space-2);
-}
-
-.ms-month {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: var(--space-2);
-    min-height: 74px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.ms-month.current { border-color: var(--accent-500); }
-
-.ms-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--text-faint);
-}
-
-.ms-month.current .ms-label { color: var(--text); }
-
-.ms-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    line-height: 1.3;
-    min-width: 0;
-}
-
-.ms-item > .t {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--text-muted);
-}
-
-.ms-item.strong > .t { color: var(--text); }
-
-.ms-foot {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--text-faint);
-    margin-top: auto;
-}
-
-@media (max-width: 900px) {
-    .month-strip { grid-template-columns: repeat(4, 1fr); }
-}
-
 /* ── Small utilities ──────────────────────────────────────────
    Each of these was written inline or re-declared per app. */
 
@@ -6105,6 +6047,9 @@ tbody tr.is-key-focus > td { background: transparent; }
         font-family: var(--font-sans);
         font-size: var(--text-xs);
         text-align: left;
+        /* the label is the column name as written ("Last done"); never take
+           the cell's own casing (.td-date capitalises its value) */
+        text-transform: none;
     }
 
     /* Day-grouped ledger */

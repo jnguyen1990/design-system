@@ -4,7 +4,8 @@
    design-system.css; a rule moves here only when no other app, the gem's
    views or the shared scripts reference its classes. */
 
-/* --- from fitness.css --- */.color-dot--cycling { background: var(--orange-9); }
+/* --- from fitness.css --- */
+.color-dot--cycling { background: var(--orange-9); }
 .color-dot--running { background: var(--red-9); }
 .color-dot--lifting, .color-dot--strength { background: var(--purple-9); }
 .color-dot--mobility { background: var(--teal-9); }
@@ -99,7 +100,8 @@
     .table-logbook td[data-col="rating"] { display: none; }
     .table-logbook td[data-col="actions"] { grid-area: actions; justify-self: end; display: flex; gap: 4px; }
 }
-/* --- from pages/block_detail.html.erb --- */.blk-meta { display: flex; gap: var(--space-6); flex-wrap: wrap; margin-top: var(--space-3); }
+/* --- from pages/block_detail.html.erb --- */
+.blk-meta { display: flex; gap: var(--space-6); flex-wrap: wrap; margin-top: var(--space-3); }
 .blk-meta .gm { display: flex; flex-direction: column; gap: 2px; }
 .gm-label { font-size: var(--text-xs); color: var(--text-muted); text-transform: lowercase; letter-spacing: 0.02em; }
 .gm-val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em; }
@@ -111,7 +113,8 @@
    opens is the shared .dropdown-menu — the .menu-wrap/.menu-pop/.menu-item
    /.menu-sep duplicate that used to live here was retired 2026-10-07: it was
    absolute-positioned with its own z-index and 33px items, so it missed both
-   the overflow-clipping fix and the 36px density floor. One menu component. */.week-head { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px; gap: 8px; }
+   the overflow-clipping fix and the 36px density floor. One menu component. */
+.week-head { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px; gap: 8px; }
 .week-num { font-family: var(--font-mono); }
 .theme-badge { font-size: 10px; }
 .week-adh { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
@@ -135,7 +138,8 @@
 .srow.open .srow-detail { display: block; }
 .srow-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .week-empty { color: var(--text-muted); font-size: var(--text-sm); margin: 0 0 10px; }
-/* --- from pages/dashboard.html.erb --- */.week-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-2); }
+/* --- from pages/dashboard.html.erb --- */
+.week-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-2); }
 .day-col {
     background: var(--bg-subtle); border: 1px solid var(--border);
     border-radius: var(--radius-md); padding: var(--space-3);
@@ -168,7 +172,8 @@
 .week-summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: var(--text-sm); }
 .week-summary-row:last-child { border-bottom: none; }
 .week-summary-row .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
-/* Main column + a fixed 380px rail; one column on mobile (below). */.dash-side-by-side { display: grid; grid-template-columns: 1fr 380px; gap: var(--space-6); align-items: start; }
+/* Main column + a fixed 380px rail; one column on mobile (below). */
+.dash-side-by-side { display: grid; grid-template-columns: 1fr 380px; gap: var(--space-6); align-items: start; }
 @media (max-width: 768px) {
     .week-grid { grid-template-columns: 1fr; }
     .day-col { min-height: auto; }
@@ -176,7 +181,9 @@
 }
 /* --- from pages/goal_detail.html.erb --- what is left of the old stepper
    design: .gm-* / .progress-* (fitness block_detail) and .adh-* (the plan
-   rows in "Goal pages"). The stepper's own rules were removed 2026-11-05. *//* --- from pages/goals.html.erb --- */[data-app="fitness"] .goal-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 160px 110px 100px 90px 56px; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; color: inherit; text-decoration: none; }
+   rows in "Goal pages"). The stepper's own rules were removed 2026-11-05. */
+/* --- from pages/goals.html.erb --- */
+[data-app="fitness"] .goal-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 160px 110px 100px 90px 56px; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; color: inherit; text-decoration: none; }
 [data-app="fitness"] .goal-row:hover { background: var(--panel-hover); }
 [data-app="fitness"] .goal-row .arrow { color: var(--text-faint); margin: 0 6px; }
 [data-app="fitness"] .goal-row .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
@@ -192,7 +199,8 @@
     [data-app="fitness"] .goal-row .status-col { grid-column: 3; grid-row: 1; }
     [data-app="fitness"] .goal-row .actions { grid-column: 2 / -1; justify-self: end; opacity: 1; }
 }
-/* --- from pages/workouts.html.erb --- */tr.workout-row-hidden td { opacity: 0.55; }
+/* --- from pages/workouts.html.erb --- */
+tr.workout-row-hidden td { opacity: 0.55; }
 tr.workout-row-hidden td:last-child { opacity: 1; }
 .workout-title-cell {
     cursor: pointer;
