@@ -443,9 +443,18 @@
         announceTheme(newTheme);
     };
 
+    // Live-region semantics for a toast (PLAT-06): errors are an assertive
+    // alert, everything else a polite status — the same as dsToast.
+    function markLive(el, type) {
+        const alert = type === 'error';
+        el.setAttribute('role', alert ? 'alert' : 'status');
+        el.setAttribute('aria-live', alert ? 'assertive' : 'polite');
+        el.setAttribute('aria-atomic', 'true');
+    }
     global.showStatus = function showStatus(divId, message, type) {
         const div = document.getElementById(divId);
         if (!div) return;
+        markLive(div, type);
         div.textContent = message;
         div.className = 'status-message status-' + type;
         div.style.display = 'block';
@@ -712,6 +721,26 @@
         });
     };
 
+    // Server-rendered flash messages (the gem's _flash partial, or any page's
+    // own .status-message) are in the page from the start, and most screen
+    // readers do not read live-region content that was there at load. Mark
+    // each one live and put its text back a moment later so it is announced.
+    function announceServerToasts() {
+        document.querySelectorAll('.status-message').forEach(el => {
+            if (el.dataset.dsAnnounced || el.id === 'ds-toast') return;
+            el.dataset.dsAnnounced = '1';
+            const text = el.textContent.trim();
+            if (!text || getComputedStyle(el).display === 'none') return;
+            markLive(el, el.classList.contains('status-error') ? 'error' : 'status');
+            const nodes = Array.from(el.childNodes);
+            el.textContent = '';
+            setTimeout(() => nodes.forEach(n => el.appendChild(n)), 150);
+        });
+    }
+    global.dsAnnounceServerToasts = announceServerToasts;
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', announceServerToasts);
+    else announceServerToasts();
+
     // Toasts: click anywhere on a .status-message to dismiss. Delegated so it
     // covers server-rendered flash divs and app-level showStatus overrides.
     document.addEventListener('click', e => {
@@ -756,6 +785,7 @@
             });
             el.appendChild(btn);
         }
+        markLive(el, type);
         el.className = 'status-message status-' + type + (action && action.label ? ' has-action' : '');
         el.style.display = 'block';
         clearTimeout(toastTimer);
