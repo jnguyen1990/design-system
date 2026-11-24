@@ -4754,8 +4754,11 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
     .card-grid-2 { grid-template-columns: 1fr; }
 }
 
-/* An input sized to its content rather than the row it sits in. */
-.row-input { width: auto; max-width: 260px; }
+/* A row input capped at 260px rather than stretched across the row.
+   width:100% — until the field resets went zero-weight (:where), input[type=text]'s
+   width:100% always beat this rule's old width:auto, which then shrank every row
+   input to its content once it finally applied (mealplanner recipe/settings forms). */
+.row-input { width: 100%; max-width: 260px; }
 
 /* A textarea you paste machine-shaped text into. */
 .mono-input {
