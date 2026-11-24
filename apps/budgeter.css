@@ -42,7 +42,7 @@
       font-family: var(--font-sans);
       font-size: var(--text-2xl);
       font-weight: var(--weight-semibold);
-      letter-spacing: -0.01em;
+      letter-spacing: var(--tracking-snug);
       line-height: var(--lh-heading);
   }
 [data-app="budgeter"] .stat-card .tile-input:hover { border-color: var(--border); }
@@ -116,7 +116,7 @@
   }
 .help-item > summary::-webkit-details-marker { display: none; }
 .help-item > summary::before {
-      content: '\25B8'; color: var(--text-faint); font-size: 11px;
+      content: '\25B8'; color: var(--text-faint); font-size: var(--text-2xs);
       transition: transform var(--motion-fast);
   }
 .help-item[open] > summary::before { transform: rotate(90deg); }

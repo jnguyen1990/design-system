@@ -1610,6 +1610,7 @@
     --font-mono: 'Geist Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
 
     /* ----- Type scale (16px root) ----- */
+    --text-3xs:  0.625rem;  /* 10px — the smallest mono labels (calendar heads, month strip) */
     --text-2xs:  0.6875rem; /* 11px — micro-labels, table heads, meta (was raw 11px x50) */
     --text-xs:   0.75rem;   /* 12px */
     --text-sm:   0.8125rem; /* 13px */
@@ -1618,6 +1619,13 @@
     --text-lg:   1.125rem;  /* 18px */
     --text-xl:   1.5rem;    /* 24px */
     --text-2xl:  2rem;      /* 32px — the top of the scale */
+
+    /* Letter spacing (PLAT-30): negative for headings and big numbers,
+       positive for small and uppercase labels. */
+    --tracking-tight:  -0.02em;  /* page titles, hero numbers */
+    --tracking-snug:   -0.01em;  /* card titles, stat values */
+    --tracking-wide:   0.02em;   /* small labels */
+    --tracking-wider:  0.04em;   /* uppercase micro-labels */
 
     /* ----- Weights ----- */
     --weight-regular:  400;
@@ -1929,7 +1937,7 @@ h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-sans);
     font-weight: var(--weight-semibold);
     line-height: var(--lh-heading);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-snug);
     color: var(--text);
     text-wrap: balance;
 }
@@ -2062,7 +2070,7 @@ label {
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     color: var(--text);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-snug);
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -2201,7 +2209,7 @@ label {
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
     color: var(--text);
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking-tight);
     line-height: var(--lh-heading);
 }
 
@@ -2233,7 +2241,7 @@ label {
     border: 1px solid var(--border);
     border-radius: 3px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     font-weight: 400;
     color: var(--text-faint);
     line-height: 1;
@@ -2245,7 +2253,7 @@ label {
     font-size: 15px;
     font-weight: var(--weight-semibold);
     color: var(--text);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-snug);
     padding-left: var(--space-3);
 }
 
@@ -2326,7 +2334,7 @@ label {
     background: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--text-sm);
     padding: 0;
 }
 
@@ -2488,7 +2496,7 @@ label {
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     color: var(--text);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-snug);
     text-wrap: balance;
 }
 
@@ -2950,9 +2958,9 @@ input[type="radio"]:focus-visible {
    ============================================================ */
 
 /* Dense table variant for modals and embedded detail tables — replaces the
-   inline font-size:12px that apps used to hand-roll. */
-.table-compact { font-size: 12px; }
-.table-compact th, .table-compact td { font-size: 12px; }
+   inline font-size:var(--text-xs) that apps used to hand-roll. */
+.table-compact { font-size: var(--text-xs); }
+.table-compact th, .table-compact td { font-size: var(--text-xs); }
 
 .table-responsive {
     overflow-x: auto;
@@ -3139,7 +3147,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     font-size: var(--text-lg);
     font-weight: var(--weight-semibold);
     color: var(--text);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-snug);
 }
 
 .modal-close {
@@ -3346,7 +3354,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     font-size: var(--text-2xl);
     font-weight: var(--weight-semibold);
     color: var(--text);
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking-tight);
     line-height: var(--lh-heading);
 }
 
@@ -3510,7 +3518,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     font-weight: var(--weight-semibold);
     color: var(--text);
     margin-bottom: var(--space-1);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-snug);
 }
 
 .insight-text {
@@ -3776,7 +3784,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 }
 
 .tool-item span {
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
 }
 
@@ -3871,7 +3879,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     border: 1px solid var(--border);
     color: var(--text-muted);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3947,7 +3955,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
    ============================================================ */
 
 /* ── Mono micro-text ──────────────────────────────────────────
-   `font-family: var(--font-mono); font-size: 11px; color: muted`
+   `font-family: var(--font-mono); font-size: var(--text-2xs); color: muted`
    appeared ~25 times across the apps. */
 /* v4.4: the names stay for compatibility; the face is Inter with tabular
    figures (mono only for numbers in data, IDs and kbd). */
@@ -3979,7 +3987,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     gap: 5px;
     padding: 3px 10px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
     border: 1px solid var(--border);
     border-radius: var(--radius-full);
@@ -4004,7 +4012,7 @@ a.meta-chip:hover {
     cursor: pointer;
     color: var(--text-muted);
     opacity: 0.6;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     line-height: 1;
 }
 
@@ -4041,7 +4049,7 @@ a.meta-chip:hover {
 
 .spec-row .sub {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-faint);
     margin-top: 2px;
 }
@@ -4120,8 +4128,8 @@ a.meta-chip:hover {
     justify-content: center;
     color: var(--text-faint);
     font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.04em;
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-wider);
     overflow: hidden;
 }
 
@@ -4140,7 +4148,7 @@ a.meta-chip:hover {
     bottom: var(--space-2);
     right: var(--space-2);
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-3xs);
     color: var(--text-faint);
 }
 
@@ -4150,7 +4158,7 @@ a.meta-chip:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: var(--text-lg);
     color: #fff;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
@@ -4231,7 +4239,7 @@ a.meta-chip:hover {
     border-radius: var(--radius-sm);
     padding: var(--space-3);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
     line-height: 1.55;
     white-space: pre-wrap;
@@ -4281,7 +4289,7 @@ a.meta-chip:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: var(--text-sm);
 }
 
 /* ── Form sections ────────────────────────────────────────────
@@ -4378,7 +4386,7 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
     position: absolute;
     inset: 0;
     color: #fff;
-    font-size: 10px;
+    font-size: var(--text-3xs);
     line-height: 14px;
     text-align: center;
 }
@@ -4471,14 +4479,14 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: var(--text-sm);
 }
 
 /* Trailing value pushed to the right edge of a flex row. */
 .row-end {
     margin-left: auto;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
     white-space: nowrap;
 }
@@ -4571,7 +4579,7 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
     justify-content: flex-start;
     padding: var(--space-2) var(--space-3);
     font-family: var(--font-sans);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     line-height: 1.5;
     color: var(--text-muted);
     letter-spacing: normal;
@@ -4663,7 +4671,7 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
     display: block;
     margin-top: 2px;
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-3xs);
     color: var(--text-faint);
 }
 
@@ -4719,7 +4727,7 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
     border: 1px solid var(--border);
     color: var(--text-muted);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
 }
 
@@ -4728,7 +4736,7 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
 
 .step-body .m {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
 }
 
@@ -4742,7 +4750,7 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
     margin: 0 0 var(--space-3) 0;
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-wider);
 }
 
 .section-title .count {
@@ -4758,7 +4766,7 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     margin: 0 0 var(--space-2);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-wider);
     color: var(--text-muted);
 }
 
@@ -4798,7 +4806,7 @@ details.form-section[open] > summary.form-section-title::before { transform: rot
 .mono-input {
     min-height: 140px;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--text-xs);
 }
 
 /* Dimmed table row — hidden/archived records that stay scannable. */
@@ -4854,7 +4862,7 @@ tr.is-muted .badge { opacity: 0.55; }
 
 .row .sub {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-faint);
     margin-top: 2px;
 }
@@ -4934,7 +4942,7 @@ tr.is-muted .badge { opacity: 0.55; }
    /.menu-sep duplicate that used to live here was retired 2026-10-07: it was
    absolute-positioned with its own z-index and 33px items, so it missed both
    the overflow-clipping fix and the 36px density floor. One menu component. */
-.menu-btn { width: var(--control-h); height: var(--control-h); display: inline-flex; align-items: center; justify-content: center; font-size: 18px; }
+.menu-btn { width: var(--control-h); height: var(--control-h); display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-lg); }
 
 .week-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .week-title h3 { margin: 0; font-size: var(--text-md); }
@@ -4954,7 +4962,7 @@ tr.is-muted .badge { opacity: 0.55; }
 
 /* --- from pages/goals.html.erb --- */
 [data-app="fitness"] .goal-tabs, [data-app="base"] .goal-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 0; flex-wrap: wrap; }
-[data-app="fitness"] .goal-tab, [data-app="base"] .goal-tab { background: transparent; border: none; cursor: pointer; padding: 8px 12px; font-size: 13px; color: var(--text-muted); border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 6px; }
+[data-app="fitness"] .goal-tab, [data-app="base"] .goal-tab { background: transparent; border: none; cursor: pointer; padding: 8px 12px; font-size: var(--text-sm); color: var(--text-muted); border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 6px; }
 [data-app="fitness"] .goal-tab.active, [data-app="base"] .goal-tab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--accent-500); }
 
 /* --- from pages/workouts.html.erb --- */
@@ -4988,7 +4996,7 @@ tr.is-muted .badge { opacity: 0.55; }
 .target-band { display: flex; gap: 24px; align-items: stretch; margin-bottom: 20px; flex-wrap: wrap; }
 .tb-goal { flex: 1.4; min-width: 300px; }
 .tb-goal .vals { display: flex; align-items: baseline; gap: 8px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; margin: 4px 0 10px; }
-.tb-goal .cur { color: var(--text-muted); font-size: 14px; }
+.tb-goal .cur { color: var(--text-muted); font-size: var(--text-base); }
 .tb-goal .tgt { font-size: 20px; font-weight: 600; }
 .tb-goal .arrow { color: var(--text-faint); }
 .tb-stat { flex: 1; min-width: 130px; padding-left: 24px; border-left: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; gap: 2px; }
@@ -4999,8 +5007,8 @@ tr.is-muted .badge { opacity: 0.55; }
 .plan-item:last-child .plan-row { border-bottom: none; }
 .plan-row:hover { background: var(--panel-hover); }
 .plan-item.current .plan-row { box-shadow: inset 2px 0 0 var(--accent-500); }
-.plan-seq { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
-.plan-name { font-weight: 500; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-seq { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-faint); }
+.plan-name { font-weight: 500; font-size: var(--text-base); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .plan-item.done .plan-name { color: var(--text-muted); }
 .plan-chevron { color: var(--text-faint); transition: transform 160ms cubic-bezier(0.2, 0, 0, 1); }
 .plan-item.open .plan-chevron { transform: rotate(90deg); }
@@ -5008,21 +5016,21 @@ tr.is-muted .badge { opacity: 0.55; }
 .plan-item.open .plan-expand { display: block; }
 .plan-item:last-child .plan-expand { border-bottom: none; }
 .pe-grid { display: grid; grid-template-columns: minmax(0,1fr) 200px; gap: 20px; align-items: start; padding-top: 10px; }
-.pe-notes { font-size: 13px; line-height: 1.6; color: var(--text-muted); margin: 0 0 10px; }
-.pe-stat { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.pe-notes { font-size: var(--text-sm); line-height: 1.6; color: var(--text-muted); margin: 0 0 10px; }
+.pe-stat { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: var(--text-xs); }
 .pe-stat:last-of-type { border-bottom: none; }
 .pe-k { color: var(--text-muted); }
-.pe-v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; }
+.pe-v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; font-size: var(--text-sm); }
 .pe-actions { display: flex; gap: 8px; margin-top: 12px; }
 
 /* Goal notes: clamped to five lines behind a "Show more" toggle
    (GoalRender.toggleNotes). */
-.notes-text { margin: 0; line-height: 1.6; font-size: 13px; color: var(--text-muted); white-space: pre-line; }
+.notes-text { margin: 0; line-height: 1.6; font-size: var(--text-sm); color: var(--text-muted); white-space: pre-line; }
 .notes-text.clamped { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
-.notes-toggle { background: none; border: none; padding: 0; margin-top: 4px; font-size: 12px; color: var(--text-faint); cursor: pointer; }
+.notes-toggle { background: none; border: none; padding: 0; margin-top: 4px; font-size: var(--text-xs); color: var(--text-faint); cursor: pointer; }
 .notes-toggle:hover { color: var(--text-muted); }
 
-.sess-day { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); text-transform: lowercase; }
+.sess-day { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-muted); text-transform: lowercase; }
 
 @media (max-width: 768px) {
     .pe-grid { grid-template-columns: 1fr; }
@@ -5033,20 +5041,20 @@ tr.is-muted .badge { opacity: 0.55; }
 /* base only — habits card (always-on vs block-scoped) */
 [data-app="base"] .habit-row { display: grid; grid-template-columns: 18px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--border); }
 [data-app="base"] .habit-row:last-child { border-bottom: none; }
-[data-app="base"] .habit-scope { padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 500; white-space: nowrap; }
+[data-app="base"] .habit-scope { padding: 2px 7px; border-radius: 4px; font-size: var(--text-3xs); font-weight: 500; white-space: nowrap; }
 [data-app="base"] .habit-scope.always { background: var(--green-a3); color: var(--green-11); }
 [data-app="base"] .habit-scope.block { background: var(--accent-soft, var(--panel)); color: var(--accent-700); }
 
 /* fitness only — this week's sessions and the details list */
-[data-app="fitness"] .sess-row { display: grid; grid-template-columns: 20px 44px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+[data-app="fitness"] .sess-row { display: grid; grid-template-columns: 20px 44px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: var(--text-sm); }
 [data-app="fitness"] .sess-row:last-child { border-bottom: none; }
 [data-app="fitness"] .sess-done { color: var(--green-11); }
 [data-app="fitness"] .sess-pending { color: var(--text-faint); }
-[data-app="fitness"] .sess-detail { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
-[data-app="fitness"] .dl-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+[data-app="fitness"] .sess-detail { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-muted); }
+[data-app="fitness"] .dl-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: var(--text-xs); }
 [data-app="fitness"] .dl-row:last-child { border-bottom: none; }
 [data-app="fitness"] .dl-k { color: var(--text-muted); }
-[data-app="fitness"] .dl-v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; }
+[data-app="fitness"] .dl-v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-xs); }
 
 /* base only — the goal list (pages/goals). Same family as the
    [data-app="fitness"] rules in Fitness components; base has one column
@@ -5146,12 +5154,12 @@ tr[data-log-toggle] { cursor: pointer; }
       font-variant-numeric: tabular-nums;
       font-size: 40px;
       font-weight: var(--weight-semibold);
-      letter-spacing: -0.02em;
+      letter-spacing: var(--tracking-tight);
       line-height: 1.1;
   }
 
 @media (max-width: 560px) {
-    .hero-num { font-size: 32px; }
+    .hero-num { font-size: var(--text-2xl); }
 }
 
 /* --- from pages/settings.html.erb --- */
@@ -5159,7 +5167,7 @@ tr[data-log-toggle] { cursor: pointer; }
 .bk-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); }
 .bk-row:last-child { border-bottom: none; }
 .bk-name { font-family: var(--font-mono); font-size: var(--text-xs); overflow-wrap: anywhere; }
-.bk-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.bk-meta { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-muted); margin-top: 2px; }
 
 /* ============================================================
    Filter tags — the list-page filter bar (shared-core.js
@@ -5831,7 +5839,7 @@ tbody tr.is-key-focus > td { background: transparent; }
 .pane-detail { padding: var(--space-5) var(--space-6); min-width: 0; }
 .pane-back { display: inline-block; font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3); }
 .pane-foot { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-5); }
-.focus-title { font-size: var(--text-xl); letter-spacing: -0.02em; margin: 0; }
+.focus-title { font-size: var(--text-xl); letter-spacing: var(--tracking-tight); margin: 0; }
 .rule-box { margin-top: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-4); background: var(--bg-subtle); }
 .rule-h { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--text-muted); margin-bottom: var(--space-2); }
 .rule-line { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1_5); font-size: var(--text-sm); margin-bottom: var(--space-2); }
@@ -6252,7 +6260,7 @@ tbody tr.is-key-focus > td { background: transparent; }
     display: inline-block;
     padding: 2px 8px;
     border-radius: var(--radius-sm);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     font-weight: 500;
     font-family: var(--font-sans);
     border: 1px solid transparent;
@@ -6295,7 +6303,7 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
     color: var(--green-11);
     font-family: var(--font-mono);
     font-weight: 600;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     line-height: 1;
     flex-shrink: 0;
 }
@@ -6309,7 +6317,7 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
     align-self: flex-start;
     padding: 2px 6px; border-radius: var(--radius-sm);
     background: var(--slate-a3); color: var(--slate-11);
-    font-size: 10px; font-weight: 500; cursor: pointer;
+    font-size: var(--text-3xs); font-weight: 500; cursor: pointer;
     border: 1px solid transparent;
 }
 .sleep-chip:hover { background: var(--slate-a4); }
@@ -6321,7 +6329,7 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
     align-self: flex-start;
     padding: 4px 8px; border-radius: var(--radius-sm);
     background: var(--bg-subtle); border: 1px solid var(--border);
-    font-size: 11px; color: var(--text-muted); cursor: pointer;
+    font-size: var(--text-2xs); color: var(--text-muted); cursor: pointer;
     font-family: var(--font-mono); font-variant-numeric: tabular-nums;
     margin-top: auto;
 }
@@ -6374,7 +6382,7 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
     font-size: var(--text-xs);
     color: var(--text-muted);
     text-transform: lowercase;
-    letter-spacing: 0.02em;
+    letter-spacing: var(--tracking-wide);
 }
 .cal-day-num {
     font-family: var(--font-mono);
@@ -6402,10 +6410,10 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 10px;
+    font-size: var(--text-3xs);
     color: var(--text-muted);
     text-transform: lowercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-wider);
 }
 .cal-slot-title {
     font-size: var(--text-sm);
@@ -6416,7 +6424,7 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
 .cal-slot-meta {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-faint);
 }
 .cal-slot.empty {
@@ -6433,7 +6441,7 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
 }
 .cal-dow {
     text-align: center;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     font-weight: 500;
     color: var(--text-muted);
     text-transform: lowercase;
@@ -6443,7 +6451,7 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
 .cal-slot-sides { display: flex; flex-wrap: wrap; gap: 3px; }
 .cal-side-chip {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-3xs);
     color: var(--text-muted);
     background: var(--bg-subtle);
     border: 1px solid var(--border);
@@ -6454,7 +6462,7 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
    week/list mode on small screens — reference: fitness), tighter cells. */
 .cal-grid--month .cal-day { min-height: 84px; padding: 4px 5px; gap: 3px; }
 .cal-grid--month .cal-day-num { font-size: var(--text-xs); }
-.cal-grid--month .cal-day-name { font-size: 10px; }
+.cal-grid--month .cal-day-name { font-size: var(--text-3xs); }
 @media (max-width: 1024px) {
     .cal-grid:not(.cal-grid--month) { grid-template-columns: repeat(2, 1fr); }
 }

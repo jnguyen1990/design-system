@@ -27,7 +27,7 @@
     text-transform: lowercase; font-weight: 500;
 }
 .ws-hero { margin: 0; }
-.ws-hero .stat-value .u { font-size: 11px; color: var(--text-muted); }
+.ws-hero .stat-value .u { font-size: var(--text-2xs); color: var(--text-muted); }
 .ws-chart-wrap { position: relative; height: 200px; }
 .ws-elev-wrap { position: relative; height: 90px; }
 .ws-map { height: 220px; border-radius: var(--radius-md); overflow: hidden; }
@@ -36,7 +36,7 @@
 .ws-main { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
 .ws-rail { display: flex; flex-direction: column; gap: var(--space-4); }
 .coach-entry + .coach-entry { border-top: 1px solid var(--border); margin-top: var(--space-3); padding-top: var(--space-3); }
-.coach-entry .coach-at { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); display: block; margin-bottom: 4px; }
+.coach-entry .coach-at { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-faint); display: block; margin-bottom: 4px; }
 @media (max-width: 900px) {
     .ws-split { grid-template-columns: 1fr; }
 }
@@ -59,21 +59,21 @@
     margin-bottom: 6px;
     gap: 8px;
 }
-.cal-week-dow { font-weight: 600; font-size: 14px; }
-.cal-week-date { color: var(--text-muted); font-size: 13px; }
+.cal-week-dow { font-weight: 600; font-size: var(--text-base); }
+.cal-week-date { color: var(--text-muted); font-size: var(--text-sm); }
 .cal-week-today-mark {
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
     font-family: var(--font-mono);
 }
 .cal-week-cards .session-card {
-    font-size: 13px !important;
+    font-size: var(--text-sm) !important;
     padding: 8px 10px !important;
     line-height: 1.4 !important;
 }
 .cal-week-empty {
     color: var(--text-muted);
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-style: italic;
 }
 @media (max-width: 768px) {
@@ -103,8 +103,8 @@
 /* --- from pages/block_detail.html.erb --- */
 .blk-meta { display: flex; gap: var(--space-6); flex-wrap: wrap; margin-top: var(--space-3); }
 .blk-meta .gm { display: flex; flex-direction: column; gap: 2px; }
-.gm-label { font-size: var(--text-xs); color: var(--text-muted); text-transform: lowercase; letter-spacing: 0.02em; }
-.gm-val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em; }
+.gm-label { font-size: var(--text-xs); color: var(--text-muted); text-transform: lowercase; letter-spacing: var(--tracking-wide); }
+.gm-val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-lg); font-weight: 600; letter-spacing: var(--tracking-snug); }
 .gm-unit { font-size: var(--text-sm); color: var(--text-muted); }
 .progress-wrap { margin-top: var(--space-4); max-width: 520px; }
 .progress-track { height: 8px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 99px; overflow: hidden; }
@@ -116,7 +116,7 @@
    the overflow-clipping fix and the 36px density floor. One menu component. */
 .week-head { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px; gap: 8px; }
 .week-num { font-family: var(--font-mono); }
-.theme-badge { font-size: 10px; }
+.theme-badge { font-size: var(--text-3xs); }
 .week-adh { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
 .srow { border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; background: var(--bg); overflow: hidden; }
 [data-app="fitness"] .srow.done { border-left: 3px solid var(--green-9); }
@@ -126,13 +126,13 @@
 .srow-main:hover { background: var(--panel-hover); }
 .s-title { font-weight: 500; }
 .s-mid { flex: 1; min-width: 0; }
-.s-sub { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.s-sub { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-muted); margin-top: 2px; }
 .s-metric { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-sm); font-weight: 600; }
 .s-status { font-size: var(--text-xs); }
 [data-app="fitness"] .s-status.done { color: var(--green-11); }
 .s-status.missed { color: var(--amber-11); }
 .s-status.planned { color: var(--text-faint); }
-.s-chev { color: var(--text-faint); font-size: 12px; transition: transform 160ms cubic-bezier(0.2,0,0,1); }
+.s-chev { color: var(--text-faint); font-size: var(--text-xs); transition: transform 160ms cubic-bezier(0.2,0,0,1); }
 .srow.open .s-chev { transform: rotate(90deg); }
 .srow-detail { display: none; padding: 0 12px 12px; }
 .srow.open .srow-detail { display: block; }
@@ -151,7 +151,7 @@
 [data-app="fitness"] .day-col .badge { white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .day-col.today { border-color: var(--accent-500); }
 .day-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-[data-app="fitness"] .day-name { font-size: var(--text-xs); color: var(--text-muted); text-transform: lowercase; letter-spacing: 0.02em; }
+[data-app="fitness"] .day-name { font-size: var(--text-xs); color: var(--text-muted); text-transform: lowercase; letter-spacing: var(--tracking-wide); }
 .day-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-md); font-weight: 600; }
 .today .day-num { color: var(--accent-700); }
 .day-session {
@@ -162,7 +162,7 @@
   }
 .day-session:hover { border-color: var(--border-hover); }
 .day-session .s-title { font-weight: 500; font-size: var(--text-sm); }
-.day-session .s-meta { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: 11px; }
+.day-session .s-meta { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: var(--text-2xs); }
 .day-session.rest { color: var(--text-faint); font-style: italic; align-items: center; padding: 8px; cursor: default; }
 .lift-row { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-3); padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; }
 .lift-row:last-child { border-bottom: none; }
@@ -192,7 +192,7 @@
 [data-app="fitness"] .goal-bar { height: 4px; border-radius: 2px; background: var(--bg-subtle); overflow: hidden; margin-bottom: 4px; }
 [data-app="fitness"] .goal-bar-fill { height: 100%; }
 [data-app="fitness"] .goal-row .status-col.badge { justify-self: end; }
-.sync-indicator { opacity: 0.5; font-size: 11px; margin-left: 4px; }
+.sync-indicator { opacity: 0.5; font-size: var(--text-2xs); margin-left: 4px; }
 @media (max-width: 768px) {
     [data-app="fitness"] .goal-row { grid-template-columns: 16px minmax(0, 1fr) auto; row-gap: 6px; }
     [data-app="fitness"] .goal-row .target-col, [data-app="fitness"] .goal-row .progress-col, [data-app="fitness"] .goal-row .days-col { grid-column: 2; }

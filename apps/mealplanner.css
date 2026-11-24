@@ -21,7 +21,7 @@
 .r-title {
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-snug);
     line-height: 1.25;
 }
 .r-foot {
@@ -67,9 +67,9 @@
     margin-bottom: 4px;
 }
 .n-day .nm-name {
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-wider);
 }
 .n-day .nm-num {
     font-family: var(--font-mono);
@@ -83,12 +83,12 @@
     font-variant-numeric: tabular-nums;
     font-size: var(--text-lg);
     font-weight: var(--weight-semibold);
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking-snug);
 }
 .n-day .target {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-faint);
 }
 /* Macro split bar. Colours mirror Palette (app/models/palette.rb):
@@ -128,13 +128,13 @@
 .dish-row .dish-index,
 .dish-remove-label {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-3xs);
     color: var(--text-faint);
 }
 .dish-remove-label { display: flex; align-items: center; gap: 4px; }
 .dish-row .dish-remove {
     padding: 4px 8px;
-    font-size: 18px;
+    font-size: var(--text-lg);
     line-height: 1;
     color: var(--text-faint);
 }
@@ -156,7 +156,7 @@
 .sale-item:hover { border-color: var(--border-hover); }
 .sale-store {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-3xs);
     color: var(--text-faint);
     letter-spacing: 0.05em;
 }
@@ -177,9 +177,9 @@
 .sale-discount,
 .sale-match {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--green-11);
-    letter-spacing: 0.02em;
+    letter-spacing: var(--tracking-wide);
 }
 .sale-discount { font-weight: var(--weight-medium); }
 /* Recipe suggestions on the sales page */
@@ -202,9 +202,9 @@
 }
 .recipe-suggest-card .rsc-meta {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
-    letter-spacing: 0.02em;
+    letter-spacing: var(--tracking-wide);
 }
 /* Products table: hidden rows stay scannable but recede. */
 tr.is-hidden-product td { color: var(--text-muted); }
