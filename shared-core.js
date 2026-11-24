@@ -2015,7 +2015,7 @@
               '<h2 class="modal-title sr-only">Command palette</h2>' +
               '<div class="palette-input"><span class="palette-input-ico" aria-hidden="true"><span class="nav-ico" data-ico="search"></span></span>' +
                 '<input type="text" class="palette-field" placeholder="Search or jump to…" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="ds-palette-list" aria-label="Search pages, records and actions">' +
-                '<kbd class="kbd palette-esc">esc</kbd></div>' +
+                '<kbd class="kbd palette-esc">esc</kbd><button type="button" class="btn btn-ghost btn-sm palette-cancel" data-modal-close>Cancel</button></div>' +
               '<div class="palette-split">' +
                 '<div class="palette-list" id="ds-palette-list" role="listbox" aria-label="Results"></div>' +
                 '<div class="palette-preview" aria-live="polite"></div>' +

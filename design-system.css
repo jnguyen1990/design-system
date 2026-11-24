@@ -3112,7 +3112,7 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
    preview pane on wide screens. Full screen on phones.
    ============================================================ */
 .modal.palette { align-items: flex-start; padding-top: 8vh; }
-.palette-box {
+.modal-box.palette-box {
     max-width: 960px;
     height: min(600px, 84vh);
     padding: 0;
@@ -3130,11 +3130,19 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     flex-shrink: 0;
 }
 .palette-input-ico { color: var(--text-muted); display: flex; }
-.palette-field {
+.palette-cancel { display: none; }
+.palette-field,
+.palette-field:focus,
+.palette-field:focus-visible {
     flex: 1;
     min-width: 0;
+    height: auto;
+    min-height: 0;
+    padding: 0;
     border: 0;
+    border-radius: 0;
     background: transparent;
+    box-shadow: none;
     color: var(--text);
     font: inherit;
     font-size: var(--text-base);
@@ -3164,6 +3172,9 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 .palette-preview-kind { font-size: var(--text-xs); color: var(--text-muted); }
 .palette-preview-heading { margin: var(--space-2) 0 var(--space-1); }
 .palette-preview-amount { margin-top: var(--space-4); }
+/* .stat-value sets its own colour later in the file; the tone wins here. */
+.palette-preview-amount.text-amount-negative { color: var(--text-amount-negative); }
+.palette-preview-amount.text-amount-positive { color: var(--text-amount-positive); }
 .palette-dl { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-4); font-size: var(--text-sm); margin: var(--space-4) 0 0; }
 .palette-dl dt { color: var(--text-muted); }
 .palette-dl dd { margin: 0; overflow-wrap: anywhere; }
@@ -3206,10 +3217,11 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
 }
 @media (max-width: 767px) {
     .modal.palette { padding: 0; }
-    .palette-box { max-width: none; width: 100vw; height: 100dvh; max-height: none; border: 0; border-radius: 0; }
+    .modal-box.palette-box { max-width: none; width: 100vw; height: 100dvh; max-height: none; border: 0; border-radius: 0; }
     .palette-input { padding-top: env(safe-area-inset-top); }
     .palette-row { min-height: 48px; }
     .palette-foot, .palette-esc, .palette-end .kbd { display: none; }
+    .palette-cancel { display: inline-flex; margin-right: calc(-1 * var(--space-2)); }
 }
 
 .modal-close:hover {
