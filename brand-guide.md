@@ -1066,6 +1066,15 @@ Cross-app shared widgets — paired with `session-render.js` and the `.session-c
 
 ---
 
+### New pages render on the server; shared components ship a class and a helper (2026-11-24)
+
+Two page styles coexist and neither is being rewritten: base, budgeter and fitness build most pages in the browser from JSON (`apiRequest` + template strings), while mealplanner, upkeep and postings render on the server (ERB). Every shared behaviour — loading, errors, undo, empty states, confirm dialogs — therefore exists twice. The rule from here on:
+
+- **A new page is server-rendered** (ERB from the controller, plain links and forms, JS only for what the server cannot do — live filtering, drag, a chart). Client-built pages stay as they are until there is another reason to touch them; do not convert one for its own sake.
+- **A new shared component ships both halves**: the CSS class in `design-system.css` (so ERB can render it directly) **and** a JS helper in `shared-core.js` that emits the same markup (so a client-built page can make it too) — `dsToast`/`.toast`, `dsConfirm`/`.modal`, `installFilterTags`/`.filter-tags` are the pattern. A component with only one half is unfinished.
+
+The rails-app-template README carries the same rule for new apps.
+
 ## 14. Accessibility floor
 
 Enforced by `scripts/check.mjs` on the kits; hold new pages to it.
