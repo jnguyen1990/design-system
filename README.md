@@ -11,8 +11,10 @@ Sharp, precise, technical. Inter + Geist Mono (self-hosted in `fonts/`), Radix C
 Include via CDN in your HTML:
 
 ```html
-<!-- Styles -->
+<!-- Styles: the shared stylesheet, then this app's own (since round three,
+     PLAT-27 — see "Two stylesheets" below). The gem's shell emits both. -->
 <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+<link rel="stylesheet" href="https://design-system.joenguyen.ca/apps/budgeter.css">
 
 <!-- Shared layout helpers: apiRequest, escapeHtml, date keys, theme
      toggle/boot, showStatus, dsConfirm/dsPrompt, installNavHotkeys
@@ -52,12 +54,37 @@ For local dev against the un-published version of these files, run `python3 scri
 
 Push to `main`. Cloudflare Workers Static Assets auto-deploys the repo root (configured in `wrangler.jsonc`). `_headers` sets `Cache-Control: public, no-cache` for all paths: browsers keep a cached copy but revalidate on every use via ETag (Workers Static Assets serves strong ETags, so unchanged files are cheap 304s). Changes propagate to all apps on the next page load — no manual cache purge, no version param, no hard refresh. Was `max-age=43200` until 2026-08-21, which left up to a 12h stale window after a push (bit the mealplanner `.cal-*` rollout). Migrated off jsDelivr on 2026-05-07 (jsDelivr's 7-day `@main` cache was blocking propagation).
 
+### Two stylesheets: `design-system.css` + `apps/<app>.css` (round three, PLAT-27)
+
+Approved by Joe 2026-11-24, replacing the rule "one stylesheet from the CDN":
+every app loads the **shared stylesheet** (tokens, chrome, and every component
+two or more apps use) **plus its own** `apps/<app>.css` (the styles only that
+app uses), both from the same pinned release, each with its own integrity hash,
+the app's file right after the shared one. App repos still hold no CSS; a
+release still moves every app together; an app no longer downloads the others'
+styles, and a change in one app's file cannot restyle another.
+
+- **Where a new rule goes:** `apps/<app>.css` when only that app uses its
+  classes (or it is scoped `[data-app="<app>"]`); `design-system.css` as soon as a
+  second app (or the gem's views, or a shared script) uses it — move it up then.
+  Keep an override next to the rule it overrides (a phone `@media` tweak of an
+  app rule lives in the same app file), because the app file loads later.
+- **postings** still loads the shared file alone (it is on gem v0.7.0 and frozen),
+  so nothing postings uses may move out of `design-system.css`.
+- `scripts/split-app-css.py` did the first split (2026-11-24) and re-runs the
+  usage check: a rule block moved only when every selector in it is the app's
+  alone. Sizes: `design-system.css` 258,801 → 230,589 bytes; `apps/fitness.css`
+  12.8 KB, `budgeter` 7.8, `mealplanner` 6.1, `base` 4.6, `upkeep` and `postings`
+  empty so far. Every page of the five engine apps rendered pixel-identical
+  before and after (1440/375, light/dark).
+
 ### Pinned releases: `v/<sha>/`
 
 The root files are always the latest. A release is a frozen copy an app can
-pin and verify: `scripts/release.mjs` copies the six files apps load
+pin and verify: `scripts/release.mjs` copies the files apps load
 (`design-system.css`, `shared-core.js`, `modal-keys.js`, `apps-launcher.js`,
-`session-render.js`, `goal-render.js` — the gem's `DS_FILES`) exactly as they
+`session-render.js`, `goal-render.js` — the gem's `DS_FILES` — and every
+`apps/<app>.css`) exactly as they
 are in a commit to `v/<12-char sha>/`, with `manifest.json`, and points
 `v/current.json` at it:
 

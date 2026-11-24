@@ -26,13 +26,17 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // Keep in step with PersonalAppClient::Configuration::DS_FILES in the gem.
-const FILES = [ 'design-system.css', 'shared-core.js', 'modal-keys.js', 'apps-launcher.js', 'session-render.js', 'goal-render.js' ];
+const CORE_FILES = [ 'design-system.css', 'shared-core.js', 'modal-keys.js', 'apps-launcher.js', 'session-render.js', 'goal-render.js' ];
 
 const git = (...args) => execFileSync('git', args, { cwd: ROOT, encoding: 'buffer', maxBuffer: 64 << 20 });
 const rev = process.argv[2] || 'HEAD';
 const full = git('rev-parse', '--verify', `${rev}^{commit}`).toString().trim();
 const short = full.slice(0, 12);
 const dir = path.join(ROOT, 'v', short);
+// Plus each app's own stylesheet (apps/<app>.css, PLAT-27): the shell loads it
+// right after design-system.css from the same release.
+const APP_CSS = git('ls-tree', '--name-only', `${full}:apps`).toString().split('\n').filter(f => f.endsWith('.css')).map(f => `apps/${f}`);
+const FILES = [ ...CORE_FILES, ...APP_CSS ];
 
 // Releasing a commit whose files equal the current release is a no-op (e.g.
 // running it again right after committing "Release …").
@@ -55,7 +59,7 @@ if (existsSync(currentPath)) {
 }
 
 mkdirSync(dir, { recursive: true });
-for (const f of FILES) writeFileSync(path.join(dir, f), bodies[f]);
+for (const f of FILES) { mkdirSync(path.dirname(path.join(dir, f)), { recursive: true }); writeFileSync(path.join(dir, f), bodies[f]); }
 const manifest = {
     sha: short,
     commit: full,

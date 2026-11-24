@@ -1070,6 +1070,10 @@ Cross-app shared widgets — paired with `session-render.js` and the `.session-c
 
 ---
 
+### Where a style lives: the shared stylesheet or the app's own (2026-11-24, PLAT-27)
+
+Every app loads `design-system.css` (tokens, chrome, every component two or more apps use) and then its own `apps/<app>.css` (what only that app uses), from the same pinned release. A rule goes in the app's file while only that app's pages use its classes, and moves up to the shared file the moment a second app needs it. An override sits in the same file as the rule it overrides. App repos still hold no CSS. Details: README → "Two stylesheets".
+
 ### New pages render on the server; shared components ship a class and a helper (2026-11-24)
 
 Two page styles coexist and neither is being rewritten: base, budgeter and fitness build most pages in the browser from JSON (`apiRequest` + template strings), while mealplanner, upkeep and postings render on the server (ERB). Every shared behaviour — loading, errors, undo, empty states, confirm dialogs — therefore exists twice. The rule from here on:

@@ -30,7 +30,8 @@ If a codebase or Figma exists, re-attach it via the Import menu so UI kits can b
 | `ui_kits/postings/` | Postings — crimson accent, postings table with the filter bar |
 | `slides/` | Sample slide deck template (cover, agenda, big quote, comparison, etc) |
 | `SKILL.md` | Agent Skill manifest (works in Claude Code) |
-| `../design-system.css` | **Canonical stylesheet** — token layer + component layer, single source of truth. Link from each HTML page via the CDN URL below. |
+| `../design-system.css` | **Canonical shared stylesheet** — token layer + every component two or more apps use. Link from each HTML page via the CDN URL below. |
+| `../apps/<app>.css` | Styles only that app uses (round three, PLAT-27); a page links it right after `design-system.css`. |
 | `../brand-guide.md` | Human-readable spec for the token layer |
 
 ---
@@ -222,9 +223,10 @@ Each app has a **single-glyph logo** rendered as inline SVG using its accent col
 
 ## How to use this system
 
-1. **Link the canonical stylesheet on every page** — one tag covers tokens + components:
+1. **Link the shared stylesheet on every page, then the app's own** (round three, PLAT-27):
    ```html
    <link rel="stylesheet" href="https://design-system.joenguyen.ca/design-system.css">
+   <link rel="stylesheet" href="https://design-system.joenguyen.ca/apps/budgeter.css">
    ```
    Set `<html data-app="budgeter">` to choose the accent (`base`, `budgeter`, `fitness`, `mealplanner`, `upkeep`, `postings`). Load `shared-core.js` after the stylesheet and it applies the saved theme; a page without it sets `data-theme="dark"` itself.
 2. **Reach for tokens, not raw Radix:** use `var(--text)` / `var(--panel)` / `var(--border)` / `var(--focus-ring)` — not `var(--slate-12)` directly. The semantic layer is what makes light/dark parity and per-app accent automatic.

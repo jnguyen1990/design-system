@@ -1,0 +1,205 @@
+/* fitness — styles only fitness uses (design system, round three PLAT-27).
+   Loaded by the gem's shell right after design-system.css, from the same
+   pinned release. Tokens and every component two or more apps use live in
+   design-system.css; a rule moves here only when no other app, the gem's
+   views or the shared scripts reference its classes. */
+
+/* --- from fitness.css --- */.color-dot--cycling { background: var(--orange-9); }
+.color-dot--running { background: var(--red-9); }
+.color-dot--lifting, .color-dot--strength { background: var(--purple-9); }
+.color-dot--mobility { background: var(--teal-9); }
+.color-dot--swimming { background: var(--blue-9); }
+.color-dot--walking, .color-dot--hiking { background: var(--green-9); }
+.color-dot--general { background: var(--slate-9); }
+.exercise-group { background: var(--panel); }
+.plan-drag { cursor: grab; }
+.plan-drag.dragging { opacity: 0.4; cursor: grabbing; }
+.cal-day.drag-over, .cal-week-day.drag-over {
+    outline: 2px dashed var(--accent-500);
+    outline-offset: -2px;
+    background: var(--orange-3) !important;
+}
+.ws-dash { display: flex; flex-direction: column; gap: var(--space-4); }
+.ws-dash .ws-h {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-sm); color: var(--text-muted);
+    text-transform: lowercase; font-weight: 500;
+}
+.ws-hero { margin: 0; }
+.ws-hero .stat-value .u { font-size: 11px; color: var(--text-muted); }
+.ws-chart-wrap { position: relative; height: 200px; }
+.ws-elev-wrap { position: relative; height: 90px; }
+.ws-map { height: 220px; border-radius: var(--radius-md); overflow: hidden; }
+#detail-modal .modal-box.modal-wide, #view-modal .modal-box.modal-wide { width: min(1060px, 96vw); max-width: 1060px; }
+.ws-split { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--space-4); align-items: start; }
+.ws-main { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.ws-rail { display: flex; flex-direction: column; gap: var(--space-4); }
+.coach-entry + .coach-entry { border-top: 1px solid var(--border); margin-top: var(--space-3); padding-top: var(--space-3); }
+.coach-entry .coach-at { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); display: block; margin-bottom: 4px; }
+@media (max-width: 900px) {
+    .ws-split { grid-template-columns: 1fr; }
+}
+.cal-week-day {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px;
+    background: var(--bg-subtle);
+}
+.cal-week-day.cal-today {
+    border-color: var(--border);
+    border-left: 2px solid var(--accent-500);
+    background: var(--panel-hover);
+}
+.cal-week-day.cal-past { opacity: 0.65; }
+.cal-week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+    gap: 8px;
+}
+.cal-week-dow { font-weight: 600; font-size: 14px; }
+.cal-week-date { color: var(--text-muted); font-size: 13px; }
+.cal-week-today-mark {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+.cal-week-cards .session-card {
+    font-size: 13px !important;
+    padding: 8px 10px !important;
+    line-height: 1.4 !important;
+}
+.cal-week-empty {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: italic;
+}
+@media (max-width: 768px) {
+    [data-app="fitness"] .stats-grid { grid-template-columns: 1fr 1fr; }
+    .table-logbook thead { display: none; }
+    .table-logbook tbody tr {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            grid-template-areas:
+                "date  type     metric"
+                "title title    title"
+                "src   duration actions";
+            gap: 4px 8px;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+    .table-logbook tbody td { padding: 0; height: auto; border: none; }
+    .table-logbook td[data-col="date"] { grid-area: date;     color: var(--text-muted); font-family: var(--font-mono); font-size: var(--text-xs); }
+    .table-logbook td[data-col="type"] { grid-area: type; }
+    .table-logbook td[data-col="title"] { grid-area: title; font-weight: 500; }
+    .table-logbook td[data-col="source"] { grid-area: src;      font-size: var(--text-xs); }
+    .table-logbook td[data-col="duration"] { grid-area: duration; font-size: var(--text-xs); color: var(--text-muted); }
+    .table-logbook td[data-col="metric"] { grid-area: metric;   font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); justify-self: end; }
+    .table-logbook td[data-col="rating"] { display: none; }
+    .table-logbook td[data-col="actions"] { grid-area: actions; justify-self: end; display: flex; gap: 4px; }
+}
+/* --- from pages/block_detail.html.erb --- */.blk-meta { display: flex; gap: var(--space-6); flex-wrap: wrap; margin-top: var(--space-3); }
+.blk-meta .gm { display: flex; flex-direction: column; gap: 2px; }
+.gm-label { font-size: var(--text-xs); color: var(--text-muted); text-transform: lowercase; letter-spacing: 0.02em; }
+.gm-val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em; }
+.gm-unit { font-size: var(--text-sm); color: var(--text-muted); }
+.progress-wrap { margin-top: var(--space-4); max-width: 520px; }
+.progress-track { height: 8px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 99px; overflow: hidden; }
+.progress-cap { display: flex; justify-content: space-between; margin-top: 6px; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
+/* Square icon trigger for a .dropdown (fitness block header). The menu it
+   opens is the shared .dropdown-menu — the .menu-wrap/.menu-pop/.menu-item
+   /.menu-sep duplicate that used to live here was retired 2026-10-07: it was
+   absolute-positioned with its own z-index and 33px items, so it missed both
+   the overflow-clipping fix and the 36px density floor. One menu component. */.week-head { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px; gap: 8px; }
+.week-num { font-family: var(--font-mono); }
+.theme-badge { font-size: 10px; }
+.week-adh { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
+.srow { border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; background: var(--bg); overflow: hidden; }
+[data-app="fitness"] .srow.done { border-left: 3px solid var(--green-9); }
+.srow.missed { border-left: 3px solid var(--amber-9); }
+.srow.planned { border-left: 3px solid var(--border); }
+.srow-main { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; }
+.srow-main:hover { background: var(--panel-hover); }
+.s-title { font-weight: 500; }
+.s-mid { flex: 1; min-width: 0; }
+.s-sub { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.s-metric { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-sm); font-weight: 600; }
+.s-status { font-size: var(--text-xs); }
+[data-app="fitness"] .s-status.done { color: var(--green-11); }
+.s-status.missed { color: var(--amber-11); }
+.s-status.planned { color: var(--text-faint); }
+.s-chev { color: var(--text-faint); font-size: 12px; transition: transform 160ms cubic-bezier(0.2,0,0,1); }
+.srow.open .s-chev { transform: rotate(90deg); }
+.srow-detail { display: none; padding: 0 12px 12px; }
+.srow.open .srow-detail { display: block; }
+.srow-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.week-empty { color: var(--text-muted); font-size: var(--text-sm); margin: 0 0 10px; }
+/* --- from pages/dashboard.html.erb --- */.week-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-2); }
+.day-col {
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: var(--space-3);
+    min-height: 160px; display: flex; flex-direction: column; gap: 6px;
+    min-width: 0;
+  }
+.day-col .day-session { min-width: 0; }
+.day-col .s-title, .day-col .s-meta { min-width: 0; overflow-wrap: anywhere; }
+[data-app="fitness"] .day-col .badge { white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.day-col.today { border-color: var(--accent-500); }
+.day-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+[data-app="fitness"] .day-name { font-size: var(--text-xs); color: var(--text-muted); text-transform: lowercase; letter-spacing: 0.02em; }
+.day-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-md); font-weight: 600; }
+.today .day-num { color: var(--accent-700); }
+.day-session {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 6px 8px;
+    font-size: var(--text-xs); display: flex; flex-direction: column; gap: 2px;
+    cursor: pointer;
+  }
+.day-session:hover { border-color: var(--border-hover); }
+.day-session .s-title { font-weight: 500; font-size: var(--text-sm); }
+.day-session .s-meta { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: 11px; }
+.day-session.rest { color: var(--text-faint); font-style: italic; align-items: center; padding: 8px; cursor: default; }
+.lift-row { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-3); padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; }
+.lift-row:last-child { border-bottom: none; }
+.lift-name { font-weight: 500; }
+.lift-prescr { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+.lift-target { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-sm); color: var(--text-muted); }
+.week-summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: var(--text-sm); }
+.week-summary-row:last-child { border-bottom: none; }
+.week-summary-row .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+/* Main column + a fixed 380px rail; one column on mobile (below). */.dash-side-by-side { display: grid; grid-template-columns: 1fr 380px; gap: var(--space-6); align-items: start; }
+@media (max-width: 768px) {
+    .week-grid { grid-template-columns: 1fr; }
+    .day-col { min-height: auto; }
+    .dash-side-by-side { grid-template-columns: 1fr !important; }
+}
+/* --- from pages/goal_detail.html.erb --- what is left of the old stepper
+   design: .gm-* / .progress-* (fitness block_detail) and .adh-* (the plan
+   rows in "Goal pages"). The stepper's own rules were removed 2026-11-05. *//* --- from pages/goals.html.erb --- */[data-app="fitness"] .goal-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 160px 110px 100px 90px 56px; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; color: inherit; text-decoration: none; }
+[data-app="fitness"] .goal-row:hover { background: var(--panel-hover); }
+[data-app="fitness"] .goal-row .arrow { color: var(--text-faint); margin: 0 6px; }
+[data-app="fitness"] .goal-row .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+[data-app="fitness"] .goal-row .actions { justify-self: end; opacity: 0; transition: opacity 120ms cubic-bezier(0.2, 0, 0, 1); }
+[data-app="fitness"] .goal-row:hover .actions, [data-app="fitness"] .goal-row:focus-within .actions { opacity: 1; }
+[data-app="fitness"] .goal-bar { height: 4px; border-radius: 2px; background: var(--bg-subtle); overflow: hidden; margin-bottom: 4px; }
+[data-app="fitness"] .goal-bar-fill { height: 100%; }
+[data-app="fitness"] .goal-row .status-col.badge { justify-self: end; }
+.sync-indicator { opacity: 0.5; font-size: 11px; margin-left: 4px; }
+@media (max-width: 768px) {
+    [data-app="fitness"] .goal-row { grid-template-columns: 16px minmax(0, 1fr) auto; row-gap: 6px; }
+    [data-app="fitness"] .goal-row .target-col, [data-app="fitness"] .goal-row .progress-col, [data-app="fitness"] .goal-row .days-col { grid-column: 2; }
+    [data-app="fitness"] .goal-row .status-col { grid-column: 3; grid-row: 1; }
+    [data-app="fitness"] .goal-row .actions { grid-column: 2 / -1; justify-self: end; opacity: 1; }
+}
+/* --- from pages/workouts.html.erb --- */tr.workout-row-hidden td { opacity: 0.55; }
+tr.workout-row-hidden td:last-child { opacity: 1; }
+.workout-title-cell {
+    cursor: pointer;
+    color: var(--text);
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+.workout-title-cell:hover { color: var(--color-link); }
