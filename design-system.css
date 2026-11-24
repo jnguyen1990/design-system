@@ -6139,6 +6139,20 @@ tbody tr.is-key-focus > td { background: transparent; }
     /* A badge that is itself a control (budgeter's category picker). */
     button.badge { min-height: 32px; padding: 0 var(--space-3); }
     .filter-chip { display: inline-flex; align-items: center; min-height: var(--control-h-sm); }
+    /* PLAT-08: the controls that stay under 44px to keep their look (dock
+       icons and theme toggle 36, button badges 32, .btn-sm 40, .btn-icon 26)
+       get an invisible ::before, centred and at least 44 × 44, that takes the
+       tap. What you see does not change. (The dock's ::after is its name.) */
+    .app-dock .dock-app, .dock-theme, button.badge, .btn-sm, .btn-icon { position: relative; }
+    .app-dock .dock-app::before, .dock-theme::before, button.badge::before, .btn-sm::before, .btn-icon::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: max(100%, 44px);
+        height: max(100%, 44px);
+        transform: translate(-50%, -50%);
+    }
 }
 
 /* Notches and the home indicator. Only takes effect where a layout opts in

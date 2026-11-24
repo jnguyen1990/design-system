@@ -347,6 +347,13 @@ async function invariants(page, { width, theme }) {
             if (!matchMedia('(pointer: coarse)').matches) fails.push('pointer:coarse is not emulated at mobile width');
             const b = $('#fx-primary').getBoundingClientRect();
             if (b.height < 44) fails.push(`.btn is ${b.height}px tall under pointer:coarse (< 44)`);
+            // PLAT-08: the small controls keep their look but tap at 44 × 44 (their ::before).
+            document.querySelectorAll('.btn-sm, .btn-icon, button.badge, .app-dock .dock-app, .dock-theme').forEach(el => {
+                if (!el.getClientRects().length) return;
+                const r = el.getBoundingClientRect(), pb = getComputedStyle(el, '::before');
+                const w = Math.max(r.width, parseFloat(pb.width) || 0), h = Math.max(r.height, parseFloat(pb.height) || 0);
+                if (w < 44 || h < 44) fails.push(`tap target <${el.tagName.toLowerCase()} class="${el.className}"> is ${Math.round(w)}x${Math.round(h)} (< 44)`);
+            });
         }
         return fails;
     }, { width, theme });
