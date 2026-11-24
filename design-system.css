@@ -2090,6 +2090,21 @@ label {
     width: 100%;
 }
 
+/* The gem's inline header (PLAT-09): title + badge and the actions share the
+   first row, the subtitle runs full width under them. A grid, so that on a
+   phone the areas reorder to title, subtitle, actions and the actions wrap
+   below both instead of landing between the title and its subtitle. */
+.page-header > div.page-header-inline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "title actions" "sub sub";
+    align-items: center;
+    column-gap: var(--space-3);
+}
+.page-header-inline > .page-header-title { grid-area: title; min-width: 0; }
+.page-header-inline > .header-actions { grid-area: actions; }
+.page-header-inline > .page-subtitle { grid-area: sub; }
+
 /* Breadcrumb line above the page title (detail pages: `garage / item name`).
    Excluded from the flex rule above — it renders as one left-aligned line. */
 .page-crumb {
@@ -2127,6 +2142,13 @@ label {
         width: 100%;
         flex-wrap: wrap;
     }
+
+    .page-header > div.page-header-inline {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "title" "sub" "actions";
+        row-gap: 0;
+    }
+    .page-header-inline > .header-actions { margin-top: var(--space-3); }
 }
 
 /* Right-aligned action buttons inside a page-header title row. */
