@@ -195,6 +195,9 @@ All six are server-rendered ERB with vanilla JS (no Turbo, no Stimulus) and load
 ## Features
 
 - Light/dark theme via `data-theme` (both first-class). With nothing saved, the boot follows the OS (`prefers-color-scheme`; dark when the OS has no preference). `toggleTheme()` fires `ds:themechange`. `color-scheme` follows the theme. Pages print light.
+- One theme across the apps (round three, PLAT-10): on a `*.joenguyen.ca` host the choice is also written to the cookie `ds_theme` on `.joenguyen.ca`, and the boot reads that cookie before localStorage and the OS. localhost, the tailnet's `*.ts.net` names and bare IPs keep localStorage only. `dsPrefs.read/write` is the shared seam (density uses it too).
+- Compact density (PLAT-16): `toggleDensity()` / the palette's "Compact density" sets `<html data-density="compact">` — tokens `--control-h`, `--control-h-sm`, `--row-h-*`, `--cell-pad-y`, `--card-pad-top/-bottom` shrink under `pointer: fine`. Fires `ds:densitychange`; stored like the theme (`ds_density`).
+- Page transitions (PLAT-15): `@view-transition { navigation: auto }` with the sidebar, `.page-header` and `.tab-bar` as named groups — the content cross-fades in 160ms; off under `prefers-reduced-motion`.
 - Radix Colors paired light/dark scales, inlined in the stylesheet (`@radix-ui/colors@3.0.0`, no CDN request) — semantic tokens (`--bg`, `--panel`, `--border`, `--text`, `--{color}-{1..12}`)
 - Per-app accent via `data-app` attribute
 - Responsive sidebar layout with mobile menu
@@ -205,7 +208,10 @@ All six are server-rendered ERB with vanilla JS (no Turbo, no Stimulus) and load
 - `dsConfirm(message, opts)` in shared-core.js — styled Promise-based confirm; auto-wired into `data-turbo-confirm`. New code never calls native `confirm()`; `dsPrompt(message, opts)` is its sibling for native `prompt()`
 - Session/calendar widgets: `.session-card` (with `.session-type-*` color variants), `.session-done` indicator, `.sleep-chip`, `.vitals-chip`, `.vitals-modal-grid`, `.session-done-mark` — all driven by [`session-render.js`](session-render.js)
 - Goal-detail screen (base + fitness): `.target-band`, `.plan-row` / `.plan-item` / `.plan-expand`, `.pe-*`, `.notes-text` — the **Goal pages** section of the stylesheet, driven by [`goal-render.js`](goal-render.js)
-- Mobile-first breakpoints (768px, 1024px); 16px inputs under 768px; 44px controls under `(pointer: coarse)` (via `--control-h`); safe-area insets and `dvh`
+- Mobile-first breakpoints (768px, 1024px); 16px inputs under 768px; 44px controls under `(pointer: coarse)` (via `--control-h`; smaller-looking controls get a 44px `::before` tap area, PLAT-08 — check.mjs measures them); safe-area insets and `dvh`
+- `.content-narrow` (PLAT-22): ~720px content for settings and single-form pages, applied by the gem's shell (`config.narrow_pages`, `content_for :content_width`)
+- `.page-header-inline` (PLAT-09): the gem's inline header is a grid — title + badge | actions, subtitle under both; on a phone the actions wrap below the subtitle
+- Type tokens (PLAT-30): `--text-3xs` (10px) joins the scale; `--tracking-tight/-snug/-wide/-wider` for letter-spacing. No raw px font sizes outside five documented one-offs
 
 ## JS helpers
 

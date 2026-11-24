@@ -37,6 +37,7 @@ The stylesheet's `@font-face` rules use relative URLs, so the fonts come from wh
 
 ### Scale (16px root)
 ```css
+--text-3xs:  0.625rem;  /* 10px — smallest mono labels (round three) */
 --text-2xs:  0.6875rem; /* 11px — micro-labels, table heads, meta (v4.3) */
 --text-xs:   0.75rem;   /* 12px — captions, kbd hints */
 --text-sm:   0.8125rem; /* 13px — secondary UI, table rows */
@@ -52,6 +53,7 @@ The stylesheet's `@font-face` rules use relative URLs, so the fonts come from wh
 - UI default / labels: **500**
 - Headings: **600** (never 700+)
 - Headings: -0.01em letter-spacing
+- **Every size and tracking value is a token (round three, PLAT-30):** `font-size: var(--text-*)`, `letter-spacing: var(--tracking-tight | -snug | -wide | -wider)` (−0.02em, −0.01em, 0.02em, 0.04em). A raw px size is a one-off display number and says so (15/20/26/40px are the only ones left); the root `html { font-size: 16px }` stays.
 - Line height: **1.5** body, **1.25** headings, **1.0** mono numerics
 - Mono numerics use `font-variant-numeric: tabular-nums` for alignment
 
@@ -209,12 +211,13 @@ The brand color appears in: logo, favicon, empty-state icon tint (`.empty-state-
 - **Sidebar (v4.4 — the quietest text on screen):** 240px, tinted `--sidebar-bg`. 34px rows, 14px regular `--text-muted` labels, 16px `--text-faint` outline icons; the active row is `--text` medium on the `--accent-soft` tint; ⌘ hints appear on hover. Brand 15px. The app dock's icons are full colour with the app name on hover.
 - **Main padding:** 32px horizontal, 8px top under the header, more below.
 - **Phones (v4.4, M2):** below 768px the engine shell's floating tab bar replaces the hamburger + drawer — see §11 "Mobile tab bar".
-- **Reading views** (long-form notes, settings, account pages): cap content width at 720px, centered.
+- **Narrow pages (round three, PLAT-22):** settings and single-form pages cap at 720px with `.content-narrow` (left-aligned like everything else; on a `.settings-pane` page the 720px is the pane beside the 190px section list). The gem's shell applies it from `config.narrow_pages` (default: `/settings`, `…/new`, `…/edit`); a page overrides with `content_for :content_width, "narrow" | "wide"`.
+- **Density (round three, PLAT-16):** `<html data-density="compact">` shortens controls (36→32, sm 32→28), rows (36→30) and cell/card padding, under a fine pointer only. Toggled from the ⌘K palette; stored beside the theme.
 
 ### Mobile rules (already in repo README)
 - All pages render at 375px wide with zero horizontal page-level scroll — check `document.body.scrollWidth <= window.innerWidth` (not `documentElement`, which the system's `overflow-x: hidden` makes always pass)
 - Text inputs are 16px under 768px (the system does it; iOS zooms below 16px)
-- Touch targets 44px (the system does it through `--control-h`)
+- Touch targets 44px (the system does it through `--control-h`; the controls that keep a smaller look — dock icons, button badges, `.btn-sm`, `.btn-icon` — get an invisible 44px `::before`, PLAT-08)
 - Tables wrap in `.table-responsive`, or opt into card rows with `.table-stack` (§11 "Stacked tables")
 - Page-header controls use `.toolbar` (flex-wrap)
 - Grids collapse to 1–2 columns under 768px
@@ -381,7 +384,7 @@ Minimal. No springs, no layout animations.
 --motion-slow: 200ms cubic-bezier(0.2, 0, 0, 1);   /* modal in */
 ```
 
-- No page transitions
+- Page-to-page navigation cross-fades the content (cross-document view transitions, 160ms, round three PLAT-15); the sidebar, page header and tab bar are named groups and hold still. Nothing else moves between pages, and nothing at all under reduced motion
 - The modal fades in (`modalIn`, `--motion-slow`). The token already carries the easing: never append a second timing function to a `--motion-*` value — that makes the declaration invalid and silently drops it (the v4.2 modal had no animation for this reason)
 - Respect `prefers-reduced-motion: reduce` (skeleton shimmer and toast slide stop too)
 - Easing is always ease-out (sharp start, soft end)
