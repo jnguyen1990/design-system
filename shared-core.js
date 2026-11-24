@@ -953,7 +953,10 @@
         briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
         users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
         search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
-        more: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>'
+        more: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+        plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+        upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+        moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
     };
 
     function iconSvg(name) {
@@ -1927,6 +1930,270 @@
     try {
         global.matchMedia('(min-width: 769px)').addEventListener('change', ev => { if (ev.matches && openSheet) setSheet(openSheet, false, sheetToggle); });
     } catch (_) { /* old Safari */ }
+
+
+    // ── Command palette (⌘K, round three, PLAT-17; Joe's pick: mockup E) ──────
+    // One centered dialog per app: "Go to" (the sidebar's nav links), this
+    // app's own records from GET <search url> grouped by `kind`, and actions
+    // pages register with dsCommands.register(). A preview pane on wide
+    // screens shows the selected record's `preview`. Opt-in: the palette is
+    // live only on pages carrying <meta name="ds-palette"> (the gem shell
+    // emits it), whose `content` is the search URL ("" = no record search),
+    // so a layout that predates it (postings) is unchanged.
+    //   dsCommands.register({ label, icon, shortcut, url | run, keywords }) → unregister()
+    //   dsPalette.open(query?) / dsPalette.close() / dsPalette.isOpen()
+    const paletteCommands = [];
+    global.dsCommands = {
+        register(cmd) {
+            if (!cmd || !cmd.label || !(cmd.url || typeof cmd.run === 'function')) return () => {};
+            paletteCommands.push(cmd);
+            return () => { const i = paletteCommands.indexOf(cmd); if (i >= 0) paletteCommands.splice(i, 1); };
+        },
+        list() { return paletteCommands.slice(); },
+    };
+
+    // Pure helpers, exported for tests.
+    function paletteMatch(text, q) {
+        if (!q) return true;
+        const hay = String(text || '').toLowerCase();
+        return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+    }
+    function paletteHighlight(text, q) {
+        const safe = global.escapeHtml(text);
+        const words = String(q || '').trim().split(/\s+/).filter(w => w.length >= 2);
+        if (!words.length) return safe;
+        const re = new RegExp('(' + words.map(w => global.escapeHtml(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+        return safe.replace(re, '<mark>$1</mark>');
+    }
+    // Sections in display order; each item: { kind: 'page'|'record'|'action', label, meta, url, run, icon, shortcut, preview }
+    function paletteSections(q, navLinks, records, commands) {
+        const sections = [];
+        const pages = navLinks.filter(l => paletteMatch(l.label, q));
+        if (pages.length) sections.push({ title: 'Go to', items: pages.map(l => ({ type: 'page', label: l.label, url: l.url, icon: l.icon, shortcut: l.shortcut })) });
+        const byKind = new Map();
+        (records || []).forEach(r => {
+            const k = r.kind || 'Results';
+            if (!byKind.has(k)) byKind.set(k, []);
+            byKind.get(k).push({ type: 'record', label: r.title, meta: r.meta, url: r.url, preview: r.preview, kind: k });
+        });
+        byKind.forEach((items, k) => sections.push({ title: paletteKindTitle(k), items }));
+        const acts = commands.filter(c => paletteMatch(c.label + ' ' + (c.keywords || ''), q));
+        if (acts.length) sections.push({ title: 'Actions', items: acts.map(c => ({ type: 'action', label: c.label, url: c.url, run: c.run, icon: c.icon, shortcut: c.shortcut })) });
+        return sections;
+    }
+    function paletteKindTitle(kind) {
+        const k = String(kind);
+        if (/(s|x|ch|sh)$/i.test(k)) return k + 'es';
+        if (/[^aeiou]y$/i.test(k)) return k.slice(0, -1) + 'ies';
+        return k + 's';
+    }
+    global.dsPaletteInternals = { paletteMatch, paletteHighlight, paletteSections, paletteKindTitle };
+
+    // One seam for "go to this URL" (tests replace it; jsdom's location can't be stubbed).
+    if (typeof global.dsNavigate !== 'function') global.dsNavigate = function dsNavigate(url) { global.location.href = url; };
+    const palette = { el: null, input: null, list: null, preview: null, flat: [], active: 0, records: [], query: '', timer: null, ctrl: null, opener: null, status: '' };
+
+    function paletteSearchUrl() {
+        const m = document.querySelector('meta[name="ds-palette"]');
+        return m ? (m.getAttribute('content') || '') : null;
+    }
+    function paletteNavLinks() {
+        return Array.from(document.querySelectorAll('.sidebar .nav-link[href]')).map(a => {
+            const ico = a.querySelector('.nav-ico');
+            const kbd = a.querySelector('.nav-kbd');
+            const label = Array.from(a.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join(' ').replace(/\s+/g, ' ').trim();
+            return { label: label ? label.charAt(0).toUpperCase() + label.slice(1) : a.textContent.trim(), url: a.getAttribute('href'), icon: ico ? ico.getAttribute('data-ico') : null, shortcut: kbd ? kbd.textContent.trim() : null };
+        });
+    }
+    function paletteBuild() {
+        const el = document.createElement('div');
+        el.className = 'modal palette';
+        el.id = 'ds-palette';
+        el.setAttribute('data-backdrop-close', '');
+        el.innerHTML =
+            '<div class="modal-box palette-box">' +
+              '<h2 class="modal-title sr-only">Command palette</h2>' +
+              '<div class="palette-input"><span class="palette-input-ico" aria-hidden="true"><span class="nav-ico" data-ico="search"></span></span>' +
+                '<input type="text" class="palette-field" placeholder="Search or jump to…" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="ds-palette-list" aria-label="Search pages, records and actions">' +
+                '<kbd class="kbd palette-esc">esc</kbd></div>' +
+              '<div class="palette-split">' +
+                '<div class="palette-list" id="ds-palette-list" role="listbox" aria-label="Results"></div>' +
+                '<div class="palette-preview" aria-live="polite"></div>' +
+              '</div>' +
+              '<div class="palette-foot" aria-hidden="true"><span><kbd class="kbd">↑↓</kbd> move</span><span><kbd class="kbd">↵</kbd> open</span><span><kbd class="kbd">⌘↵</kbd> new tab</span><span><kbd class="kbd">esc</kbd> close</span></div>' +
+            '</div>';
+        document.body.appendChild(el);
+        palette.el = el;
+        palette.input = el.querySelector('.palette-field');
+        palette.list = el.querySelector('.palette-list');
+        palette.preview = el.querySelector('.palette-preview');
+        if (typeof global.renderNavIcons === 'function') global.renderNavIcons(el);
+        palette.input.addEventListener('input', () => paletteQuery(palette.input.value));
+        palette.input.addEventListener('keydown', paletteKeydown);
+        palette.list.addEventListener('mousemove', e => {
+            const opt = e.target.closest && e.target.closest('[role="option"]');
+            if (opt) paletteSetActive(Number(opt.getAttribute('data-index')));
+        });
+        palette.list.addEventListener('click', e => {
+            const opt = e.target.closest && e.target.closest('[role="option"]');
+            if (opt) paletteActivate(Number(opt.getAttribute('data-index')), e.metaKey || e.ctrlKey);
+        });
+        palette.preview.addEventListener('click', e => {
+            const btn = e.target.closest && e.target.closest('[data-palette-url]');
+            if (btn) { e.preventDefault(); paletteGo(btn.getAttribute('data-palette-url'), e.metaKey || e.ctrlKey); }
+        });
+        el.addEventListener('modal:close', () => { palette.query = ''; if (palette.ctrl) palette.ctrl.abort(); clearTimeout(palette.timer); });
+    }
+    function paletteRender() {
+        const sections = paletteSections(palette.query, paletteNavLinks(), palette.records, paletteCommands);
+        palette.flat = [];
+        let html = '';
+        sections.forEach((sec, si) => {
+            const gid = 'ds-palette-g' + si;
+            html += '<div role="group" aria-labelledby="' + gid + '"><div class="palette-group" id="' + gid + '">' + global.escapeHtml(sec.title) + '</div>';
+            sec.items.forEach(item => {
+                const i = palette.flat.length;
+                palette.flat.push(item);
+                const lead = item.type === 'record' ? '' : '<span class="palette-ico" aria-hidden="true"><span class="nav-ico" data-ico="' + global.escapeHtml(item.icon || (item.type === 'page' ? 'grid' : 'more')) + '"></span></span>';
+                const meta = item.meta ? '<span class="palette-meta">' + global.escapeHtml(item.meta) + '</span>' : '';
+                const end = item.shortcut ? '<span class="palette-end"><kbd class="kbd">' + global.escapeHtml(item.shortcut) + '</kbd></span>' : '';
+                html += '<div class="palette-row" role="option" id="ds-palette-o' + i + '" data-index="' + i + '" aria-selected="false">' + lead +
+                        '<span class="palette-main"><span class="palette-title">' + paletteHighlight(item.label, palette.query) + '</span>' + meta + '</span>' + end + '</div>';
+            });
+            html += '</div>';
+        });
+        if (palette.status) html += '<div class="palette-status">' + global.escapeHtml(palette.status) + '</div>';
+        if (!palette.flat.length && !palette.status) html += '<div class="palette-status">' + (palette.query ? 'No matches' : 'Type to search') + '</div>';
+        palette.list.innerHTML = html;
+        if (typeof global.renderNavIcons === 'function') global.renderNavIcons(palette.list);
+        paletteSetActive(Math.min(palette.active, Math.max(0, palette.flat.length - 1)));
+    }
+    function paletteSetActive(i) {
+        palette.active = i;
+        palette.list.querySelectorAll('[role="option"]').forEach(o => o.setAttribute('aria-selected', String(Number(o.getAttribute('data-index')) === i)));
+        const opt = document.getElementById('ds-palette-o' + i);
+        if (opt) { palette.input.setAttribute('aria-activedescendant', opt.id); if (opt.scrollIntoView) opt.scrollIntoView({ block: 'nearest' }); }
+        else palette.input.removeAttribute('aria-activedescendant');
+        palettePreview(palette.flat[i]);
+    }
+    function palettePreview(item) {
+        const p = item && item.preview;
+        if (!p) { palette.preview.innerHTML = ''; palette.preview.classList.add('is-empty'); return; }
+        palette.preview.classList.remove('is-empty');
+        const esc = global.escapeHtml;
+        const tone = p.amount_tone === 'negative' ? ' text-amount-negative' : p.amount_tone === 'positive' ? ' text-amount-positive' : '';
+        let h = '<div class="palette-preview-kind">' + esc(item.kind || '') + '</div>';
+        h += '<h3 class="palette-preview-heading">' + esc(p.heading || item.label) + '</h3>';
+        if (p.subheading) h += '<div class="text-meta">' + esc(p.subheading) + '</div>';
+        if (p.amount) h += '<div class="stat-value palette-preview-amount' + tone + '">' + esc(p.amount) + '</div>';
+        if (p.fields && p.fields.length) {
+            h += '<dl class="palette-dl">' + p.fields.map(f => '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>').join('') + '</dl>';
+        }
+        const actions = (p.actions && p.actions.length) ? p.actions : (item.url ? [{ label: 'Open', url: item.url }] : []);
+        if (actions.length) {
+            h += '<div class="palette-preview-actions">' + actions.map((a, i) =>
+                '<button type="button" class="btn ' + (i === 0 ? 'btn-primary' : 'btn-secondary') + ' btn-sm" tabindex="-1" data-palette-url="' + esc(a.url) + '">' + esc(a.label) + '</button>').join('') + '</div>';
+        }
+        palette.preview.innerHTML = h;
+    }
+    function paletteQuery(q) {
+        palette.query = q;
+        palette.active = 0;
+        clearTimeout(palette.timer);
+        if (palette.ctrl) { palette.ctrl.abort(); palette.ctrl = null; }
+        const url = paletteSearchUrl();
+        const term = q.trim();
+        if (!url || term.length < 2) { palette.records = []; palette.status = ''; paletteRender(); return; }
+        palette.status = 'Searching…';
+        paletteRender();
+        palette.timer = setTimeout(() => {
+            const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+            palette.ctrl = ctrl;
+            const sep = url.includes('?') ? '&' : '?';
+            fetch(url + sep + 'q=' + encodeURIComponent(term) + '&limit=6', { headers: { Accept: 'application/json' }, credentials: 'same-origin', signal: ctrl ? ctrl.signal : undefined })
+                .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+                .then(data => {
+                    if (palette.query !== q) return;
+                    palette.records = (data && data.results) || [];
+                    palette.status = '';
+                    paletteRender();
+                })
+                .catch(err => {
+                    if (err && err.name === 'AbortError') return;
+                    if (palette.query !== q) return;
+                    palette.records = [];
+                    palette.status = 'Search is unavailable right now';
+                    paletteRender();
+                });
+        }, 150);
+    }
+    function paletteGo(url, newTab) {
+        if (!url) return;
+        if (newTab) { global.open(url, '_blank', 'noopener'); return; }
+        global.dsPalette.close();
+        global.dsNavigate(url);
+    }
+    function paletteActivate(i, newTab) {
+        const item = palette.flat[i];
+        if (!item) return;
+        if (item.type === 'action' && typeof item.run === 'function' && !(newTab && item.url)) {
+            global.dsPalette.close();
+            item.run();
+            return;
+        }
+        paletteGo(item.url, newTab);
+    }
+    function paletteKeydown(e) {
+        const n = palette.flat.length;
+        if (e.key === 'ArrowDown') { e.preventDefault(); if (n) paletteSetActive((palette.active + 1) % n); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); if (n) paletteSetActive((palette.active - 1 + n) % n); }
+        else if (e.key === 'Home' && n && !palette.input.value) { e.preventDefault(); paletteSetActive(0); }
+        else if (e.key === 'End' && n && !palette.input.value) { e.preventDefault(); paletteSetActive(n - 1); }
+        else if (e.key === 'Enter') {
+            // Handled here, never by modal-keys' "Enter clicks the primary button".
+            e.preventDefault(); e.stopPropagation();
+            paletteActivate(palette.active, e.metaKey || e.ctrlKey);
+        }
+    }
+    global.dsPalette = {
+        open(query) {
+            if (paletteSearchUrl() === null) return false;
+            if (!palette.el) paletteBuild();
+            palette.opener = document.activeElement;
+            palette.records = []; palette.status = ''; palette.active = 0;
+            palette.input.value = query || '';
+            palette.query = palette.input.value;
+            paletteRender();
+            if (typeof global.openModal === 'function') global.openModal(palette.el);
+            else palette.el.classList.add('modal-open');
+            palette.input.focus();
+            if (palette.query) paletteQuery(palette.query);
+            return true;
+        },
+        close() {
+            if (!palette.el) return;
+            if (typeof global.closeModal === 'function') global.closeModal(palette.el);
+            else palette.el.classList.remove('modal-open');
+        },
+        isOpen() { return !!(palette.el && palette.el.classList.contains('modal-open')); },
+    };
+    // ⌘K / Ctrl+K anywhere, including inside a field; again to close.
+    document.addEventListener('keydown', function (e) {
+        if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey || String(e.key).toLowerCase() !== 'k') return;
+        if (paletteSearchUrl() === null) return;
+        e.preventDefault();
+        if (global.dsPalette.isOpen()) global.dsPalette.close(); else global.dsPalette.open();
+    });
+    document.addEventListener('click', function (e) {
+        const t = e.target.closest && e.target.closest('[data-palette-open]');
+        if (!t) return;
+        e.preventDefault();
+        const sheet = t.closest('.sheet');
+        if (sheet && typeof global.dsSheet === 'function') global.dsSheet(sheet, false);
+        global.dsPalette.open();
+    });
+    // Shell default actions.
+    global.dsCommands.register({ label: 'Switch theme', icon: 'moon', keywords: 'dark light mode', run: () => global.toggleTheme && global.toggleTheme() });
 
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;

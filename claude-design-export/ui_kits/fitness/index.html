@@ -6,6 +6,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ⌘K palette on (the gem shell emits this; content = the app's search URL, empty in a kit) -->
+  <meta name="ds-palette" content="">
   <title>This week · Fitness</title>
   <!-- Same head as the app's layout: stylesheet, then shared-core (boots the
        saved theme before first paint), modal-keys, and the deferred apps dock. -->
@@ -59,6 +61,7 @@
   <nav class="sidebar">
     <div class="sidebar-header">
       <div class="brand-title"><span class="brand-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none"><defs><linearGradient id="al-bg-fit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F76B15"/><stop offset="1" stop-color="#CC4E00"/></linearGradient></defs><rect x="1" y="1" width="30" height="30" rx="7" fill="url(#al-bg-fit)"/><rect x="1.5" y="1.5" width="29" height="29" rx="6.5" stroke="rgba(255,255,255,0.18)" stroke-width="0.75"/><rect x="3" y="8.5" width="6.5" height="15" rx="1.4" fill="#FFFFFF"/><rect x="22.5" y="8.5" width="6.5" height="15" rx="1.4" fill="#FFFFFF"/><rect x="9.5" y="14.5" width="13" height="3" rx="0.8" fill="#FFFFFF"/><rect x="9.5" y="11.5" width="0.9" height="9" rx="0.3" fill="url(#al-bg-fit)" opacity="0.85"/><rect x="21.6" y="11.5" width="0.9" height="9" rx="0.3" fill="url(#al-bg-fit)" opacity="0.85"/></svg></span>Fitness</div>
+      <button type="button" class="palette-trigger" data-palette-open aria-keyshortcuts="Meta+K"><span class="nav-ico" data-ico="search" aria-hidden="true"></span><span>Search</span><kbd class="kbd">⌘K</kbd></button>
     </div>
     <div class="nav-section">
       <ul class="nav-menu">

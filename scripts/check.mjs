@@ -353,6 +353,48 @@ async function invariants(page, { width, theme }) {
 }
 
 // Anchor .btn hover must keep its rest colour (A2.2): needs a real hover.
+// The ⌘K palette (PLAT-17), on kits that opt in with <meta name="ds-palette">:
+// opens on ⌘K with focus in a combobox field, lists the sidebar's pages, fits
+// the viewport (full screen on phones, preview pane only on wide screens), and
+// Escape closes it and gives focus back.
+async function paletteInvariant(page, { width }) {
+    const has = await page.evaluate(() => !!document.querySelector('meta[name="ds-palette"]'));
+    if (!has) return [];
+    const fails = [];
+    await page.evaluate(() => document.body.focus());
+    await page.keyboard.press('Meta+k');
+    await page.waitForTimeout(150);
+    const r = await page.evaluate((width) => {
+        const pal = document.getElementById('ds-palette');
+        if (!pal || !pal.classList.contains('modal-open')) return { open: false };
+        const box = pal.querySelector('.palette-box').getBoundingClientRect();
+        const prev = getComputedStyle(pal.querySelector('.palette-preview')).display;
+        return {
+            open: true,
+            focus: document.activeElement && document.activeElement.classList.contains('palette-field'),
+            combobox: document.activeElement && document.activeElement.getAttribute('role') === 'combobox',
+            pages: pal.querySelectorAll('[role="option"]').length,
+            goTo: !!Array.from(pal.querySelectorAll('.palette-group')).find(g => g.textContent === 'Go to'),
+            active: document.activeElement && document.activeElement.getAttribute('aria-activedescendant'),
+            boxW: box.width, boxL: box.left, vw: innerWidth, preview: prev,
+            overflow: document.body.scrollWidth > innerWidth,
+        };
+    }, width);
+    if (!r.open) return [ 'palette: ⌘K did not open it' ];
+    if (!r.focus || !r.combobox) fails.push('palette: focus is not in the combobox field');
+    if (!r.goTo || r.pages < 2) fails.push(`palette: "Go to" missing or empty (${r.pages} options)`);
+    if (!r.active) fails.push('palette: no aria-activedescendant on the field');
+    if (r.overflow) fails.push('palette: page overflows horizontally while open');
+    if (width <= 767 && (Math.round(r.boxW) !== r.vw || Math.round(r.boxL) !== 0)) fails.push(`palette: not full screen on a phone (${r.boxW}px at ${r.boxL})`);
+    if (width >= 1024 && r.preview === 'none') fails.push('palette: preview pane hidden on a wide screen');
+    if (width < 1024 && r.preview !== 'none') fails.push('palette: preview pane shown on a narrow screen');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(100);
+    const closed = await page.evaluate(() => !document.querySelector('#ds-palette.modal-open'));
+    if (!closed) fails.push('palette: Escape did not close it');
+    return fails;
+}
+
 async function hoverInvariant(page) {
     const fails = [];
     for (const id of ['#fx-a-btn', '#fx-a-btn2']) {
@@ -440,7 +482,7 @@ for (const { kit, theme, width } of combos) {
             // Re-run the label enhancer for the injected fixture, if present.
             if (window.dsEnhanceLabels) window.dsEnhanceLabels(host);
         }, FIXTURE);
-        const fails = [...errors, ...visual, ...await invariants(page, { width, theme }), ...await hoverInvariant(page)];
+        const fails = [...errors, ...visual, ...await invariants(page, { width, theme }), ...await hoverInvariant(page), ...await paletteInvariant(page, { width })];
         if (fails.length) { failed++; console.log(`FAIL ${label}`); fails.forEach(f => console.log(`     - ${f}`)); }
         else console.log(`ok   ${label}`);
     } catch (e) {

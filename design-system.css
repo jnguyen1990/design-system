@@ -3105,6 +3105,113 @@ tbody tr.row-total:hover { background: var(--bg-subtle); }
     transition: background var(--motion-fast), color var(--motion-fast);
 }
 
+/* ============================================================
+   Command palette (⌘K) — round three, PLAT-17 (Joe's mockup E)
+   A .modal.palette built by shared-core's dsPalette: input, a list
+   grouped "Go to" / this app's records by kind / Actions, and a
+   preview pane on wide screens. Full screen on phones.
+   ============================================================ */
+.modal.palette { align-items: flex-start; padding-top: 8vh; }
+.palette-box {
+    max-width: 960px;
+    height: min(600px, 84vh);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.palette-input {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-4);
+    min-height: 52px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.palette-input-ico { color: var(--text-muted); display: flex; }
+.palette-field {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--text-base);
+    outline: none;
+}
+.palette-split { display: grid; grid-template-columns: 1fr 320px; flex: 1; min-height: 0; }
+.palette-list { overflow-y: auto; padding: var(--space-2) 0; border-right: 1px solid var(--border); }
+.palette-group { padding: var(--space-3) var(--space-4) var(--space-1); font-size: var(--text-xs); color: var(--text-muted); }
+.palette-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-1_5) var(--space-4);
+    min-height: 40px;
+    cursor: pointer;
+}
+.palette-row[aria-selected="true"] { background: var(--panel-hover); }
+.palette-ico { display: flex; color: var(--text-muted); flex-shrink: 0; }
+.palette-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.palette-title, .palette-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.palette-meta { font-size: var(--text-xs); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.palette-end { margin-left: auto; display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; color: var(--text-muted); }
+.palette mark { background: transparent; color: var(--text); font-weight: 600; }
+.palette-status { padding: var(--space-4); font-size: var(--text-sm); color: var(--text-muted); }
+.palette-preview { padding: var(--space-5); overflow-y: auto; }
+.palette-preview.is-empty { padding: 0; }
+.palette-preview-kind { font-size: var(--text-xs); color: var(--text-muted); }
+.palette-preview-heading { margin: var(--space-2) 0 var(--space-1); }
+.palette-preview-amount { margin-top: var(--space-4); }
+.palette-dl { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-4); font-size: var(--text-sm); margin: var(--space-4) 0 0; }
+.palette-dl dt { color: var(--text-muted); }
+.palette-dl dd { margin: 0; overflow-wrap: anywhere; }
+.palette-preview-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+.palette-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-4);
+    border-top: 1px solid var(--border);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+/* The shell's open control: a quiet search field look in the sidebar. */
+.palette-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: var(--control-h);
+    padding: 0 var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: background var(--motion-fast);
+}
+.palette-trigger:hover { background: var(--panel-hover); }
+.palette-trigger .kbd { margin-left: auto; }
+.sidebar-header .palette-trigger { margin-top: var(--space-3); }
+.sheet .sheet-search { width: auto; margin: var(--space-1) var(--space-4) var(--space-3); }
+@media (max-width: 1023px) {
+    .palette-split { grid-template-columns: 1fr; }
+    .palette-preview { display: none; }
+    .palette-list { border-right: 0; }
+}
+@media (max-width: 767px) {
+    .modal.palette { padding: 0; }
+    .palette-box { max-width: none; width: 100vw; height: 100dvh; max-height: none; border: 0; border-radius: 0; }
+    .palette-input { padding-top: env(safe-area-inset-top); }
+    .palette-row { min-height: 48px; }
+    .palette-foot, .palette-esc, .palette-end .kbd { display: none; }
+}
+
 .modal-close:hover {
     background: var(--panel);
     color: var(--text);
