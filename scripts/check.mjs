@@ -280,6 +280,8 @@ async function invariants(page, { width, theme }) {
         if (width <= 768) {
             const fs = parseFloat(cs(inp).fontSize);
             if (fs < 16) fails.push(`input font-size ${fs}px under 768px (iOS zooms below 16)`);
+            const sfs = parseFloat(cs($('#fx-select')).fontSize);
+            if (sfs < 16) fails.push(`select font-size ${sfs}px under 768px (iOS zooms below 16)`);
             if (document.body.scrollWidth > window.innerWidth) fails.push(`body.scrollWidth ${document.body.scrollWidth} > ${window.innerWidth}`);
             const vw = window.innerWidth;
             const over = [];
@@ -310,6 +312,20 @@ async function hoverInvariant(page) {
         await page.waitForTimeout(200);
         const hover = await el.evaluate(e => getComputedStyle(e).color);
         if (rest !== hover) fails.push(`<a ${id}> hover colour ${hover} differs from rest ${rest}`);
+        await page.mouse.move(0, 0);
+    }
+    // Row hover tints only clickable rows (.table-clickable, onclick,
+    // data-href, data-row-open, row-select); a plain data row stays put.
+    if ((page.viewportSize() || {}).width > 768) {
+        const row = page.locator('#fx-days tbody tr:not(.stack-day)');
+        await row.hover();
+        await page.waitForTimeout(200);
+        const plain = await row.evaluate(e => getComputedStyle(e).backgroundColor);
+        if (!/rgba\(0, 0, 0, 0\)|transparent/.test(plain)) fails.push(`plain table row tints on hover (${plain})`);
+        await row.evaluate(e => e.closest('table').classList.add('table-clickable'));
+        await page.mouse.move(0, 0); await row.hover(); await page.waitForTimeout(200);
+        const tinted = await row.evaluate(e => getComputedStyle(e).backgroundColor);
+        if (/rgba\(0, 0, 0, 0\)|transparent/.test(tinted)) fails.push('.table-clickable row does not tint on hover');
         await page.mouse.move(0, 0);
     }
     return fails;

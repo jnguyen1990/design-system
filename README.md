@@ -177,6 +177,8 @@ Apps that share this system also share a set of layout/markup/copy conventions s
 - Row/chip/field remove `×` inside an uncommitted form: `btn-ghost`, no confirm; `btn-danger` = persisted destruction, always confirmed
 - Numbers: mono + tabular-nums; `var(--red-11)` for outflow, `var(--green-11)` for inflow; unicode minus `−` not hyphen
 - Tables wrapped in `.table-responsive`; shared `<colgroup>` widths when stacked across cards
+- Row hover tints only clickable rows: add `.table-clickable` to a table whose rows open something; `tr[onclick]`, `tr[data-href]`, `tr[data-row-open]` and row-select rows tint without it. A plain data table does not tint
+- The bare `input`/`select`/`textarea` and `table`/`th`/`td` resets are `:where()` (zero specificity): any class overrides them. Never add a component exception to the reset — style the component
 - Color tokens: Radix scale only (`var(--green-9)`), never legacy aliases (`var(--success-500)`, `var(--hover-bg)`, `var(--color-bg)`, `var(--color-border)` — those are forbidden and have all been swept from the production apps)
 - Emoji: only the functional symbols whitelisted in the brand guide (✓ ✕ ⋮ × ← → ☰ ☀ stars `−` `·` `–` ▲ + the vitals chip's 😴 ❤️ 🚶). Decorative emoji (📊📄💾🗑️⚠️📥 etc.) do not appear in headings or button labels — use `.badge` + `.color-dot` for categorical signaling.
 - Concept explainers in settings use a grid of accent-bordered cards + small nested-bullet diagram, not `<pre>` ASCII trees or `<code>`-heavy bullet lists

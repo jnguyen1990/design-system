@@ -2780,12 +2780,16 @@ textarea.form-control {
 }
 .drop-zone-input { display: none; }
 
-/* Base input styling — applies to ALL inputs even without .form-control */
-input[type="text"], input[type="email"], input[type="password"],
+/* Base input styling — applies to ALL inputs even without .form-control.
+   Wrapped in :where() (2026-11-24) so it carries no weight: any class —
+   a component's or .form-control's — overrides it without !important or a
+   longer selector. A chip that is really a <select> styles itself (see
+   select.session-type-badge) instead of being an exception here. */
+:where(input[type="text"], input[type="email"], input[type="password"],
 input[type="number"], input[type="date"], input[type="time"],
 input[type="datetime-local"], input[type="month"], input[type="week"],
 input[type="url"], input[type="search"], input[type="tel"],
-textarea, select:not(.session-type-badge) {
+textarea, select) {
     width: 100%;
     height: var(--control-h);
     padding: 0 12px;
@@ -2802,7 +2806,7 @@ textarea, select:not(.session-type-badge) {
     box-sizing: border-box;
 }
 
-textarea {
+:where(textarea) {
     height: auto;
     padding: 8px 12px;
     line-height: var(--lh-body);
@@ -2810,10 +2814,10 @@ textarea {
     resize: vertical;
 }
 
-/* The chevron has to come AFTER the reset above: both are (0,1,1), and the
-   reset's `background` shorthand and `padding` wiped the image and the right
-   padding while appearance:none survived — a select that looked like a text
-   input in every app. */
+/* The chevron once had to come AFTER the reset above (both were (0,1,1),
+   and the reset's `background` shorthand and `padding` wiped the image and
+   the right padding while appearance:none survived). The reset is :where()
+   now, so this wins wherever it sits. */
 select.form-control {
     appearance: none;
     -webkit-appearance: none;
@@ -2824,11 +2828,11 @@ select.form-control {
     cursor: pointer;
 }
 
-input::placeholder, textarea::placeholder { color: var(--text-faint); }
+:where(input, textarea)::placeholder { color: var(--text-faint); }
 
-input:hover:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+:where(input:hover:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
 textarea:hover,
-select:not(.session-type-badge):hover {
+select:hover) {
     border-color: var(--border-hover);
 }
 
@@ -2966,19 +2970,20 @@ input[type="radio"]:focus-visible {
     -webkit-overflow-scrolling: touch;
 }
 
-table {
+/* Table reset: :where() (2026-11-24) so any table class overrides it. */
+:where(table) {
     width: 100%;
     border-collapse: collapse;
     font-size: var(--text-base);
 }
 
-thead {
+:where(thead) {
     border-bottom: 1px solid var(--border);
 }
 
 /* v4: uppercase micro-header — kept as an instrument-panel signature */
 /* v4.4: sentence-case micro-labels — the UPPERCASE signature is retired. */
-thead th {
+:where(thead th) {
     padding: 0 12px;
     height: 32px;
     text-align: left;
@@ -2988,20 +2993,27 @@ thead th {
     white-space: nowrap;
 }
 
-tbody tr {
+:where(tbody tr) {
     border-bottom: 1px solid var(--border);
     transition: background var(--motion-fast);
 }
 
-tbody tr:last-child { border-bottom: none; }
+:where(tbody tr:last-child) { border-bottom: none; }
 
-tbody tr:hover { background: var(--panel); }
+/* Hover tint only where a row IS a click target (2026-11-24; every row used
+   to tint, clickable or not). A table opts in with .table-clickable; rows
+   that are clickable by construction tint without it: an onclick or
+   data-href row, a dsListKeys [data-row-open] row, and a row-select row. */
+.table-clickable tbody tr:hover,
+tbody tr:is([onclick], [data-href], [data-row-open]):hover,
+tbody tr:has(input[type="checkbox"][data-row-select]):hover { background: var(--panel); }
+.table-clickable tbody tr, tbody tr:is([onclick], [data-href]) { cursor: pointer; }
 
 /* Row-select tables (shared-core.js): the whole row is a click target for
    a checkbox that opts in via data-row-select */
 tbody tr:has(input[type="checkbox"][data-row-select]) { cursor: pointer; }
 
-tbody td {
+:where(tbody td) {
     padding: 8px 12px;
     height: var(--row-h-default);
     color: var(--text);
@@ -6817,6 +6829,9 @@ tbody tr.is-key-focus > td { background: transparent; }
     font-family: var(--font-sans);
     border: 1px solid transparent;
 }
+/* fitness renders the chip as a <select> to change a session's type: undo
+   the field reset's full-width, control-height box. */
+select.session-type-badge { width: auto; height: auto; line-height: normal; cursor: pointer; }
 .session-type-outdoor_cycling, .session-type-indoor_cycling, .session-type-cycling { background: var(--orange-a3); color: var(--orange-11); }
 .session-type-outdoor_running, .session-type-indoor_running, .session-type-running { background: var(--red-a3); color: var(--red-11); }
 .session-type-lifting, .session-type-strength { background: var(--purple-a3); color: var(--purple-11); }
