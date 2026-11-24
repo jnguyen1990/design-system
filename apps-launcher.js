@@ -105,14 +105,29 @@
       '<circle cx="9.4" cy="10" r="1.1" fill="#CB1D63"/>' +
     '</svg>';
 
-  const APPS = [
-    { id: "base",        name: "Base",     url: "https://base.joenguyen.ca",     logo: LOGO_BASE },
-    { id: "budgeter",    name: "Budgeter", url: "https://budgeter.joenguyen.ca", logo: LOGO_BUDGETER },
-    { id: "fitness",     name: "Fitness",  url: "https://fitness.joenguyen.ca",  logo: LOGO_FITNESS },
-    { id: "mealplanner", name: "Meals",    url: "https://mealplanner.joenguyen.ca", logo: LOGO_MEALS },
-    { id: "upkeep",      name: "Upkeep",   url: "https://upkeep.joenguyen.ca",   logo: LOGO_UPKEEP },
-    { id: "postings",    name: "Postings", url: "https://postings.joenguyen.ca", logo: LOGO_POSTINGS }
+  const LOGOS = {
+    base: LOGO_BASE, budgeter: LOGO_BUDGETER, fitness: LOGO_FITNESS,
+    mealplanner: LOGO_MEALS, upkeep: LOGO_UPKEEP, postings: LOGO_POSTINGS
+  };
+  // The app list comes from the page when the shell provides it (personal_app_client v0.9.0
+  // renders window.PERSONAL_APPS from its apps.json — the one list of apps, PLAT-44); this
+  // copy is only the fallback for a page without the shell. An app without a logo here gets
+  // its initial in a plain tile.
+  const FALLBACK_APPS = [
+    { id: "base",        name: "Base",     url: "https://base.joenguyen.ca" },
+    { id: "budgeter",    name: "Budgeter", url: "https://budgeter.joenguyen.ca" },
+    { id: "fitness",     name: "Fitness",  url: "https://fitness.joenguyen.ca" },
+    { id: "mealplanner", name: "Meals",    url: "https://mealplanner.joenguyen.ca" },
+    { id: "upkeep",      name: "Upkeep",   url: "https://upkeep.joenguyen.ca" },
+    { id: "postings",    name: "Postings", url: "https://postings.joenguyen.ca" }
   ];
+  const initialLogo = (name) =>
+    '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 32 32">' +
+      '<rect x="1" y="1" width="30" height="30" rx="7" fill="currentColor" opacity="0.18"/>' +
+      '<text x="16" y="21" text-anchor="middle" font-size="14" font-family="system-ui, sans-serif" fill="currentColor">' +
+      String(name || "?").charAt(0).toUpperCase() + '</text></svg>';
+  const APPS = (Array.isArray(window.PERSONAL_APPS) && window.PERSONAL_APPS.length ? window.PERSONAL_APPS : FALLBACK_APPS)
+    .map(a => ({ id: a.id, name: a.dock_name || a.name, url: a.public_url || a.url, logo: LOGOS[a.id] || initialLogo(a.name) }));
 
   function buildDock(currentApp) {
     const dock = document.createElement("div");
