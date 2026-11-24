@@ -54,6 +54,10 @@
                                         the group's lone text control (gives the
                                         control an id when it has none). Runs on
                                         load and on every modal open.
+     - dsFieldErrors(form, {field: msg|[msgs]})  field-level errors: aria-invalid,
+                                        a .form-error under the field wired with
+                                        aria-describedby, focus the first; returns
+                                        messages it could not place. dsClearFieldErrors(form).
      - showStatus(divId, message, type) status-message div; success auto-hides in 3s
                                         (budgeter overrides: defaults type to 'info')
      - dsConfirm(message, opts)         styled Promise<boolean> replacement for
@@ -459,6 +463,69 @@
         div.className = 'status-message status-' + type;
         div.style.display = 'block';
         if (type === 'success') setTimeout(() => { div.style.display = 'none'; }, 3000);
+    };
+
+    // ── Field-level errors (PLAT-07) ──────────────────────────────────────
+    // dsFieldErrors(form, { title: "Title required", "recipe[servings]": ["must be > 0"] })
+    // marks each named field aria-invalid, puts a .form-error under it (inside
+    // its .form-group when there is one) wired up with aria-describedby, clears
+    // the previous round's errors first, and focuses the first invalid field.
+    // A key matches a field's name, its Rails-style suffix (`title` →
+    // `recipe[title]`) or its id. Messages for fields it cannot find are
+    // returned, so the caller can toast them. An edit clears that field's error.
+    // The server-rendered twin is the gem's personal_app_field_error helper.
+    let fieldErrorSeq = 0;
+    function findField(form, key) {
+        const esc = global.CSS && CSS.escape ? CSS.escape : (v => String(v).replace(/["\\]/g, '\\$&'));
+        return form.querySelector('[name="' + esc(key) + '"]')
+            || form.querySelector('[name$="[' + esc(key) + ']"]')
+            || form.querySelector('#' + esc(key));
+    }
+    function clearFieldError(field) {
+        field.removeAttribute('aria-invalid');
+        const id = field.dataset.dsErrorId;
+        if (!id) return;
+        const msg = document.getElementById(id);
+        if (msg) msg.remove();
+        const ids = (field.getAttribute('aria-describedby') || '').split(/\s+/).filter(x => x && x !== id);
+        if (ids.length) field.setAttribute('aria-describedby', ids.join(' ')); else field.removeAttribute('aria-describedby');
+        delete field.dataset.dsErrorId;
+    }
+    global.dsClearFieldErrors = function dsClearFieldErrors(form) {
+        if (!form) return;
+        form.querySelectorAll('[data-ds-error-id]').forEach(clearFieldError);
+    };
+    global.dsFieldErrors = function dsFieldErrors(form, errors) {
+        if (typeof form === 'string') form = document.getElementById(form) || document.querySelector(form);
+        if (!form) return [];
+        global.dsClearFieldErrors(form);
+        const unplaced = [];
+        let first = null;
+        Object.keys(errors || {}).forEach(key => {
+            const list = [].concat(errors[key]).filter(Boolean).map(String);
+            if (!list.length) return;
+            const field = findField(form, key);
+            if (!field) { list.forEach(m => unplaced.push(m)); return; }
+            const id = 'ds-field-error-' + (++fieldErrorSeq);
+            const msg = document.createElement('p');
+            msg.className = 'form-error';
+            msg.id = id;
+            msg.textContent = list.join(' · ');
+            const group = field.closest('.form-group');
+            if (group) group.appendChild(msg); else field.insertAdjacentElement('afterend', msg);
+            field.setAttribute('aria-invalid', 'true');
+            field.setAttribute('aria-describedby', ((field.getAttribute('aria-describedby') || '') + ' ' + id).trim());
+            field.dataset.dsErrorId = id;
+            if (!field.dataset.dsErrorWired) {
+                field.dataset.dsErrorWired = '1';
+                const clear = () => clearFieldError(field);
+                field.addEventListener('input', clear);
+                field.addEventListener('change', clear);
+            }
+            if (!first) first = field;
+        });
+        if (first) first.focus();
+        return unplaced;
     };
 
     // Styled confirm dialog (brand-guide §13). Builds one reusable DS modal.
