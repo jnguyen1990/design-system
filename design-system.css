@@ -1,9 +1,18 @@
 /* ============================================================
    Joe's Personal Apps — Design System v4.4
-   Inter + Geist Mono, Radix Colors.
-   v4: elevated cards on a tinted page, alpha-tinted chips,
-   accent in chrome (active nav, selection, checks, primary),
-   sentence-case copy with uppercase micro-labels, 7/9px radii.
+   Inter + Geist Mono (self-hosted), Radix Colors.
+   v4.4 look: one flat page surface (--sheet); only the sidebar is
+   tinted. Cards and stat cards are flat sections opened by a top
+   hairline — no fill, side borders, radius or shadow. Floating
+   layers (modal, menu, toast, tab bar, sheet) are the only raised
+   surfaces. Sentence case everywhere, micro-labels included — no
+   uppercase. Inter for all text; Geist Mono only for numbers in
+   tables, amounts, dates and IDs (big stat values stay Inter with
+   tabular-nums). Accent in chrome only: primary button, active
+   nav, focus ring, selection, checked controls. Alpha-tinted
+   chips, 7/9/12px radii, minimal motion. Phones get the tab bar +
+   More sheet and stacked-table card rows.
+   Spec: brand-guide.md. Rules for editing this file: README.md.
    ============================================================ */
 
 /* ===== Webfonts: self-hosted (2026-11-23) =====
