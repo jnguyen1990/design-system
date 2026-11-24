@@ -13,7 +13,7 @@ Apps feel like considered tools with product polish. Linear's edge, Things 3's s
 ### Voice & tone
 - Direct. No hype, no exclamation points.
 - **Sentence case everywhere** (v4 — replaces the old lowercase-labels rule): `New entry`, `Today`, `Archive`, `Apr 22 · Amex`.
-- **Micro-labels are sentence case too (v4.4, Joe 2026-11-23).** Table headers (`thead th`), `.stat-label`, `.row-section-label`, `.nav-section-label` and `.settings-nav-label` are 12px medium `--text-muted`, no tracking. The v4 UPPERCASE signature is retired — two casing registers only: lowercase nav/page titles where the apps already use them, sentence case for everything else.
+- **Micro-labels are sentence case too (v4.4, Joe 2026-11-23).** Table headers (`thead th`), `.stat-label`, `.row-section-label` and `.settings-nav-label` are 12px medium `--text-muted`, no tracking. The v4 UPPERCASE signature is retired — two casing registers only: lowercase nav/page titles where the apps already use them, sentence case for everything else.
 - Sentence case — never Title Case — for buttons and menus.
 - **Mono only for numbers in data, IDs and kbd (v4.4).** Amounts, counts and IDs in tables, `.kbd`, filter syntax. Metadata — subtitles, crumbs, dates (`.td-date`), `.text-meta`, `.mono-meta`, `.row-lead`, chips — is Inter with tabular figures. `.stat-value` big numbers are Inter (v4.1).
 - Empty states: one short line of copy, no illustration.
@@ -165,7 +165,7 @@ The brand color appears in: logo, favicon, empty-state icon tint (`.empty-state-
 | `--accent-solid-hover`, `--accent-solid-active` | darkened 14% / 24% | moved away from the text colour, so hover never loses contrast |
 | `--danger-solid` / `--danger-on` (+ `-hover`, `-active`) | red-11 / white | red-9 / near-black |
 
-`.btn-primary`, `.btn-danger`, `.filter-btn.active` and checked checkboxes/radios use them. A new app's `[data-app]` block needs nothing extra unless its step 9 is bright: then add it to the dark near-black rule beside budgeter/fitness/upkeep/postings.
+`.btn-primary`, `.btn-danger` and checked checkboxes/radios use them. A new app's `[data-app]` block needs nothing extra unless its step 9 is bright: then add it to the dark near-black rule beside budgeter/fitness/upkeep/postings.
 
 ---
 
@@ -184,7 +184,6 @@ The brand color appears in: logo, favicon, empty-state icon tint (`.empty-state-
 --space-6:  24px;   /* section spacing */
 --space-8:  32px;   /* page header to content */
 --space-12: 48px;   /* major sections */
---space-16: 64px;   /* hero spacing */
 ```
 
 **Density target: spacious.**
@@ -610,7 +609,9 @@ repo’s JS):
 | `.btn-success`, `.btn-error`, `.btn-cta` | `.btn-primary`, `.btn-danger`, `.btn-primary` |
 | `.app-grid`, `.app-card*`, `[data-app-color]` | the apps dock; `.auto-grid` + `.card.card-link` for a grid of linked cards |
 | `.category-group-card`, `.category-list`, `.category-item`, `.category-*` | `.card`, `.list-rows` / `.list-row`, `.color-dot` |
-| `.nav-submenu` | `.submenu` inside the nav `<li>` (the wrapper class did nothing a plain `<li>` does not) |
+| `.nav-submenu`, `.submenu` (2026-11-24: never used) | a flat nav list |
+| `.btn-lg`, `.modal-backdrop`, `.table-wrapper`, `.nav-section-label`, `.nav-icon`, `.filter-btn` (2026-11-24, PLAT-28: no references in any app, kit or script) | `.btn`, `.modal` (its own scrim), `.table-responsive`, `.settings-nav-label`, `.nav-ico`, `.filter-chip` |
+| App leftovers (2026-11-24): `.arch-day-row` (+ `.date-col`, `.score-pips`), `.brief-main` / `.brief-rail`, `.cat-note`, `.drop-indicator`, `.insight-bar`, `.insight-error`, `.kw-row`, `.tprev`, `.virtual-rows`, `.week-foot`, `.week-sessions`, `.ws-cmp` | nothing — the pages that used them were rebuilt |
 | `.copy-btn.ok` | the "Copied" toast from `data-copy-text` / `data-copy-target` |
 | Fitness’s stepper-era goal detail: `.stepper`, `.block-card*`, `.step-arrow`, `.bc-*`, `.blocks-head`, `.goal-meta`, `.goal-notes`, `.recap` / `.rc-*`, `.adh-row`, `.adh-label`, `.muted-dash` | the **Goal pages** section (`.target-band`, `.plan-*`); `.adh-track` / `.adh-fill` / `.adh-count`, `.gm-label` / `.gm-val` and `.progress-*` are still live |
 
@@ -641,8 +642,11 @@ for `cssToken()`):
 | `--sidebar-w` (256px) | `--sidebar-width` (240px) |
 | raw `z-index` numbers | the `--z-*` scale (§4) |
 
-Kept although unused in the stylesheet: `--accent-soft-hover` (the new-app
-checklist asks for it), `--row-h-spacious`, and the unused spacing steps.
+Removed 2026-11-24 (PLAT-29, no use in the stylesheet, its scripts, the kits or any app):
+`--accent-soft-hover`, `--accent-50` / `-100` / `-400` / `-600` (each `[data-app]` block now sets
+`--accent-300`, `-500`, `-700`, `--accent-soft`, `--accent-text` and the solid pair), `--space-16`,
+`--lh-mono`. Kept although unused: `--row-h-spacious` and `--space-0_5` (density and spacing
+steps round three is about to use).
 
 ---
 
