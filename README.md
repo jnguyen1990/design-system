@@ -52,6 +52,60 @@ For local dev against the un-published version of these files, run `python3 scri
 
 Push to `main`. Cloudflare Workers Static Assets auto-deploys the repo root (configured in `wrangler.jsonc`). `_headers` sets `Cache-Control: public, no-cache` for all paths: browsers keep a cached copy but revalidate on every use via ETag (Workers Static Assets serves strong ETags, so unchanged files are cheap 304s). Changes propagate to all apps on the next page load — no manual cache purge, no version param, no hard refresh. Was `max-age=43200` until 2026-08-21, which left up to a 12h stale window after a push (bit the mealplanner `.cal-*` rollout). Migrated off jsDelivr on 2026-05-07 (jsDelivr's 7-day `@main` cache was blocking propagation).
 
+### Pinned releases: `v/<sha>/`
+
+The root files are always the latest. A release is a frozen copy an app can
+pin and verify: `scripts/release.mjs` copies the six files apps load
+(`design-system.css`, `shared-core.js`, `modal-keys.js`, `apps-launcher.js`,
+`session-render.js`, `goal-render.js` — the gem's `DS_FILES`) exactly as they
+are in a commit to `v/<12-char sha>/`, with `manifest.json`, and points
+`v/current.json` at it:
+
+```bash
+/usr/local/bin/mise exec node@22 -- node scripts/release.mjs     # release HEAD (no-op if nothing changed)
+git add v && git commit -m "Release <sha>"                        # then push with the change
+```
+
+```json
+// v/current.json  (and v/<sha>/manifest.json)
+{ "sha": "937dae3e5599", "commit": "<full sha>", "date": "…", "base": "/v/937dae3e5599/",
+  "files": { "design-system.css": "sha384-…", "shared-core.js": "sha384-…", … } }
+```
+
+An app then loads `https://design-system.joenguyen.ca/v/<sha>/<file>` with
+`integrity="<files[file]>" crossorigin="anonymous"`. `v/*` is served with a
+one-year immutable cache and `Access-Control-Allow-Origin: *`;
+`v/current.json` stays `no-cache`. The one rewrite in a release is the
+stylesheet's font URLs (`fonts/…` → `../../fonts/…`, the shared unversioned
+fonts). Releases are never edited or deleted while an app may pin one —
+check each app's personal_app config first. Push the release before any app
+that names it.
+
+### Vendored libraries: `vendor/`
+
+Chart.js and Leaflet are served from here, never from a public CDN — URLs,
+SRI hashes and the upgrade rule are in [`vendor/README.md`](vendor/README.md).
+
+### Rolling back a release
+
+Two routes; the first is instant and touches no git history.
+
+1. **Cloudflare dashboard** → Workers & Pages → the `design-system` Worker →
+   **Deployments** → pick the last good deployment → **Rollback** (or
+   `npx wrangler deployments list` then `npx wrangler rollback <version-id>`
+   with a token that can edit Workers). Apps see it on their next page load
+   (root files are no-cache). `main` still holds the bad commit, so follow
+   with route 2 before the next push, or the next deploy brings it back.
+2. **Git:** `git revert <bad sha>` and push; Cloudflare deploys the revert
+   (about a minute).
+
+Apps pinned to a `v/<sha>/` release are unaffected by either route — that is
+the point of pinning. Status (2026-11-24): the steps above follow
+Cloudflare's documented Workers rollback; **not yet confirmed against this
+account** — the mini has no Cloudflare login or API token, so neither the
+Deployments page nor `wrangler deployments list` could be opened. Confirm
+once in the dashboard and replace this sentence with what you saw.
+
 ### Before you push: the pre-push hook
 
 Every push to `main` is a production deploy to six apps. A tracked git hook
