@@ -100,11 +100,8 @@ Two routes; the first is instant and touches no git history.
    (about a minute).
 
 Apps pinned to a `v/<sha>/` release are unaffected by either route — that is
-the point of pinning. Status (2026-11-24): the steps above follow
-Cloudflare's documented Workers rollback; **not yet confirmed against this
-account** — the mini has no Cloudflare login or API token, so neither the
-Deployments page nor `wrangler deployments list` could be opened. Confirm
-once in the dashboard and replace this sentence with what you saw.
+the point of pinning. Route 1 confirmed by Joe in the dashboard on
+2026-11-24 (the Deployments page offers Rollback on earlier versions).
 
 ### Before you push: the pre-push hook
 
