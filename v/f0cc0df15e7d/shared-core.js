@@ -1,0 +1,2206 @@
+/* Shared layout helpers for Joe's personal apps (base, budgeter, fitness,
+   mealplanner, upkeep, postings). Loaded synchronously by each app layout
+   right after design-system.css: <script src="…/shared-core.js"></script>
+
+   Exposes globals (classic script — an app can override any of these by
+   redeclaring the function in a later inline script):
+     - apiRequest(url, options)         JSON fetch wrapper; resolves with the parsed
+                                        body, throws Error("HTTP error! status: N")
+                                        on !response.ok. Sends X-CSRF-Token (from the
+                                        csrf-token meta) on same-origin non-GET
+                                        requests; a FormData body goes out without a
+                                        JSON Content-Type. The thrown error carries
+                                        .status, .data and .serverMessage. options:
+                                        accept ('json'), csrf (false to skip),
+                                        serverErrorMessage (true → error.message is
+                                        the server's message), busy (an element or
+                                        selector that carries aria-busy="true" while
+                                        the request is in flight). Per-app default:
+                                        apiRequest.defaults.serverErrorMessage.
+                                        (fitness + upkeep still override in their
+                                        layouts until they adopt this.)
+     - formatDate(dateString, opts)     "Monday, July 6, 2026"; opts {short:true} or
+                                        'short' → "Jul 6, 2026". Per-app default:
+                                        formatDate.defaults.short.
+                                        (fitness + budgeter still override: short)
+     - shortDate(dateString)            "Jul 6"
+     - escapeHtml(value)                &<>"' escaped; null/undefined → ''. Defined
+                                        only if nothing else has claimed the name.
+     - todayKey()                       today as "YYYY-MM-DD" in the LOCAL zone —
+                                        never build this from toISOString() (UTC).
+     - dateKey(date) / monthKey(date)   "YYYY-MM-DD" / "YYYY-MM" for a Date, local.
+     - localDateTimeValue(date)         "YYYY-MM-DDTHH:MM" for datetime-local inputs.
+     - cssToken(name, fallback)         a :root custom property as a trimmed string
+                                        (Chart.js colours); fallback when empty.
+                                        cssToken('green-9') or cssToken('--green-9').
+     - dsChartTheme()                   the current theme's chart colours:
+                                        {palette: [--viz-1..8], grid, axis, text,
+                                        surface, border, font}. When Chart.js is on
+                                        the page it also sets Chart.defaults (font,
+                                        tick/grid/tooltip colours, 2px lines), and
+                                        from then on a theme toggle re-applies them
+                                        and redraws every chart. Series colours are
+                                        the page's: re-read palette on
+                                        "ds:themechange" if datasets hold them.
+     - toggleTheme()                    flips data-theme, persists to localStorage
+                                        (the apps dock's button calls it and
+                                        draws its own glyph), then dispatches
+                                        "ds:themechange" on document
+                                        ({detail:{theme}}) so charts can re-theme.
+     - dsSheet(id, open)                open/close a .sheet bottom sheet (the mobile
+                                        "More" sheet); toggles otherwise come from
+                                        [data-sheet-toggle][aria-controls] buttons.
+     - dsEnhanceLabels(root)            points each .form-group's lone <label> at
+                                        the group's lone text control (gives the
+                                        control an id when it has none). Runs on
+                                        load and on every modal open.
+     - dsFieldErrors(form, {field: msg|[msgs]})  field-level errors: aria-invalid,
+                                        a .form-error under the field wired with
+                                        aria-describedby, focus the first; returns
+                                        messages it could not place. dsClearFieldErrors(form).
+     - showStatus(divId, message, type) status-message div; success auto-hides in 3s
+                                        (budgeter overrides: defaults type to 'info')
+     - dsConfirm(message, opts)         styled Promise<boolean> replacement for
+                                        window.confirm(). opts: title, confirmLabel,
+                                        cancelLabel, danger (default true — affirmative
+                                        renders btn-danger; false → btn-primary).
+                                        Handles data-turbo-confirm forms with or
+                                        without Turbo (delegated submit fallback).
+     - dsPrompt(message, opts)          styled Promise<string|null> replacement for
+                                        window.prompt(): the text on OK, null on
+                                        cancel. opts: title, value, placeholder,
+                                        confirmLabel, cancelLabel, danger (default
+                                        false), multiline.
+     - dsToast(message, type, ms)       a toast that needs no pre-placed div. type:
+                                        success (default) | error | info | warning;
+                                        all but error clear after ms (default 3000).
+                                        The third argument may instead be an options
+                                        object {ms, action: {label, onClick}}: the
+                                        action renders as a button inside the toast
+                                        ("Undo"), runs onClick once, and the toast
+                                        then stays 6000ms by default.
+     - dsCopy(text)                     copy to the clipboard → Promise<boolean>.
+     - dsEmptyState(text, opts)         HTML string for an .empty-state block. opts:
+                                        icon (a NAV_ICONS name), action (trusted HTML
+                                        for a button/link), compact (one-line
+                                        variant). text is escaped.
+     - initSettingsPanes(opts)          wires a .settings-pane section list: shows one
+                                        .pane at a time, syncs the #hash for deep links
+                                        and reload, marks the active .settings-nav link,
+                                        and fires a bubbling "settingspane:change" event
+                                        ({detail:{pane}}) so a page can retitle its header.
+                                        Returns {show(name), panes:[…]} or null.
+     - enhanceFileInputs(root)          wraps every input[type="file"] in a
+                                        .drop-zone (click browses, drag-drop
+                                        assigns + fires change). Auto-runs on
+                                        DOMContentLoaded/turbo:load; call again
+                                        for dynamically inserted inputs. Opt out
+                                        per input with data-dz-skip.
+     - installFilterTags(el, opts)      list-page filter bar: a committed term becomes
+                                        a tag and the box clears. opts: fields (the
+                                        per-page spec — the menu, builder and parser
+                                        are all generated from it), value, onChange,
+                                        errorEl, builderButton (the "+ Filter" button;
+                                        class it .filter-tags-add), textField. A text
+                                        or enum field may set exact: true so its terms
+                                        match the whole value, not a substring. Returns
+                                        {tags, query, set, add, clear, focus, parse}.
+                                        opts.navigate {path, map, keep, tagsParam,
+                                        textParam} wires a server-rendered page: tags
+                                        become the params its controller already
+                                        accepts and the page navigates.
+     - filterTagsMatch(row, tags, get)  client-side matcher for pages that already
+                                        hold their rows; `get(field, row)` returns the
+                                        value to test. Strings match as substrings
+                                        unless the field is exact: true. Server-backed
+                                        pages translate tags into query params instead.
+     - placeDropdownMenu(menu)          anchors an open .dropdown-menu to its
+                                        .dropdown trigger as position: fixed, so a
+                                        card's overflow context cannot clip it;
+                                        flips above when short of room below.
+                                        Applied automatically whenever the `open`
+                                        class lands on a .dropdown-menu — pages keep
+                                        their own toggle functions and call nothing.
+     - dsListKeys(container, opts)      keyboard for a list or table: j/k (and
+                                        ↓/↑ with opts.arrows) move a focus row,
+                                        Enter opens it, Esc clears, "/" focuses
+                                        opts.search, and opts.keys maps more keys to
+                                        row actions ({c: row => …}). Rows are
+                                        opts.rows (default 'tbody tr, .list-row,
+                                        [data-key-row]') re-queried on every key, so
+                                        re-rendered lists keep working. Enter
+                                        defaults to opts.onEnter(row) or clicking the
+                                        row's [data-row-open] / first a[href]. Quiet
+                                        while typing, while a modal or dropdown is
+                                        open, and with ⌘/Ctrl/Alt held. Returns
+                                        {focus(i), current(), clear(), destroy()}.
+     - installNavHotkeys(opts)          ⌘1..⌘9 sidebar nav; call once per page.
+                                        opts.allowCtrl — also respond to Ctrl (default
+                                        false: Mac-only Meta, so Ctrl+1..9 tab switching
+                                        on Windows/Linux isn't hijacked).
+                                        opts.allowComma — also handle "," (⌘, settings).
+
+   Also runs on load:
+     - applies the saved theme from localStorage immediately (before first paint);
+       with nothing saved, follows the OS (prefers-color-scheme), dark when the
+       OS states no preference, and keeps following it until the user toggles
+     - prints in the light theme (beforeprint/afterprint swap)
+     - aria-current="page" on .nav-link.active; aria-label / aria-expanded on
+       the mobile menu button (#mobileMenuBtn) when the layout set none
+     - wires the mobile menu toggle / overlay / nav-link close (delegated, Turbo-safe)
+     - row-select tables: clicking a row toggles its checkbox when that
+       checkbox opts in with data-row-select (delegated; clicks on the row's
+       own links/buttons/inputs are left alone)
+     - click-to-dismiss for any .status-message toast (delegated document listener)
+     - flash auto-dismiss: a .status-message.status-success that is visible when
+       the page loads hides itself after 3s (errors stay)
+     - copy buttons: clicking [data-copy-text="…"] or [data-copy-target="<selector>"]
+       copies and confirms with a toast (data-copy-label overrides "Copied")
+     - renderNavIcons(): fills <span class="nav-ico" data-ico="name"> with the
+       shared outline icon set on DOMContentLoaded + turbo:load (v4.2 nav)
+
+   Idempotent — safe to load more than once. */
+(function (global) {
+    if (global.__sharedCoreInstalled) return;
+    global.__sharedCoreInstalled = true;
+
+    // Apply the theme immediately so there's no light/dark flash. A saved
+    // choice wins; otherwise the OS preference, and dark when the OS states
+    // none (the apps' historical default).
+    function readSavedTheme() {
+        try { return localStorage.getItem('theme'); } catch (_) { return null; }
+    }
+    function systemTheme() {
+        try { return global.matchMedia && global.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+        catch (_) { return 'dark'; }
+    }
+    function applyTheme(theme) {
+        const h = document.documentElement;
+        h.classList.remove('light', 'dark');
+        h.setAttribute('data-theme', theme);
+        h.classList.add(theme);
+    }
+    function announceTheme(theme) {
+        document.dispatchEvent(new CustomEvent('ds:themechange', { detail: { theme: theme } }));
+    }
+    applyTheme(readSavedTheme() || systemTheme());
+    // Print light whatever the screen theme (the Radix dark scales key on
+    // the .dark class, which CSS alone cannot drop), then put it back.
+    let printRestore = null;
+    global.addEventListener('beforeprint', () => {
+        const t = document.documentElement.getAttribute('data-theme');
+        if (t === 'dark') { printRestore = t; applyTheme('light'); }
+    });
+    global.addEventListener('afterprint', () => {
+        if (printRestore) { applyTheme(printRestore); printRestore = null; }
+    });
+    // Until the user picks a theme, follow the OS when it changes.
+    try {
+        global.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+            if (readSavedTheme()) return;
+            const t = systemTheme();
+            applyTheme(t);
+            announceTheme(t);
+        });
+    } catch (_) { /* old Safari: no addEventListener on MediaQueryList */ }
+
+    // ── Small pure helpers ─────────────────────────────────────────────────
+    // escapeHtml was written privately 15 times across base, budgeter and
+    // fitness in two null-handling variants. Defined only when nothing has
+    // claimed the name, and a page's own `function escapeHtml` declaration in
+    // a later script still replaces it, so pages keep their copy until cleaned.
+    if (typeof global.escapeHtml !== 'function') {
+        global.escapeHtml = function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        };
+    }
+
+    // Local-date keys. NEVER derive "today" from toISOString(): it converts to
+    // UTC, so any evening west of Greenwich reads as tomorrow (and the last
+    // evening of a month as next month). Lifted from budgeter's layout.
+    const pad2 = n => String(n).padStart(2, '0');
+    const asDate = d => (d instanceof Date ? d : (d === undefined || d === null ? new Date() : new Date(d)));
+    global.monthKey = function monthKey(date) {
+        date = asDate(date);
+        return date.getFullYear() + '-' + pad2(date.getMonth() + 1);
+    };
+    global.dateKey = function dateKey(date) {
+        date = asDate(date);
+        return global.monthKey(date) + '-' + pad2(date.getDate());
+    };
+    global.todayKey = function todayKey() {
+        return global.dateKey(new Date());
+    };
+    // Value for <input type="datetime-local">: local wall time, to the minute.
+    global.localDateTimeValue = function localDateTimeValue(date) {
+        date = asDate(date);
+        return global.dateKey(date) + 'T' + pad2(date.getHours()) + ':' + pad2(date.getMinutes());
+    };
+
+    // Read a design token off :root for code that needs a colour STRING
+    // (Chart.js, Leaflet). The stylesheet can lose a load race against the
+    // first chart, so an empty read falls back. `name` takes or omits the
+    // leading "--": cssToken('green-9', '#30A46C').
+    global.cssToken = function cssToken(name, fallback) {
+        const prop = String(name).indexOf('--') === 0 ? String(name) : '--' + name;
+        const v = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+        return v || (fallback === undefined ? '' : fallback);
+    };
+
+    // Chart theme from tokens. Returns plain strings so any library can use
+    // it; with Chart.js present it also sets Chart.defaults. Called once, it
+    // keeps Chart.defaults in step with the theme (ds:themechange) and
+    // redraws live charts — dataset colours stay the page's job.
+    let chartThemeWired = false;
+    global.dsChartTheme = function dsChartTheme() {
+        const t = n => global.cssToken(n);
+        const theme = {
+            palette: [1, 2, 3, 4, 5, 6, 7, 8].map(i => t('--viz-' + i)),
+            grid: t('--viz-grid'),
+            axis: t('--viz-axis'),
+            text: t('--text'),
+            surface: t('--card'),
+            border: t('--card-border'),
+            font: t('--font-sans') || 'Inter, sans-serif',
+            mono: t('--font-mono') || 'monospace',
+        };
+        const C = global.Chart;
+        if (C && C.defaults) {
+            const d = C.defaults;
+            d.color = theme.axis;
+            d.borderColor = theme.grid;
+            d.font = Object.assign({}, d.font, { family: theme.font, size: 12 });
+            if (d.scale && d.scale.grid) d.scale.grid.color = theme.grid;
+            if (d.elements && d.elements.line) d.elements.line.borderWidth = 2;
+            const tip = d.plugins && d.plugins.tooltip;
+            if (tip) Object.assign(tip, {
+                backgroundColor: theme.surface, titleColor: theme.text, bodyColor: theme.text,
+                borderColor: theme.border, borderWidth: 1, padding: 10, cornerRadius: 7,
+            });
+            if (d.plugins && d.plugins.legend && d.plugins.legend.labels) d.plugins.legend.labels.color = theme.axis;
+            if (!chartThemeWired) {
+                chartThemeWired = true;
+                let prev = theme;
+                document.addEventListener('ds:themechange', () => {
+                    const next = global.dsChartTheme();
+                    // Chart.js caches resolved options, so a defaults change
+                    // alone does not reach a live chart. Swap every option
+                    // value that still holds the previous theme's colour for
+                    // the new one — colours a page chose itself are left alone.
+                    const swap = new Map();
+                    ['grid', 'axis', 'text', 'surface', 'border'].forEach(k => { if (prev[k]) swap.set(prev[k], next[k]); });
+                    prev.palette.forEach((c, i) => { if (c) swap.set(c, next.palette[i]); });
+                    const walk = (o, depth) => {
+                        if (!o || typeof o !== 'object' || depth > 6) return;
+                        Object.keys(o).forEach(k => {
+                            const v = o[k];
+                            if (typeof v === 'string' && swap.has(v)) o[k] = swap.get(v);
+                            else if (Array.isArray(v)) v.forEach((x, i) => { if (typeof x === 'string' && swap.has(x)) v[i] = swap.get(x); });
+                            else if (v && typeof v === 'object' && k !== 'chart' && k[0] !== '_') walk(v, depth + 1);
+                        });
+                    };
+                    const live = C.instances ? Object.values(C.instances) : [];
+                    live.forEach(ch => {
+                        try {
+                            const sc = ch.options && ch.options.scales;
+                            if (sc) Object.keys(sc).forEach(id => {
+                                const ax = ch.config.options.scales && ch.config.options.scales[id] || (ch.config.options.scales = ch.config.options.scales || {}, ch.config.options.scales[id] = {});
+                                ax.grid = Object.assign({}, ax.grid, { color: swap.get(sc[id].grid && sc[id].grid.color) || (ax.grid && ax.grid.color) || next.grid });
+                                ax.border = Object.assign({}, ax.border, { color: swap.get(sc[id].border && sc[id].border.color) || (ax.border && ax.border.color) || next.grid });
+                                ax.ticks = Object.assign({}, ax.ticks, { color: swap.get(sc[id].ticks && sc[id].ticks.color) || (ax.ticks && ax.ticks.color) || next.axis });
+                            });
+                            walk(ch.config.options.plugins, 0);
+                            (ch.data.datasets || []).forEach(ds => walk(ds, 0));
+                            ch.update('none');
+                        } catch (_) { /* destroyed or foreign chart */ }
+                    });
+                    prev = next;
+                });
+            }
+        }
+        return theme;
+    };
+
+    // JSON fetch wrapper. What every caller has always seen is unchanged:
+    // resolves with the parsed JSON body, rejects with
+    // Error("HTTP error! status: <code>") on a non-2xx, and a caller's own
+    // `headers` REPLACE the default Content-Type rather than merging with it.
+    //
+    // Added 2026-11-05 (none of it alters an existing call):
+    //   - X-CSRF-Token from <meta name="csrf-token"> on same-origin non-GET
+    //     requests, unless the caller set one or passes csrf:false.
+    //   - a FormData body goes out with no Content-Type, so the browser can
+    //     write the multipart boundary (when the caller supplied no headers).
+    //   - the thrown error carries .status, .data (parsed JSON error body, or
+    //     null) and .serverMessage (data.error | data.message | data.errors).
+    //   - options.accept: 'json' (or a MIME string) adds an Accept header, for
+    //     endpoints that pick their response with respond_to.
+    //   - options.serverErrorMessage: true makes error.message the server's
+    //     message when there is one. Off by default because existing callers
+    //     show or compare the "HTTP error!" text; an app that wants it on
+    //     everywhere sets apiRequest.defaults.serverErrorMessage = true once
+    //     in its layout (this is what fitness's override does today).
+    const apiDefaults = { serverErrorMessage: false };
+    global.apiRequest = async function apiRequest(url, options = {}) {
+        const { serverErrorMessage, accept, csrf, busy, ...fetchOptions } = options || {};
+        // busy: an element (or selector) that is aria-busy for the life of
+        // the request — pairs with .skeleton placeholders.
+        let busyEl = null;
+        if (busy) {
+            try { busyEl = typeof busy === 'string' ? document.querySelector(busy) : busy; } catch (_) { busyEl = null; }
+            if (busyEl && busyEl.setAttribute) busyEl.setAttribute('aria-busy', 'true');
+        }
+        const isForm = typeof FormData !== 'undefined' && fetchOptions.body instanceof FormData;
+        const defaults = { headers: isForm ? {} : { 'Content-Type': 'application/json' } };
+        const config = { ...defaults, ...fetchOptions };
+
+        const extra = {};
+        if (accept) extra['Accept'] = accept === true || accept === 'json' ? 'application/json' : accept;
+        const method = String(config.method || 'GET').toUpperCase();
+        if (csrf !== false && method !== 'GET' && method !== 'HEAD') {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            const token = meta && meta.getAttribute('content');
+            let sameOrigin = false;
+            try { sameOrigin = new URL(url, global.location.href).origin === global.location.origin; } catch (_) { /* opaque URL */ }
+            if (token && sameOrigin) extra['X-CSRF-Token'] = token;
+        }
+        const extraKeys = Object.keys(extra);
+        if (extraKeys.length) {
+            // Never overwrite a header the caller set themselves.
+            const h = config.headers;
+            if (typeof Headers !== 'undefined' && (h instanceof Headers || Array.isArray(h))) {
+                const merged = new Headers(h);
+                extraKeys.forEach(k => { if (!merged.has(k)) merged.set(k, extra[k]); });
+                config.headers = merged;
+            } else {
+                const merged = { ...(h || {}) };
+                const have = Object.keys(merged).map(k => k.toLowerCase());
+                extraKeys.forEach(k => { if (have.indexOf(k.toLowerCase()) === -1) merged[k] = extra[k]; });
+                config.headers = merged;
+            }
+        }
+
+        try {
+            const response = await fetch(url, config);
+            if (!response.ok) {
+                const error = new Error(`HTTP error! status: ${response.status}`);
+                error.status = response.status;
+                error.data = null;
+                error.serverMessage = null;
+                try {
+                    const body = await response.json();
+                    error.data = body;
+                    if (body && typeof body === 'object') {
+                        const m = body.error || body.message ||
+                            (Array.isArray(body.errors) ? body.errors.join(', ') : body.errors);
+                        if (m && typeof m === 'string') error.serverMessage = m;
+                    }
+                } catch (_) { /* not JSON — status is all we have */ }
+                const useServer = serverErrorMessage === undefined
+                    ? apiDefaults.serverErrorMessage
+                    : serverErrorMessage;
+                if (useServer && error.serverMessage) error.message = error.serverMessage;
+                throw error;
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('API request failed:', error);
+            throw error;
+        } finally {
+            if (busyEl && busyEl.removeAttribute) busyEl.removeAttribute('aria-busy');
+        }
+    };
+    global.apiRequest.defaults = apiDefaults;
+
+    // formatDate('2026-07-06')                  "Monday, July 6, 2026"
+    // formatDate('2026-07-06', { short: true }) "Jul 6, 2026"  (also 'short')
+    // An app whose every date is short sets formatDate.defaults.short = true
+    // once in its layout — the override budgeter and fitness each carry.
+    const formatDateDefaults = { short: false };
+    global.formatDate = function formatDate(dateString, opts) {
+        if (!dateString) return '';
+        const date = new Date(dateString + 'T00:00:00');
+        // opts is only honoured as an object or the string 'short', so
+        // list.map(formatDate) — which passes an index — keeps the default.
+        const asked = opts === 'short' ? true
+            : (opts && typeof opts === 'object' && typeof opts.short === 'boolean') ? opts.short
+            : undefined;
+        const short = asked === undefined ? formatDateDefaults.short : asked;
+        return short
+            ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    };
+    global.formatDate.defaults = formatDateDefaults;
+
+    global.shortDate = function shortDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString + 'T00:00:00');
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    global.toggleTheme = function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+        try { localStorage.setItem('theme', newTheme); } catch (_) { /* private mode */ }
+        announceTheme(newTheme);
+    };
+
+    // Live-region semantics for a toast (PLAT-06): errors are an assertive
+    // alert, everything else a polite status — the same as dsToast.
+    function markLive(el, type) {
+        const alert = type === 'error';
+        el.setAttribute('role', alert ? 'alert' : 'status');
+        el.setAttribute('aria-live', alert ? 'assertive' : 'polite');
+        el.setAttribute('aria-atomic', 'true');
+    }
+    global.showStatus = function showStatus(divId, message, type) {
+        const div = document.getElementById(divId);
+        if (!div) return;
+        markLive(div, type);
+        div.textContent = message;
+        div.className = 'status-message status-' + type;
+        div.style.display = 'block';
+        if (type === 'success') setTimeout(() => { div.style.display = 'none'; }, 3000);
+    };
+
+    // ── Field-level errors (PLAT-07) ──────────────────────────────────────
+    // dsFieldErrors(form, { title: "Title required", "recipe[servings]": ["must be > 0"] })
+    // marks each named field aria-invalid, puts a .form-error under it (inside
+    // its .form-group when there is one) wired up with aria-describedby, clears
+    // the previous round's errors first, and focuses the first invalid field.
+    // A key matches a field's name, its Rails-style suffix (`title` →
+    // `recipe[title]`) or its id. Messages for fields it cannot find are
+    // returned, so the caller can toast them. An edit clears that field's error.
+    // The server-rendered twin is the gem's personal_app_field_error helper.
+    let fieldErrorSeq = 0;
+    function findField(form, key) {
+        const esc = global.CSS && CSS.escape ? CSS.escape : (v => String(v).replace(/["\\]/g, '\\$&'));
+        return form.querySelector('[name="' + esc(key) + '"]')
+            || form.querySelector('[name$="[' + esc(key) + ']"]')
+            || form.querySelector('#' + esc(key));
+    }
+    function clearFieldError(field) {
+        field.removeAttribute('aria-invalid');
+        const id = field.dataset.dsErrorId;
+        if (!id) return;
+        const msg = document.getElementById(id);
+        if (msg) msg.remove();
+        const ids = (field.getAttribute('aria-describedby') || '').split(/\s+/).filter(x => x && x !== id);
+        if (ids.length) field.setAttribute('aria-describedby', ids.join(' ')); else field.removeAttribute('aria-describedby');
+        delete field.dataset.dsErrorId;
+    }
+    global.dsClearFieldErrors = function dsClearFieldErrors(form) {
+        if (!form) return;
+        form.querySelectorAll('[data-ds-error-id]').forEach(clearFieldError);
+    };
+    global.dsFieldErrors = function dsFieldErrors(form, errors) {
+        if (typeof form === 'string') form = document.getElementById(form) || document.querySelector(form);
+        if (!form) return [];
+        global.dsClearFieldErrors(form);
+        const unplaced = [];
+        let first = null;
+        Object.keys(errors || {}).forEach(key => {
+            const list = [].concat(errors[key]).filter(Boolean).map(String);
+            if (!list.length) return;
+            const field = findField(form, key);
+            if (!field) { list.forEach(m => unplaced.push(m)); return; }
+            const id = 'ds-field-error-' + (++fieldErrorSeq);
+            const msg = document.createElement('p');
+            msg.className = 'form-error';
+            msg.id = id;
+            msg.textContent = list.join(' · ');
+            const group = field.closest('.form-group');
+            if (group) group.appendChild(msg); else field.insertAdjacentElement('afterend', msg);
+            field.setAttribute('aria-invalid', 'true');
+            field.setAttribute('aria-describedby', ((field.getAttribute('aria-describedby') || '') + ' ' + id).trim());
+            field.dataset.dsErrorId = id;
+            if (!field.dataset.dsErrorWired) {
+                field.dataset.dsErrorWired = '1';
+                const clear = () => clearFieldError(field);
+                field.addEventListener('input', clear);
+                field.addEventListener('change', clear);
+            }
+            if (!first) first = field;
+        });
+        if (first) first.focus();
+        return unplaced;
+    };
+
+    // Styled confirm dialog (brand-guide §13). Builds one reusable DS modal.
+    // The affirmative sits rightmost; danger:true renders it btn-danger, which
+    // also means modal-keys' Enter-to-primary deliberately does NOT fire it —
+    // and Cancel takes focus, because Enter on a focused button activates it
+    // natively and the danger action must never be one keypress away.
+    global.dsConfirm = function dsConfirm(message, opts = {}) {
+        const danger = opts.danger !== false;
+        let modal = document.getElementById('ds-confirm-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'ds-confirm-modal';
+            modal.setAttribute('role', 'alertdialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-labelledby', 'ds-confirm-title');
+            modal.setAttribute('aria-describedby', 'ds-confirm-message');
+            modal.innerHTML =
+                '<div class="modal-box" style="max-width:480px">' +
+                '<div class="modal-header"><h3 id="ds-confirm-title"></h3>' +
+                '<button class="modal-close btn-ghost" data-ds-confirm="cancel" aria-label="Close">&times;</button></div>' +
+                '<div class="modal-body"><p id="ds-confirm-message" style="margin:0"></p></div>' +
+                '<div class="modal-footer">' +
+                '<button class="btn btn-secondary" data-ds-confirm="cancel"></button>' +
+                '<button class="btn" data-ds-confirm="ok"></button></div></div>';
+            document.body.appendChild(modal);
+        }
+        modal.querySelector('#ds-confirm-title').textContent = opts.title || 'Confirm';
+        modal.querySelector('#ds-confirm-message').textContent = message;
+        modal.querySelector('.modal-footer [data-ds-confirm="cancel"]').textContent = opts.cancelLabel || 'Cancel';
+        const okBtn = modal.querySelector('[data-ds-confirm="ok"]');
+        okBtn.textContent = opts.confirmLabel || 'Confirm';
+        okBtn.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+        const returnFocus = document.activeElement;
+        modal.classList.add('modal-open');
+        (danger ? modal.querySelector('.modal-footer [data-ds-confirm="cancel"]') : okBtn).focus();
+        return new Promise(resolve => {
+            function done(ok) {
+                modal.classList.remove('modal-open');
+                if (returnFocus && returnFocus.focus && document.contains(returnFocus)) returnFocus.focus();
+                modal.removeEventListener('click', onClick);
+                document.removeEventListener('keydown', onKey, true);
+                resolve(ok);
+            }
+            function onClick(e) {
+                const act = e.target.closest('[data-ds-confirm]');
+                if (act) return done(act.getAttribute('data-ds-confirm') === 'ok');
+                if (e.target === modal) done(false);  // backdrop click
+            }
+            function onKey(e) {
+                if (e.key === 'Escape') { e.preventDefault(); done(false); }
+            }
+            modal.addEventListener('click', onClick);
+            document.addEventListener('keydown', onKey, true);
+        });
+    };
+
+    // Styled prompt — dsConfirm's sibling for the one-line "why?" question.
+    // Resolves with the typed string ('' if left blank) on OK and null on
+    // cancel / Esc / backdrop, the same contract as window.prompt().
+    // opts: title, value (initial text), placeholder, confirmLabel,
+    // cancelLabel, danger (default false — a prompt is rarely destructive),
+    // multiline (textarea; Enter then inserts a newline instead of submitting).
+    global.dsPrompt = function dsPrompt(message, opts = {}) {
+        let modal = document.getElementById('ds-prompt-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'ds-prompt-modal';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-labelledby', 'ds-prompt-title');
+            modal.innerHTML =
+                '<div class="modal-box" style="max-width:480px">' +
+                '<div class="modal-header"><h3 id="ds-prompt-title"></h3>' +
+                '<button class="modal-close btn-ghost" data-ds-prompt="cancel" aria-label="Close">&times;</button></div>' +
+                '<div class="modal-body"><label id="ds-prompt-message" for="ds-prompt-input" style="display:block;margin:0 0 8px"></label>' +
+                '<span id="ds-prompt-field"></span></div>' +
+                '<div class="modal-footer">' +
+                '<button class="btn btn-secondary" data-ds-prompt="cancel"></button>' +
+                '<button class="btn" data-ds-prompt="ok"></button></div></div>';
+            document.body.appendChild(modal);
+        }
+        // Rebuilt per call so single-line and multiline prompts can alternate.
+        const field = modal.querySelector('#ds-prompt-field');
+        field.innerHTML = '';
+        const input = document.createElement(opts.multiline ? 'textarea' : 'input');
+        if (opts.multiline) input.rows = 3; else input.type = 'text';
+        input.id = 'ds-prompt-input';
+        input.className = 'form-control';
+        input.style.width = '100%';
+        input.value = opts.value === undefined || opts.value === null ? '' : String(opts.value);
+        input.placeholder = opts.placeholder || '';
+        field.appendChild(input);
+
+        modal.querySelector('#ds-prompt-title').textContent = opts.title || 'Enter a value';
+        modal.querySelector('#ds-prompt-message').textContent = message === undefined || message === null ? '' : message;
+        modal.querySelector('.modal-footer [data-ds-prompt="cancel"]').textContent = opts.cancelLabel || 'Cancel';
+        const okBtn = modal.querySelector('[data-ds-prompt="ok"]');
+        okBtn.textContent = opts.confirmLabel || 'OK';
+        okBtn.className = 'btn ' + (opts.danger ? 'btn-danger' : 'btn-primary');
+        const returnFocus = document.activeElement;
+        modal.classList.add('modal-open');
+        input.focus();
+        input.select();
+        return new Promise(resolve => {
+            let settled = false;
+            function done(ok) {
+                // modal-keys' Enter-to-primary and the input's own Enter can
+                // both land here for one keypress; only the first counts.
+                if (settled) return;
+                settled = true;
+                modal.classList.remove('modal-open');
+                if (returnFocus && returnFocus.focus && document.contains(returnFocus)) returnFocus.focus();
+                modal.removeEventListener('click', onClick);
+                document.removeEventListener('keydown', onKey, true);
+                resolve(ok ? input.value : null);
+            }
+            function onClick(e) {
+                const act = e.target.closest('[data-ds-prompt]');
+                if (act) return done(act.getAttribute('data-ds-prompt') === 'ok');
+                if (e.target === modal) done(false);  // backdrop click
+            }
+            function onKey(e) {
+                if (e.key === 'Escape') { e.preventDefault(); done(false); }
+                else if (e.key === 'Enter' && e.target === input && !opts.multiline &&
+                         !e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                    e.preventDefault();
+                    done(true);
+                }
+            }
+            modal.addEventListener('click', onClick);
+            document.addEventListener('keydown', onKey, true);
+        });
+    };
+
+    // Route Rails/Turbo data-turbo-confirm through the styled dialog. Turbo
+    // (an importmap module) is loaded by DOMContentLoaded when present.
+    document.addEventListener('DOMContentLoaded', () => {
+        const T = global.Turbo;
+        if (!T) return;
+        const method = (msg) => global.dsConfirm(msg);
+        if (T.config && T.config.forms) T.config.forms.confirm = method;
+        else if (T.setConfirmMethod) T.setConfirmMethod(method);
+    });
+
+    // The same attribute WITHOUT Turbo (the apps are all vanilla since
+    // 2026-09-10): intercept the form submit and gate it on dsConfirm. The
+    // attribute may sit on the form (button_to form: {data:}) or on the
+    // submit button itself (button_to data:). Defers to Turbo if present.
+    document.addEventListener('submit', function (e) {
+        if (global.Turbo) return;
+        const holder =
+            (e.submitter && e.submitter.closest('[data-turbo-confirm]')) ||
+            (e.target.matches && e.target.matches('[data-turbo-confirm]') ? e.target : null);
+        if (!holder) return;
+        e.preventDefault();
+        global.dsConfirm(holder.getAttribute('data-turbo-confirm')).then(ok => {
+            // Native submit() skips this listener, so no re-entry loop.
+            if (ok) e.target.submit();
+        });
+    }, true);
+
+    // ── List keyboard helper ───────────────────────────────────────────────
+    // One implementation of the j/k list pattern (Linear, Gmail) so ledgers,
+    // inboxes and reminder lists move the same way in every app. The focus
+    // row is a class (.is-key-focus), not DOM focus, so typing elsewhere and
+    // screen-reader focus are left alone; aria-current marks it for AT.
+    global.dsListKeys = function dsListKeys(container, opts) {
+        opts = opts || {};
+        const root = typeof container === 'string' ? document.querySelector(container) : container;
+        if (!root) return null;
+        const rowSel = opts.rows || 'tbody tr, .list-row, [data-key-row]';
+        const keys = opts.keys || {};
+        let index = -1;
+        const rows = () => Array.prototype.filter.call(root.querySelectorAll(rowSel),
+            r => !r.hidden && r.offsetParent !== null && !r.hasAttribute('data-key-skip'));
+        function paint(list) {
+            list = list || rows();
+            root.querySelectorAll('.is-key-focus').forEach(r => { r.classList.remove('is-key-focus'); r.removeAttribute('aria-current'); });
+            const row = list[index];
+            if (!row) return null;
+            row.classList.add('is-key-focus');
+            row.setAttribute('aria-current', 'true');
+            try { row.scrollIntoView({ block: 'nearest' }); } catch (_) { /* old engines */ }
+            if (typeof opts.onFocus === 'function') opts.onFocus(row, index);
+            return row;
+        }
+        function focus(i) {
+            const list = rows();
+            if (!list.length) { index = -1; return null; }
+            index = Math.max(0, Math.min(i, list.length - 1));
+            return paint(list);
+        }
+        function current() { const list = rows(); return list[index] || null; }
+        function clear() { index = -1; paint([]); }
+        function open(row) {
+            if (typeof opts.onEnter === 'function') return opts.onEnter(row);
+            const target = row.querySelector('[data-row-open]') || row.querySelector('a[href]');
+            if (target) target.click();
+        }
+        function typing(t) {
+            if (!t || !t.tagName) return false;
+            const tag = t.tagName.toLowerCase();
+            return tag === 'input' || tag === 'textarea' || tag === 'select' || t.isContentEditable;
+        }
+        function onKey(e) {
+            if (!document.contains(root) || root.offsetParent === null) return;
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            if (document.querySelector('.modal.modal-open, .dropdown-menu.open')) return;
+            if (typing(e.target)) {
+                if (e.key === 'Escape' && opts.search && e.target.matches(opts.search)) e.target.blur();
+                return;
+            }
+            const k = e.key;
+            if (k === '/' && opts.search) {
+                const box = document.querySelector(opts.search);
+                if (box) { e.preventDefault(); box.focus(); if (box.select) box.select(); }
+                return;
+            }
+            if (k === 'j' || (opts.arrows && k === 'ArrowDown')) { e.preventDefault(); focus(index + 1); return; }
+            if (k === 'k' || (opts.arrows && k === 'ArrowUp')) { e.preventDefault(); focus(index < 0 ? 0 : index - 1); return; }
+            if (k === 'Escape' && index >= 0) { clear(); return; }
+            const row = current();
+            if (!row) return;
+            if (k === 'Enter') { e.preventDefault(); open(row); return; }
+            const fn = keys[k];
+            if (typeof fn === 'function') { e.preventDefault(); fn(row, index); }
+        }
+        // A click inside a row moves the focus row there, so j/k continue
+        // from where the mouse was.
+        function onClick(e) {
+            const row = e.target.closest && e.target.closest(rowSel);
+            if (!row || !root.contains(row)) return;
+            const i = rows().indexOf(row);
+            if (i !== -1) { index = i; paint(); }
+        }
+        document.addEventListener('keydown', onKey);
+        root.addEventListener('click', onClick);
+        return {
+            focus: focus, current: current, clear: clear,
+            destroy() { document.removeEventListener('keydown', onKey); root.removeEventListener('click', onClick); clear(); },
+        };
+    };
+
+    // ⌘1..⌘9 — jump to the matching sidebar link. Skip when the user is typing.
+    global.installNavHotkeys = function installNavHotkeys(opts = {}) {
+        document.addEventListener('keydown', e => {
+            const mod = opts.allowCtrl ? (e.metaKey || e.ctrlKey) : (e.metaKey && !e.ctrlKey);
+            if (!mod || e.altKey || e.shiftKey) return;
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable) return;
+            const isDigit = e.key >= '1' && e.key <= '9';
+            if (!isDigit && !(opts.allowComma && e.key === ',')) return;
+            const link = document.querySelector(`.nav-link[data-nav-key="${e.key}"]`);
+            if (!link) return;
+            e.preventDefault();
+            window.location.href = link.getAttribute('href');
+        });
+    };
+
+    // Server-rendered flash messages (the gem's _flash partial, or any page's
+    // own .status-message) are in the page from the start, and most screen
+    // readers do not read live-region content that was there at load. Mark
+    // each one live and put its text back a moment later so it is announced.
+    function announceServerToasts() {
+        document.querySelectorAll('.status-message').forEach(el => {
+            if (el.dataset.dsAnnounced || el.id === 'ds-toast') return;
+            el.dataset.dsAnnounced = '1';
+            const text = el.textContent.trim();
+            if (!text || getComputedStyle(el).display === 'none') return;
+            markLive(el, el.classList.contains('status-error') ? 'error' : 'status');
+            const nodes = Array.from(el.childNodes);
+            el.textContent = '';
+            setTimeout(() => nodes.forEach(n => el.appendChild(n)), 150);
+        });
+    }
+    global.dsAnnounceServerToasts = announceServerToasts;
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', announceServerToasts);
+    else announceServerToasts();
+
+    // Toasts: click anywhere on a .status-message to dismiss. Delegated so it
+    // covers server-rendered flash divs and app-level showStatus overrides.
+    document.addEventListener('click', e => {
+        const toast = e.target.closest && e.target.closest('.status-message');
+        if (toast) toast.style.display = 'none';
+    });
+
+    // A toast with no markup to pre-place: showStatus() needs a div the page
+    // already rendered, this one makes its own (#ds-toast, reused). type is
+    // success | error | info | warning; everything but error clears itself
+    // after `ms` (default 3000), error waits for a click.
+    let toastTimer = null;
+    global.dsToast = function dsToast(message, type, ms) {
+        if (!document.body) return null;
+        // dsToast(msg, {…}) and dsToast(msg, type, {…}) as well as the
+        // original dsToast(msg, type, ms).
+        let opts = {};
+        if (type && typeof type === 'object') { opts = type; type = opts.type; }
+        else if (ms && typeof ms === 'object') { opts = ms; }
+        else if (ms) { opts = { ms: ms }; }
+        let el = document.getElementById('ds-toast');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'ds-toast';
+            el.setAttribute('role', 'status');
+            el.setAttribute('aria-live', 'polite');
+            document.body.appendChild(el);
+        }
+        type = type || 'success';
+        el.textContent = message;
+        const action = opts.action;
+        if (action && action.label) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'toast-action';
+            btn.textContent = action.label;
+            let used = false;
+            btn.addEventListener('click', () => {
+                if (used) return;
+                used = true;
+                if (typeof action.onClick === 'function') action.onClick();
+            });
+            el.appendChild(btn);
+        }
+        markLive(el, type);
+        el.className = 'status-message status-' + type + (action && action.label ? ' has-action' : '');
+        el.style.display = 'block';
+        clearTimeout(toastTimer);
+        const wait = opts.ms || (action && action.label ? 6000 : 3000);
+        if (type !== 'error') toastTimer = setTimeout(() => { el.style.display = 'none'; }, wait);
+        return el;
+    };
+
+    // Server-rendered flash: a success toast present when the page loads
+    // clears itself after 3s; errors stay until clicked or the next
+    // navigation. mealplanner, postings and upkeep each carried this as a
+    // layout one-liner — running both is harmless, each just hides the same
+    // element at the same moment.
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.status-message.status-success').forEach(el => {
+            // Only a toast that is actually showing. A hidden one is a page's
+            // own showStatus()/copy-status target and keeps its own timer.
+            if (el.id === 'ds-toast' || getComputedStyle(el).display === 'none') return;
+            setTimeout(() => { el.style.display = 'none'; }, 3000);
+        });
+    });
+
+    // ── Copy to clipboard ──────────────────────────────────────────────────
+    //   <button data-copy-text="the literal text">Copy</button>
+    //   <button data-copy-target="#mcp-url">Copy</button>
+    // data-copy-target takes a selector: a form field copies its value,
+    // anything else its trimmed text. Confirms with a toast ("Copied", or
+    // data-copy-label). The attribute is data-copy-text, not data-copy —
+    // mealplanner's settings page already uses data-copy="<element id>" with
+    // its own handler, and answering to that name would copy the id string.
+    function dsCopy(text) {
+        text = text === undefined || text === null ? '' : String(text);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text).then(() => true, () => legacyCopy(text));
+        }
+        return Promise.resolve(legacyCopy(text));
+    }
+    // dsCopy(text) → Promise<boolean>, for pages that copy from script.
+    global.dsCopy = dsCopy;
+    // navigator.clipboard needs a secure context; fall back so a copy button
+    // on plain http (local dev, LAN) is never a dead end.
+    function legacyCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+        ta.remove();
+        return ok;
+    }
+    document.addEventListener('click', e => {
+        const el = e.target.closest && e.target.closest('[data-copy-text], [data-copy-target]');
+        if (!el) return;
+        let text;
+        if (el.hasAttribute('data-copy-text')) {
+            text = el.getAttribute('data-copy-text');
+        } else {
+            let src = null;
+            try { src = document.querySelector(el.getAttribute('data-copy-target')); } catch (_) { /* bad selector */ }
+            if (!src) return;
+            text = 'value' in src && typeof src.value === 'string' ? src.value : (src.textContent || '').trim();
+        }
+        dsCopy(text).then(ok => {
+            global.dsToast(ok ? (el.getAttribute('data-copy-label') || 'Copied') : 'Copy failed', ok ? 'success' : 'error');
+        });
+    });
+
+    // v4.2 nav icons — Feather-style 24×24 outline set. Layouts write
+    // <span class="nav-ico" data-ico="name"></span>; the SVG is injected here
+    // so the icon set has one home (like the dock logos in apps-launcher.js).
+    const NAV_ICONS = {
+        star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+        grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+        target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+        bell: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+        cloud: '<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>',
+        archive: '<polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/>',
+        activity: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+        sliders: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+        'pie-chart': '<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+        list: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+        'alert-triangle': '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+        inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+        calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+        'trending-up': '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+        book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+        barbell: '<path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M3 9v6"/><path d="M21 9v6"/><line x1="6.5" y1="12" x2="17.5" y2="12"/>',
+        'file-text': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+        cart: '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>',
+        tag: '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+        package: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+        wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+        clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+        briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+        users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+        more: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+        plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+        upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+        moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+    };
+
+    function iconSvg(name) {
+        const body = NAV_ICONS[name];
+        return body
+            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>'
+            : '';
+    }
+
+    // Empty state markup for JS-rendered lists (the CSS documents the
+    // server-rendered form). The icon is inlined, so no renderNavIcons pass
+    // is needed after an innerHTML write.
+    global.dsEmptyState = function dsEmptyState(text, opts) {
+        opts = opts || {};
+        const icon = opts.icon ? iconSvg(opts.icon) : '';
+        return '<div class="empty-state' + (opts.compact ? ' empty-state--compact' : '') + '">' +
+            (icon ? '<span class="empty-state-icon">' + icon + '</span>' : '') +
+            '<p class="empty-state-text">' + global.escapeHtml(text) + '</p>' +
+            (opts.action || '') + '</div>';
+    };
+
+    global.renderNavIcons = function renderNavIcons(root) {
+        (root || document).querySelectorAll('.nav-ico[data-ico]:empty').forEach(el => {
+            const body = NAV_ICONS[el.getAttribute('data-ico')];
+            if (body) el.innerHTML =
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>';
+        });
+    };
+    document.addEventListener('DOMContentLoaded', () => global.renderNavIcons());
+    document.addEventListener('turbo:load', () => global.renderNavIcons());
+
+    // Settings panes — one section visible at a time (see .settings-pane in
+    // design-system.css). Deep-linkable: /settings#connector opens that pane,
+    // and switching panes rewrites the hash WITHOUT pushing history entries,
+    // so Back leaves settings instead of walking the panes you clicked.
+    global.initSettingsPanes = function initSettingsPanes(opts = {}) {
+        const root = typeof opts.root === 'string'
+            ? document.querySelector(opts.root)
+            : (opts.root || document.querySelector('.settings-pane'));
+        if (!root) return null;
+
+        const links = Array.from(root.querySelectorAll('.settings-nav a[data-pane]'));
+        const panes = Array.from(root.querySelectorAll('.pane[data-pane]'));
+        if (!links.length || !panes.length) return null;
+        const names = links.map(a => a.getAttribute('data-pane'));
+
+        function show(name, o) {
+            o = o || {};
+            if (names.indexOf(name) === -1) name = names[0];
+            panes.forEach(p => { p.hidden = p.getAttribute('data-pane') !== name; });
+            links.forEach(a => {
+                const on = a.getAttribute('data-pane') === name;
+                a.classList.toggle('active', on);
+                if (on) a.setAttribute('aria-current', 'page');
+                else a.removeAttribute('aria-current');
+            });
+            if (o.hash !== false) {
+                try { history.replaceState(null, '', '#' + name); } catch (e) { /* file:// */ }
+            }
+            root.dispatchEvent(new CustomEvent('settingspane:change', {
+                detail: { pane: name }, bubbles: true
+            }));
+            return name;
+        }
+
+        links.forEach(a => a.addEventListener('click', e => {
+            e.preventDefault();
+            show(a.getAttribute('data-pane'));
+        }));
+        global.addEventListener('hashchange', () => show(location.hash.slice(1), { hash: false }));
+
+        show(location.hash.slice(1) || names[0], { hash: false });
+        return { show: show, panes: names };
+    };
+
+    // ── Sticky-header height ──────────────────────────────────────────
+    // `.page-header` is sticky at top:0, so anything else that sticks has to
+    // start below it. Its height is NOT a constant: 63px with a title alone,
+    // 87px with a subtitle, 113px with a crumb as well, and ~15px less below
+    // 1024px. The design system hardcoded 84px for `.settings-nav`, which put
+    // 3px of the rail under the header in four apps and 29px in upkeep and
+    // postings (both render a crumb). Measuring is the only thing that holds
+    // across compositions, so publish it as a custom property and let CSS do
+    // the arithmetic: `top: calc(var(--header-h) + var(--space-3))`.
+    function syncHeaderHeight() {
+        const h = document.querySelector('.page-header');
+        if (!h) return;
+        const px = Math.round(h.getBoundingClientRect().height);
+        if (px > 0) document.documentElement.style.setProperty('--header-h', px + 'px');
+    }
+    global.syncHeaderHeight = syncHeaderHeight;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        syncHeaderHeight();
+        // The header also changes height on its own — a subtitle wrapping at a
+        // narrow width, or header-actions reflowing — so watch it rather than
+        // only sampling on resize.
+        const h = document.querySelector('.page-header');
+        if (h && global.ResizeObserver) new ResizeObserver(syncHeaderHeight).observe(h);
+    });
+    document.addEventListener('turbo:load', syncHeaderHeight);
+
+    // ── Drop zones ─────────────────────────────────────────────────────────
+    // Every input[type="file"] gets wrapped in a .drop-zone: click browses,
+    // drag-and-drop assigns the files to the hidden input and fires its
+    // change event, so existing per-app JS reading input.files keeps working
+    // untouched. Opt out per input with data-dz-skip. Re-runnable for
+    // dynamically inserted inputs via enhanceFileInputs(root).
+    global.enhanceFileInputs = function enhanceFileInputs(root) {
+        (root || document).querySelectorAll('input[type="file"]:not([data-dz-skip]):not([data-dz-enhanced])').forEach(input => {
+            // Inputs already hidden behind their own trigger button (the
+            // style="display:none" + button.click() pattern several apps use)
+            // keep their existing flow — injecting a visible zone there would
+            // break the layout around the trigger.
+            if (input.hidden || input.style.display === 'none' || getComputedStyle(input).display === 'none') return;
+            input.setAttribute('data-dz-enhanced', '1');
+
+            const zone = document.createElement('div');
+            zone.className = 'drop-zone';
+            zone.setAttribute('tabindex', '0');
+            zone.setAttribute('role', 'button');
+            zone.setAttribute('aria-label', 'Choose or drop ' + (input.multiple ? 'files' : 'a file'));
+
+            const label = document.createElement('div');
+            const hint = document.createElement('div');
+            hint.className = 'drop-zone-hint';
+            const files = document.createElement('div');
+            files.className = 'drop-zone-files';
+            zone.append(label, hint, files);
+
+            const accept = (input.getAttribute('accept') || '').trim();
+            const idle = () => {
+                label.textContent = input.multiple ? 'Drop files here or click to browse' : 'Drop a file here or click to browse';
+                hint.textContent = accept ? accept.split(',').map(s => s.trim()).join(' · ') : '';
+            };
+            const update = () => {
+                idle();
+                const names = Array.from(input.files || []).map(f => f.name);
+                if (!names.length) { files.textContent = ''; return; }
+                const shown = names.slice(0, 3).join(', ');
+                files.textContent = names.length > 3 ? shown + ' +' + (names.length - 3) + ' more' : shown;
+            };
+
+            input.classList.add('drop-zone-input');
+            input.insertAdjacentElement('afterend', zone);
+            update();
+
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+            });
+            ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            }));
+            zone.addEventListener('dragleave', e => {
+                if (!zone.contains(e.relatedTarget)) zone.classList.remove('dragover');
+            });
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                const dropped = Array.from((e.dataTransfer && e.dataTransfer.files) || []);
+                if (!dropped.length) return;
+                const dt = new DataTransfer();
+                (input.multiple ? dropped : dropped.slice(0, 1)).forEach(f => dt.items.add(f));
+                input.files = dt.files;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            input.addEventListener('change', update);
+        });
+    };
+    document.addEventListener('DOMContentLoaded', () => global.enhanceFileInputs());
+    document.addEventListener('turbo:load', () => global.enhanceFileInputs());
+
+    // ── Filter tags ────────────────────────────────────────────────────────
+    // A list page's filter bar: one field where a committed term becomes a tag.
+    // Type `imported:today` or `imported date = today`, press Enter, it becomes
+    // the tag `imported:today` and the box clears for the next one. The TAGS are
+    // the filter state; the query string exists only to carry that state in the
+    // URL. Free text is not a special case — it is the `keyword` field.
+    //
+    //   const f = installFilterTags(el, {
+    //     fields: { keyword:{type:'text'}, category:{type:'enum', values:[…]} },
+    //     value: 'imported:today',
+    //     onChange(tags, q) { … }
+    //   });
+    //
+    // Pages declare fields; the suggestion menu, the builder and the parser are
+    // all generated from that one spec.
+    const FT_DATE_WORDS = [ 'today', 'yesterday', 'this month', 'last month', 'this year' ];
+
+    function ftResolveDate(raw, today) {
+        const t = String(raw).trim().toLowerCase();
+        // ISO first: the word normalisation below turns hyphens into spaces so
+        // "this-month" reads as "this month", which would shred 2026-10-01.
+        if (/^\d{4}$/.test(t))             return { kind: 'year',  value: t, word: t };
+        if (/^\d{4}-\d{2}$/.test(t))       return { kind: 'month', value: t, word: t };
+        if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return { kind: 'day',   value: t, word: t };
+        const v = t.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+        const d = new Date(today);
+        if (v === 'today')      return { kind: 'day',   value: ftDay(d), word: 'today' };
+        if (v === 'yesterday')  { d.setDate(d.getDate() - 1); return { kind: 'day', value: ftDay(d), word: 'yesterday' }; }
+        if (v === 'this month') return { kind: 'month', value: ftDay(d).slice(0, 7), word: 'this-month' };
+        if (v === 'last month') { d.setMonth(d.getMonth() - 1); return { kind: 'month', value: ftDay(d).slice(0, 7), word: 'last-month' }; }
+        if (v === 'this year')  return { kind: 'year',  value: String(d.getFullYear()), word: 'this-year' };
+        return null;
+    }
+    function ftDay(d) {
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    // Client-side matcher for pages that already hold their rows in memory.
+    // `get` maps a field name to that row's value; dates must come back as
+    // YYYY-MM-DD and numbers as numbers. Server-backed pages ignore this and
+    // translate tags into query params instead.
+    function filterTagsMatch(row, tags, get) {
+        return (tags || []).every(t => {
+            const got = get(t.field, row);
+            if (got === undefined || got === null) return t.op === '!=';
+            if (t.date) {
+                const cmp = t.date.kind === 'month' ? String(got).slice(0, 7)
+                          : t.date.kind === 'year'  ? String(got).slice(0, 4) : String(got);
+                switch (t.op) {
+                    case '=':  return cmp === t.date.value;
+                    case '!=': return cmp !== t.date.value;
+                    case '>':  return cmp >  t.date.value;
+                    case '<':  return cmp <  t.date.value;
+                    case '>=': return cmp >= t.date.value;
+                    case '<=': return cmp <= t.date.value;
+                }
+            }
+            if (t.num !== undefined) {
+                const n = Number(got);
+                switch (t.op) {
+                    case '=':  return n === t.num;
+                    case '!=': return n !== t.num;
+                    case '>':  return n >  t.num;
+                    case '<':  return n <  t.num;
+                    case '>=': return n >= t.num;
+                    case '<=': return n <= t.num;
+                }
+            }
+            // Text and enum. An array value (tags on a record) matches if any
+            // element equals the term. A string matches as a substring, unless
+            // the field was declared `exact: true` in installFilterTags' spec
+            // (the term then carries loose: false) — then it must equal it.
+            const hay = Array.isArray(got) ? got.map(v => String(v).toLowerCase()) : String(got).toLowerCase();
+            const want = String(t.raw).toLowerCase();
+            const hit = Array.isArray(hay) ? hay.includes(want)
+                      : t.loose === false ? hay === want
+                      : hay.includes(want);
+            return t.op === '!=' ? !hit : hit;
+        });
+    }
+    global.filterTagsMatch = filterTagsMatch;
+
+    let ftSeq = 0;
+    function installFilterTags(root, opts) {
+        if (!root) return null;
+        const fields = opts.fields || {};
+        const today = opts.today ? new Date(opts.today) : new Date();
+        // Longest alias first so "imported date" beats "imported".
+        const aliases = Object.entries(fields)
+            .flatMap(([key, f]) => (f.aliases || [key]).map(a => [ a.toLowerCase(), key ]))
+            .sort((a, b) => b[0].length - a[0].length);
+
+        let tags = [];
+        let focused = -1;
+
+        root.classList.add('filter-tags');
+        root.innerHTML = '<input type="text" autocomplete="off" spellcheck="false">'
+            + '<div class="filter-tags-menu"></div>';
+        const input = root.querySelector('input');
+        const menu = root.querySelector('.filter-tags-menu');
+        input.placeholder = opts.placeholder || 'Filter or search…';
+        // A combobox over a listbox of suggestions (PLAT-05): the input owns
+        // the focus, the highlighted option is aria-activedescendant.
+        const menuId = 'ds-ft-menu-' + (++ftSeq);
+        menu.id = menuId;
+        menu.setAttribute('role', 'listbox');
+        input.setAttribute('role', 'combobox');
+        input.setAttribute('aria-autocomplete', 'list');
+        input.setAttribute('aria-controls', menuId);
+        input.setAttribute('aria-expanded', 'false');
+        if (!input.hasAttribute('aria-label')) input.setAttribute('aria-label', opts.label || 'Filter');
+        function syncActive() {
+            const open = menu.classList.contains('open');
+            input.setAttribute('aria-expanded', open ? 'true' : 'false');
+            const sel = open && menu.querySelector('.filter-tags-opt.is-sel');
+            menu.querySelectorAll('.filter-tags-opt[role="option"]').forEach(o => o.setAttribute('aria-selected', o === sel ? 'true' : 'false'));
+            if (sel) input.setAttribute('aria-activedescendant', sel.id); else input.removeAttribute('aria-activedescendant');
+        }
+
+        // ── Parse exactly one term; precision here is what lets Enter refuse ──
+        function parseTerm(text) {
+            const s = String(text).trim();
+            if (!s) return null;
+            const phrase = FT_DATE_WORDS.map(w => w.replace(/ /g, '\\s+')).join('|');
+            const value = '("[^"]*"|\'[^\']*\'|' + phrase + '|.+)';
+
+            for (const [ alias, key ] of aliases) {
+                const m = s.match(new RegExp('^' + alias.replace(/ /g, '\\s+') + '\\s*(>=|<=|!=|=|>|<|:)\\s*' + value + '$', 'i'));
+                if (!m) continue;
+                const spec = fields[key];
+                let op = m[1] === ':' ? '=' : m[1];
+                let raw = m[2].replace(/^["']|["']$/g, '').trim();
+                // `amount:>90` — the colon only names the field, so lift the real
+                // operator out of the value. The suggestion menu proposes this shape.
+                if (op === '=' && spec.type !== 'text') {
+                    const lifted = raw.match(/^(>=|<=|!=|>|<)\s*(.+)$/);
+                    if (lifted) { op = lifted[1]; raw = lifted[2].trim(); }
+                }
+                if (spec.type === 'date') {
+                    const d = ftResolveDate(raw, today);
+                    if (!d) return { error: '"' + raw + '" isn\'t a date. Try today, yesterday, this month, or ' + ftDay(today) + '.' };
+                    return { field: key, op, raw: d.word, date: d };
+                }
+                if (spec.type === 'number') {
+                    const n = parseFloat(raw.replace(/[$,\s]/g, ''));
+                    if (isNaN(n)) return { error: '"' + raw + '" isn\'t a number.' };
+                    return { field: key, op, raw: String(n), num: n };
+                }
+                if (spec.type === 'enum') {
+                    const vals = ftValues(key);
+                    const hit = vals.find(v => String(v).toLowerCase() === raw.toLowerCase());
+                    if (!hit) return { error: 'No ' + (spec.label || key).toLowerCase() + ' called "' + raw + '".'
+                        + (vals.length ? ' Try: ' + vals.slice(0, 6).join(', ') + (vals.length > 6 ? '…' : '') + '.' : '') };
+                    return ftExact({ field: key, op, raw: String(hit).toLowerCase() }, spec);
+                }
+                return ftExact({ field: key, op, raw: raw.toLowerCase() }, spec);
+            }
+            // A trailing operator is incomplete, not wrong.
+            for (const [ alias, key ] of aliases) {
+                if (new RegExp('^' + alias.replace(/ /g, '\\s+') + '\\s*(>=|<=|!=|=|>|<|:)\\s*$', 'i').test(s)) return { incomplete: key };
+            }
+            const named = s.match(/^([a-z][a-z ]*?)\s*(>=|<=|!=|=|>|<|:)\s*(.+)$/i);
+            if (named) return { error: 'There\'s no "' + named[1].trim() + '" to filter on. Fields: ' + Object.keys(fields).join(', ') + '.' };
+            // Bare words are sugar for the free-text field.
+            const free = opts.textField || 'keyword';
+            return fields[free] ? { field: free, op: '=', raw: s.toLowerCase() } : { error: 'Type a filter like ' + Object.keys(fields)[0] + ':…' };
+        }
+
+        // A field declared `exact: true` yields terms filterTagsMatch compares
+        // whole-value (type:running must not also match indoor_running).
+        function ftExact(term, spec) {
+            if (spec.exact) term.loose = false;
+            return term;
+        }
+        function ftValues(key) {
+            const v = fields[key].values;
+            return (typeof v === 'function' ? v() : v) || [];
+        }
+        function label(t) {
+            const v = /\s/.test(t.raw) ? '"' + t.raw + '"' : t.raw;
+            return t.field + (t.op === '=' ? ':' : t.op) + v;
+        }
+        const query = () => tags.map(label).join(' ');
+
+        // ── Render ────────────────────────────────────────────────────────────
+        function render(fire) {
+            [ ...root.querySelectorAll('.filter-tag') ].forEach(n => n.remove());
+            tags.forEach((t, i) => {
+                const el = document.createElement('span');
+                el.className = 'filter-tag' + (t.field === (opts.textField || 'keyword') ? ' filter-tag--text' : '')
+                    + (i === focused ? ' is-focused' : '');
+                // A real button (PLAT-05): reachable with Tab, pressed with Enter or Space.
+                el.innerHTML = escapeForTag(label(t)) + ' <button type="button" class="filter-tag-x" data-i="' + i
+                    + '" aria-label="Remove ' + escapeForTag(label(t)) + '">&times;</button>';
+                root.insertBefore(el, input);
+            });
+            root.classList.toggle('has-tags', tags.length > 0);
+            if (fire !== false && opts.onChange) opts.onChange(tags.slice(), query());
+        }
+        function escapeForTag(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function setError(msg) {
+            root.classList.toggle('is-invalid', !!msg);
+            if (opts.errorEl) opts.errorEl.textContent = msg || '';
+        }
+        function commit(term) { tags.push(term); focused = -1; input.value = ''; setError(''); render(); }
+
+        // ── Suggestions ───────────────────────────────────────────────────────
+        function suggest() {
+            const v = input.value;
+            if (!v.trim()) return { head: 'Filter by', items: Object.keys(fields).map(k => ftFieldItem(k)) };
+            const m = v.match(/^(.*?)(:|=)\s*(.*)$/);
+            if (m) {
+                const key = (aliases.find(a => a[0] === m[1].trim().toLowerCase()) || [])[1];
+                if (key) {
+                    const spec = fields[key];
+                    if (spec.type === 'text')
+                        return { head: (spec.label || key) + ' contains…', items: [ { k: m[3] || '…', d: spec.hint || 'type a value, then Enter', insert: null } ] };
+                    const pool = spec.type === 'date' ? [ 'today', 'yesterday', 'this month', 'last month' ]
+                        : spec.type === 'number' ? [ '>50', '>100', '<20' ] : ftValues(key).map(String);
+                    const typed = m[3].replace(/\s+/g, '').toLowerCase();
+                    const hits = pool.filter(x => x.replace(/\s+/g, '').toLowerCase().startsWith(typed));
+                    return hits.length ? { head: (spec.label || key) + ' is…',
+                        items: hits.slice(0, 40).map(x => ({ k: x, d: '', insert: /^[<>]/.test(x) ? key + x : key + ':' + x })) } : null;
+                }
+            }
+            const hits = Object.keys(fields).filter(k =>
+                k.startsWith(v.toLowerCase()) || (fields[k].label || '').toLowerCase().startsWith(v.toLowerCase()));
+            return hits.length ? { head: 'Filter by', items: hits.map(k => ftFieldItem(k)) } : null;
+        }
+        function ftFieldItem(k) { return { k: k + ':', d: fields[k].type || 'text', insert: k + ':' }; }
+
+        function openMenu() {
+            const s = suggest();
+            if (!s) return closeMenu();
+            menu.innerHTML = '<div class="filter-tags-menu-head" role="presentation">' + s.head + '</div>' + s.items.map((it, i) =>
+                it.insert === null
+                    ? '<div class="filter-tags-opt is-static" role="presentation"><span class="k">' + escapeForTag(it.k) + '</span><span class="d">' + escapeForTag(it.d) + '</span></div>'
+                    : '<div class="filter-tags-opt' + (i === 0 ? ' is-sel' : '') + '" role="option" id="' + menuId + '-o' + i + '" data-insert="' + escapeForTag(it.insert) + '">'
+                      + '<span class="k">' + escapeForTag(it.k) + '</span><span class="d">' + escapeForTag(it.d) + '</span></div>').join('');
+            menu.classList.add('open');
+            syncActive();
+        }
+        const closeMenu = () => { menu.classList.remove('open'); syncActive(); };
+
+        function applySuggestion(ins) {
+            const term = parseTerm(ins);
+            // A suggestion that completes a term commits immediately — picking
+            // "today" should not leave you with text still to confirm.
+            if (term && term.field) commit(term); else { input.value = ins; }
+            input.focus(); openMenu();
+        }
+
+        // ── Events ────────────────────────────────────────────────────────────
+        root.addEventListener('mousedown', e => {
+            if (e.target.classList.contains('filter-tag-x')) {
+                tags.splice(+e.target.dataset.i, 1); render(); e.preventDefault(); return;
+            }
+            const tag = e.target.closest('.filter-tag');
+            if (tag) {
+                const i = [ ...root.querySelectorAll('.filter-tag') ].indexOf(tag);
+                input.value = label(tags[i]);
+                tags.splice(i, 1); render(); input.focus(); openMenu(); e.preventDefault(); return;
+            }
+            if (e.target !== input) { input.focus(); e.preventDefault(); }
+        });
+        input.addEventListener('input', () => { setError(''); focused = -1; render(false); openMenu(); });
+        input.addEventListener('focus', openMenu);
+        input.addEventListener('blur', () => setTimeout(closeMenu, 150));
+        input.addEventListener('keydown', e => {
+            const opts_ = [ ...menu.querySelectorAll('.filter-tags-opt[data-insert]') ];
+            const cur = opts_.findIndex(o => o.classList.contains('is-sel'));
+            if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && menu.classList.contains('open') && opts_.length) {
+                e.preventDefault();
+                opts_.forEach(o => o.classList.remove('is-sel'));
+                opts_[(cur + (e.key === 'ArrowDown' ? 1 : opts_.length - 1) + opts_.length) % opts_.length].classList.add('is-sel');
+                syncActive();
+                return;
+            }
+            // Tab accepts the highlighted suggestion; Shift+Tab is always focus moving back
+            // (to the tags' remove buttons), never swallowed.
+            if (e.key === 'Tab' && !e.shiftKey && menu.classList.contains('open') && cur >= 0) { e.preventDefault(); applySuggestion(opts_[cur].dataset.insert); return; }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const term = parseTerm(input.value);
+                if (!term) return;
+                if (term.incomplete) { setError(''); openMenu(); return; }
+                if (term.error) { setError(term.error); return; }
+                commit(term); openMenu();
+                return;
+            }
+            if (e.key === 'Backspace' && !input.value) {
+                if (focused === -1 && tags.length) { focused = tags.length - 1; render(false); }
+                else if (focused >= 0) { tags.splice(focused, 1); focused = -1; render(); }
+                return;
+            }
+            if (e.key === 'Escape') closeMenu();
+        });
+        // Keyboard removal (Enter/Space on the button). Mouse removal happens on
+        // mousedown above, which also keeps the input focused.
+        root.addEventListener('click', e => {
+            const x = e.target.closest && e.target.closest('.filter-tag-x');
+            if (!x) return;
+            e.preventDefault();
+            tags.splice(+x.dataset.i, 1); focused = -1; render(); input.focus();
+        });
+        menu.addEventListener('mousedown', e => {
+            const o = e.target.closest('.filter-tags-opt[data-insert]');
+            if (o) { e.preventDefault(); applySuggestion(o.dataset.insert); }
+        });
+
+        // ── Public surface ────────────────────────────────────────────────────
+        const api = {
+            get tags() { return tags.slice(); },
+            get query() { return query(); },
+            set(q, fire) {
+                tags = [];
+                String(q || '').split(/\s+(?=[^"]*(?:"[^"]*"[^"]*)*$)/).filter(Boolean).forEach(part => {
+                    const t = parseTerm(part);
+                    if (t && t.field) tags.push(t);
+                });
+                focused = -1; input.value = ''; setError('');
+                render(fire !== false);
+                return api;
+            },
+            add(text) { const t = parseTerm(text); if (t && t.field) commit(t); return api; },
+            clear() { tags = []; focused = -1; render(); return api; },
+            focus() { input.focus(); return api; },
+            fields,
+            parse: parseTerm,
+        };
+
+        // Optional "+ Filter" builder — appends a tag, same as typing one.
+        if (opts.builderButton) {
+            const box = document.createElement('div');
+            box.className = 'filter-tags-menu filter-tags-builder';
+            opts.builderButton.classList.add('filter-tags-add');
+            opts.builderButton.parentNode.insertBefore(box, opts.builderButton.nextSibling);
+            let bField = null;
+            const showFields = () => {
+                bField = null;
+                box.innerHTML = '<div class="filter-tags-menu-head">Filter by</div>' + Object.keys(fields).map(k =>
+                    '<div class="filter-tags-opt" data-field="' + k + '"><span class="k">' + escapeForTag(fields[k].label || k)
+                    + '</span><span class="d">' + (fields[k].type || 'text') + '</span></div>').join('');
+                box.classList.add('open');
+            };
+            opts.builderButton.addEventListener('click', e => {
+                e.stopPropagation();
+                box.classList.contains('open') ? box.classList.remove('open') : showFields();
+            });
+            box.addEventListener('click', e => {
+                const o = e.target.closest('.filter-tags-opt');
+                if (!o) return;
+                // Stop here: the innerHTML swap below detaches the clicked node, so
+                // the document handler would read this as an outside click.
+                e.stopPropagation();
+                if (o.dataset.field) {
+                    const k = o.dataset.field, spec = fields[k];
+                    if (spec.type === 'text') { box.classList.remove('open'); input.value = k + ':'; input.focus(); openMenu(); return; }
+                    bField = k;
+                    const vals = spec.type === 'date' ? [ 'today', 'yesterday', 'this month', 'last month' ]
+                        : spec.type === 'number' ? [ '>50', '>100', '<20' ] : ftValues(k).map(String);
+                    box.innerHTML = '<div class="filter-tags-menu-head">' + escapeForTag(spec.label || k) + ' is…</div>'
+                        + vals.slice(0, 40).map(v => '<div class="filter-tags-opt" data-value="' + escapeForTag(v) + '"><span class="k">' + escapeForTag(v) + '</span></div>').join('');
+                    return;
+                }
+                if (o.dataset.value !== undefined) {
+                    api.add(bField + ':' + o.dataset.value);
+                    box.classList.remove('open');
+                }
+            });
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.filter-tags-builder') && e.target !== opts.builderButton) box.classList.remove('open');
+            });
+        }
+
+        // ── Server-rendered pages: navigate instead of re-fetching ───────────
+        // Four pages repeated the same shape — collect free text into one param,
+        // map each remaining term onto a param the controller already accepts,
+        // stash the tags themselves so the field can rebuild, navigate. That is
+        // the shape, so it lives here; a page supplies only what is genuinely
+        // its own (the path, and a `map` for terms that are not a plain
+        // field=value).
+        const nav = opts.navigate;
+        if (nav) {
+            const tagsParam = nav.tagsParam || 'tags';
+            const textParam = nav.textParam === undefined ? 'q' : nav.textParam;
+            const textField = opts.textField === undefined ? 'keyword' : opts.textField;
+            const current = new URLSearchParams(global.location.search);
+
+            opts.onChange = function (tagList, q) {
+                const params = new URLSearchParams();
+                const words = [];
+                tagList.forEach(t => {
+                    if (textParam && t.field === textField) { words.push(t.raw); return; }
+                    // A page's map() returns true when it has handled the term;
+                    // anything else falls through to plain field=value.
+                    if (nav.map && nav.map(t, params) === true) return;
+                    params.set(t.field, t.raw);
+                });
+                if (words.length) params.set(textParam, words.join(' '));
+                if (q) params.set(tagsParam, q);
+                (nav.keep || []).forEach(k => { if (current.get(k)) params.set(k, current.get(k)); });
+                global.location = nav.path + '?' + params.toString();
+            };
+
+            // Tags in the URL win over whatever the page reconstructed from
+            // legacy params — a ?tags= link is the authoritative form.
+            if (current.get(tagsParam)) opts.value = current.get(tagsParam);
+        }
+
+        if (opts.value) api.set(opts.value, false);
+        else render(false);
+        return api;
+    }
+    global.installFilterTags = installFilterTags;
+
+    // ── Dropdown placement ─────────────────────────────────────────────────
+    // A .dropdown-menu is absolutely positioned inside its .dropdown, which
+    // means any ancestor with an overflow context clips it — notably
+    // .table-responsive, whose overflow-y MUST be hidden (overflow-x: auto
+    // forces the other axis to compute as auto, which would put a second
+    // scrollbar inside every tall table card). The visible symptom was a row
+    // menu near the bottom of a card being cut in half.
+    //
+    // So on open the menu switches to position: fixed and is anchored to its
+    // trigger by script: fixed escapes ancestor overflow entirely. It flips
+    // above the trigger when there is not room below, clamps to the viewport
+    // on both axes, and caps its own height so a long menu scrolls itself
+    // instead of running off-screen.
+    //
+    // Driven by a MutationObserver on the `open` class rather than by wrapping
+    // a toggle function, so every existing per-page toggleMenu() keeps working
+    // untouched.
+    var GAP = 4;        // menu-to-trigger offset, matches the CSS fallback
+    var MARGIN = 8;     // smallest gap we will leave against a viewport edge
+
+    function placeDropdownMenu(menu) {
+        var dropdown = menu.closest('.dropdown');
+        if (!dropdown) return;
+
+        // Anchor to the trigger button, not the .dropdown wrapper. A wrapper
+        // that stretches (a block-level .dropdown in a full-width header, say)
+        // would otherwise right-align the menu to the far edge of the page,
+        // leaving it floating away from the control that opened it.
+        var trigger = dropdown.querySelector(':scope > button, :scope > .btn') || dropdown;
+
+        // Measure unstyled by the previous placement, and untransformed —
+        // offsetWidth/Height ignore the open/close translate.
+        menu.style.maxHeight = '';
+        var anchorRect = trigger.getBoundingClientRect();
+        var width = menu.offsetWidth;
+        var height = menu.offsetHeight;
+        var below = window.innerHeight - anchorRect.bottom - GAP - MARGIN;
+        var above = anchorRect.top - GAP - MARGIN;
+
+        // Prefer below; flip only when below cannot hold the menu AND above
+        // is the roomier side, so a menu that fits stays where it is expected.
+        var up = height > below && above > below;
+        // A data attribute, not a class: the observer below filters on
+        // `class`, so writing a class here would re-enter this function on
+        // every open — Chrome re-serialises the attribute even for a no-op
+        // toggle, which turns that into an unbounded microtask loop.
+        menu.dataset.dropdownPlacement = up ? 'up' : 'down';
+
+        // 120px floor so a menu squeezed against an edge is still a usable,
+        // scrollable sliver rather than a 2px line.
+        var room = Math.max(up ? above : below, 120);
+        if (height > room) menu.style.maxHeight = room + 'px';
+        var used = Math.min(height, room);
+
+        var top = up ? anchorRect.top - used - GAP : anchorRect.bottom + GAP;
+        // Final guard: whatever the anchor did, the menu body sits inside the
+        // viewport. Matters when the trigger itself is at the very edge, where
+        // neither side has room and the 120px floor overflows the side we picked.
+        top = Math.min(Math.max(top, MARGIN), Math.max(window.innerHeight - used - MARGIN, MARGIN));
+
+        // Open toward the free space: a trigger on the left half of the screen
+        // grows its menu rightward, one on the right grows leftward. Always
+        // right-aligning would send a left-hand trigger's menu back under the
+        // fixed sidebar, which the viewport clamp alone cannot catch — the
+        // sidebar is not the viewport edge.
+        var alignLeft = anchorRect.left + anchorRect.width / 2 < window.innerWidth / 2;
+        var left = alignLeft ? anchorRect.left : anchorRect.right - width;
+        left = Math.min(Math.max(left, MARGIN), Math.max(window.innerWidth - width - MARGIN, MARGIN));
+
+        menu.dataset.dropdownAlign = alignLeft ? 'left' : 'right';
+        menu.style.position = 'fixed';
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+        menu.style.right = 'auto';
+        menu.style.bottom = 'auto';
+    }
+
+    function clearDropdownMenu(menu) {
+        delete menu.dataset.dropdownPlacement;
+        delete menu.dataset.dropdownAlign;
+        menu.style.position = '';
+        menu.style.top = '';
+        menu.style.left = '';
+        menu.style.right = '';
+        menu.style.bottom = '';
+        menu.style.maxHeight = '';
+    }
+
+    global.placeDropdownMenu = placeDropdownMenu;
+
+    new MutationObserver(function (records) {
+        records.forEach(function (record) {
+            var el = record.target;
+            if (!el.classList || !el.classList.contains('dropdown-menu')) return;
+            if (el.classList.contains('open')) placeDropdownMenu(el);
+            else clearDropdownMenu(el);
+        });
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'], subtree: true });
+
+    // A fixed menu does not travel with the page, so follow the trigger while
+    // anything scrolls (capture: true — scrolls inside a table wrapper do not
+    // bubble). Once the trigger has left the viewport the menu is pointing at
+    // nothing; close it rather than leave it stranded.
+    var reflowQueued = false;
+    function reflowOpenDropdowns() {
+        if (reflowQueued) return;
+        reflowQueued = true;
+        requestAnimationFrame(function () {
+            reflowQueued = false;
+            document.querySelectorAll('.dropdown-menu.open').forEach(function (menu) {
+                var dropdown = menu.closest('.dropdown');
+                if (!dropdown) return;
+                var rect = (dropdown.querySelector(':scope > button, :scope > .btn') || dropdown).getBoundingClientRect();
+                if (rect.bottom < 0 || rect.top > window.innerHeight) menu.classList.remove('open');
+                else placeDropdownMenu(menu);
+            });
+        });
+    }
+    window.addEventListener('scroll', reflowOpenDropdowns, true);
+    window.addEventListener('resize', reflowOpenDropdowns);
+
+    // Esc closes the top-most menu — a floating layer the keyboard cannot
+    // dismiss is a trap. Focus goes back to the trigger (see below).
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        var open = document.querySelectorAll('.dropdown-menu.open');
+        if (!open.length) return;
+        e.stopPropagation();
+        open.forEach(function (menu) { menu.classList.remove('open'); });
+    });
+
+    // ── Dropdown keyboard + ARIA (round three, PLAT-04) ───────────────────
+    // Pages keep toggling .open themselves (toggleMenu()); everything here is
+    // driven by that class, so no page changes. A trigger gets
+    // aria-haspopup="menu", aria-controls and aria-expanded; the menu
+    // role="menu" and its .dropdown-item children role="menuitem" with a
+    // roving tabindex (most items are <a onclick> with no href, which a
+    // keyboard could not reach at all). Opening moves focus to the first item;
+    // Up / Down / Home / End move; Enter or Space activates an item that has
+    // no native activation; Tab closes and lets focus move on; closing with
+    // focus inside the menu puts it back on the trigger.
+    var dropdownSeq = 0;
+    var MENU_ITEM = '.dropdown-item:not([disabled]):not(.disabled):not([hidden])';
+    function dropdownTriggerOf(menu) {
+        var dropdown = menu.closest('.dropdown');
+        return dropdown ? dropdown.querySelector(':scope > button, :scope > .btn') : null;
+    }
+    function prepareDropdown(menu) {
+        if (!menu.id) menu.id = 'ds-menu-' + (++dropdownSeq);
+        menu.setAttribute('role', 'menu');
+        var trigger = dropdownTriggerOf(menu);
+        if (trigger) {
+            trigger.setAttribute('aria-haspopup', 'menu');
+            trigger.setAttribute('aria-controls', menu.id);
+            trigger.setAttribute('aria-expanded', menu.classList.contains('open') ? 'true' : 'false');
+        }
+        menu.querySelectorAll('.dropdown-item').forEach(function (item) {
+            item.setAttribute('role', 'menuitem');
+            if (!item.hasAttribute('tabindex')) item.setAttribute('tabindex', '-1');
+        });
+    }
+    function menuItems(menu) {
+        return Array.prototype.slice.call(menu.querySelectorAll(MENU_ITEM));
+    }
+    function onDropdownOpened(menu) {
+        prepareDropdown(menu);
+        // The menu fades in with a visibility transition, so at the moment .open
+        // lands it is still visibility:hidden and focus() would be ignored —
+        // focus on the next frame, once it is showing.
+        var focusFirst = function () {
+            if (!menu.classList.contains('open') || menu.contains(document.activeElement)) return;
+            var first = menuItems(menu)[0];
+            if (first) first.focus({ preventScroll: true });
+        };
+        // rAF can be throttled (a background tab, headless); timers back it up.
+        // focusFirst is idempotent: the first call that lands wins.
+        if (global.requestAnimationFrame) global.requestAnimationFrame(function () { global.requestAnimationFrame(focusFirst); });
+        setTimeout(focusFirst, 50);
+        setTimeout(focusFirst, 200);
+    }
+    function onDropdownClosed(menu) {
+        var trigger = dropdownTriggerOf(menu);
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        if (trigger && menu.contains(document.activeElement)) trigger.focus({ preventScroll: true });
+    }
+    global.dsPrepareDropdowns = function (root) {
+        (root || document).querySelectorAll('.dropdown-menu').forEach(prepareDropdown);
+    };
+    new MutationObserver(function (records) {
+        records.forEach(function (record) {
+            var el = record.target;
+            if (!el.classList || !el.classList.contains('dropdown-menu')) return;
+            var wasOpen = (record.oldValue || '').split(/\s+/).indexOf('open') !== -1;
+            var isOpen = el.classList.contains('open');
+            if (isOpen && !wasOpen) onDropdownOpened(el);
+            else if (!isOpen && wasOpen) onDropdownClosed(el);
+        });
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
+    // Menus rendered later (innerHTML rows) get their attributes the first
+    // time their trigger takes focus, before any screen reader announces it.
+    document.addEventListener('focusin', function (e) {
+        var dropdown = e.target.closest && e.target.closest('.dropdown');
+        if (!dropdown || e.target.closest('.dropdown-menu')) return;
+        var menu = dropdown.querySelector(':scope > .dropdown-menu');
+        if (menu) prepareDropdown(menu);
+    });
+    document.addEventListener('keydown', function (e) {
+        var target = e.target;
+        if (!target || !target.closest) return;
+        // ArrowDown on a closed trigger opens its menu (the page's own handler).
+        var dropdown = target.closest('.dropdown');
+        if (dropdown && !target.closest('.dropdown-menu') && e.key === 'ArrowDown') {
+            var closed = dropdown.querySelector(':scope > .dropdown-menu:not(.open)');
+            if (closed) { e.preventDefault(); target.click(); }
+            return;
+        }
+        var menu = target.closest('.dropdown-menu.open');
+        if (!menu) return;
+        var items = menuItems(menu);
+        var i = items.indexOf(target);
+        var next = null;
+        if (e.key === 'ArrowDown') next = items[(i + 1) % items.length];
+        else if (e.key === 'ArrowUp') next = items[(i - 1 + items.length) % items.length];
+        else if (e.key === 'Home') next = items[0];
+        else if (e.key === 'End') next = items[items.length - 1];
+        else if ((e.key === 'Enter' || e.key === ' ') && i !== -1) {
+            var native = target.tagName === 'BUTTON' || (target.tagName === 'A' && target.hasAttribute('href'));
+            if (!native || e.key === ' ') { e.preventDefault(); target.click(); }
+            return;
+        } else if (e.key === 'Tab') {
+            menu.classList.remove('open');
+            return;
+        }
+        if (next) { e.preventDefault(); next.focus({ preventScroll: true }); }
+    });
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { global.dsPrepareDropdowns(); });
+    else global.dsPrepareDropdowns();
+
+    // ── Row-select tables ──────────────────────────────────────────────────
+    // Clicking anywhere on a row toggles its selection checkbox — but only
+    // when that checkbox opts in with data-row-select, because most
+    // checkboxes across the apps are state toggles (complete a task,
+    // settings flags) where a stray row click must NOT flip them. The
+    // dispatched change event keeps existing per-page count/bulk-bar
+    // handlers working untouched. Delegated at the document, so rows
+    // re-rendered via innerHTML need no re-wiring.
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        if (e.target.closest('a, button, input, select, textarea, label, [contenteditable]')) return;
+        // A stray click while a dropdown is open is a dismiss, not a select.
+        if (document.querySelector('.dropdown-menu.open')) return;
+        const row = e.target.closest('tr');
+        if (!row) return;
+        const box = row.querySelector('input[type="checkbox"][data-row-select]');
+        if (!box || box.disabled) return;
+        box.checked = !box.checked;
+        box.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    // ── Label association ──────────────────────────────────────────────────
+    // Most app forms write <div class="form-group"><label>…</label><input></div>
+    // with no for/id pair, so the label neither names the field for a screen
+    // reader nor focuses it on click. Conservative: only a group with exactly
+    // one bare label and exactly one text-like control (input, select,
+    // textarea — never checkbox/radio, whose groups are chip sets) is wired.
+    let labelSeq = 0;
+    global.dsEnhanceLabels = function dsEnhanceLabels(root) {
+        (root || document).querySelectorAll('.form-group').forEach(group => {
+            const labels = group.querySelectorAll('label');
+            if (labels.length !== 1) return;
+            const label = labels[0];
+            if (label.htmlFor || label.querySelector('input, select, textarea')) return;
+            const controls = group.querySelectorAll(
+                'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="file"]), select, textarea');
+            if (controls.length !== 1) return;
+            const control = controls[0];
+            if (!control.id) {
+                let id;
+                do { id = 'ds-field-' + (++labelSeq); } while (document.getElementById(id));
+                control.id = id;
+            }
+            label.htmlFor = control.id;
+        });
+    };
+
+    // aria-current on the active nav link and a name + state on the mobile
+    // menu button — layouts that already set them are left alone.
+    function enhanceChrome() {
+        document.querySelectorAll('.nav-link.active:not([aria-current])').forEach(a => a.setAttribute('aria-current', 'page'));
+        const btn = document.getElementById('mobileMenuBtn');
+        if (btn) {
+            if (!btn.hasAttribute('aria-label') && !btn.hasAttribute('aria-labelledby')) btn.setAttribute('aria-label', 'Menu');
+            const sidebar = document.querySelector('.sidebar');
+            if (!btn.hasAttribute('aria-expanded')) btn.setAttribute('aria-expanded', sidebar && sidebar.classList.contains('open') ? 'true' : 'false');
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => { enhanceChrome(); global.dsEnhanceLabels(); });
+    document.addEventListener('turbo:load', () => { enhanceChrome(); global.dsEnhanceLabels(); });
+
+    // Mobile menu toggle / overlay / close-on-navigate. Delegated at the
+    // document so Turbo body swaps (mealplanner, postings) don't orphan the
+    // handlers with the old <body>. Esc closes an open drawer.
+    function setMobileMenu(open) {
+        const sidebar = document.querySelector('.sidebar');
+        if (!sidebar) return;
+        const overlay = document.getElementById('mobileOverlay');
+        const btn = document.getElementById('mobileMenuBtn');
+        sidebar.classList.toggle('open', open);
+        if (overlay) overlay.classList.toggle('show', open);
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        const sidebar = document.querySelector('.sidebar');
+        if (!sidebar) return;
+        if (e.target.closest('#mobileMenuBtn')) { e.stopPropagation(); setMobileMenu(!sidebar.classList.contains('open')); }
+        else if (e.target.closest('#mobileOverlay') || e.target.closest('.nav-link')) setMobileMenu(false);
+    });
+    // ── Bottom sheet (v4.4, the mobile "More" sheet) ────────────────────────
+    // <button data-sheet-toggle aria-controls="more-sheet" aria-expanded="false">
+    // opens <div class="sheet" id="more-sheet" hidden> and the .sheet-scrim
+    // before it. Focus moves into the sheet and stays there; Esc, a scrim
+    // tap or following a link closes it and focus returns to the toggle.
+    let openSheet = null;
+    let sheetToggle = null;
+    function sheetFocusables(sheet) {
+        return Array.prototype.filter.call(
+            sheet.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+            el => el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    }
+    function setSheet(sheet, open, toggle) {
+        if (!sheet) return;
+        const scrim = sheet.previousElementSibling && sheet.previousElementSibling.classList.contains('sheet-scrim')
+            ? sheet.previousElementSibling : null;
+        sheet.hidden = !open;
+        if (scrim) scrim.hidden = !open;
+        const t = toggle || document.querySelector('[data-sheet-toggle][aria-controls="' + sheet.id + '"]');
+        if (t) t.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) {
+            openSheet = sheet;
+            sheetToggle = t;
+            const first = sheetFocusables(sheet)[0];
+            if (first) first.focus();
+        } else {
+            openSheet = null;
+            if (t && document.contains(t)) t.focus();
+            sheetToggle = null;
+        }
+    }
+    global.dsSheet = function dsSheet(idOrEl, open) {
+        const sheet = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
+        setSheet(sheet, open === undefined ? sheet.hidden : !!open);
+    };
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        const t = e.target.closest('[data-sheet-toggle]');
+        if (t) {
+            const sheet = document.getElementById(t.getAttribute('aria-controls'));
+            if (sheet) { e.preventDefault(); setSheet(sheet, sheet.hidden, t); }
+            return;
+        }
+        if (!openSheet) return;
+        if (e.target.closest('.sheet-scrim')) setSheet(openSheet, false, sheetToggle);
+        else if (e.target.closest('.sheet a[href]')) { openSheet.hidden = true; const s = openSheet.previousElementSibling; if (s && s.classList.contains('sheet-scrim')) s.hidden = true; openSheet = null; }
+    });
+    document.addEventListener('keydown', function (e) {
+        if (!openSheet) return;
+        if (e.key === 'Escape') { e.preventDefault(); setSheet(openSheet, false, sheetToggle); return; }
+        if (e.key === 'Tab') {
+            const items = sheetFocusables(openSheet);
+            if (!items.length) return;
+            const first = items[0], last = items[items.length - 1];
+            if (!openSheet.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+            else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    }, true);
+    // Rotating to a wide screen leaves no tab bar to come back to.
+    try {
+        global.matchMedia('(min-width: 769px)').addEventListener('change', ev => { if (ev.matches && openSheet) setSheet(openSheet, false, sheetToggle); });
+    } catch (_) { /* old Safari */ }
+
+
+    // ── Command palette (⌘K, round three, PLAT-17; Joe's pick: mockup E) ──────
+    // One centered dialog per app: "Go to" (the sidebar's nav links), this
+    // app's own records from GET <search url> grouped by `kind`, and actions
+    // pages register with dsCommands.register(). A preview pane on wide
+    // screens shows the selected record's `preview`. Opt-in: the palette is
+    // live only on pages carrying <meta name="ds-palette"> (the gem shell
+    // emits it), whose `content` is the search URL ("" = no record search),
+    // so a layout that predates it (postings) is unchanged.
+    //   dsCommands.register({ label, icon, shortcut, url | run, keywords }) → unregister()
+    //   dsPalette.open(query?) / dsPalette.close() / dsPalette.isOpen()
+    const paletteCommands = [];
+    global.dsCommands = {
+        register(cmd) {
+            if (!cmd || !cmd.label || !(cmd.url || typeof cmd.run === 'function')) return () => {};
+            paletteCommands.push(cmd);
+            return () => { const i = paletteCommands.indexOf(cmd); if (i >= 0) paletteCommands.splice(i, 1); };
+        },
+        list() { return paletteCommands.slice(); },
+    };
+
+    // Pure helpers, exported for tests.
+    function paletteMatch(text, q) {
+        if (!q) return true;
+        const hay = String(text || '').toLowerCase();
+        return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+    }
+    function paletteHighlight(text, q) {
+        const safe = global.escapeHtml(text);
+        const words = String(q || '').trim().split(/\s+/).filter(w => w.length >= 2);
+        if (!words.length) return safe;
+        const re = new RegExp('(' + words.map(w => global.escapeHtml(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+        return safe.replace(re, '<mark>$1</mark>');
+    }
+    // Sections in display order; each item: { kind: 'page'|'record'|'action', label, meta, url, run, icon, shortcut, preview }
+    function paletteSections(q, navLinks, records, commands) {
+        const sections = [];
+        const pages = navLinks.filter(l => paletteMatch(l.label, q));
+        if (pages.length) sections.push({ title: 'Go to', items: pages.map(l => ({ type: 'page', label: l.label, url: l.url, icon: l.icon, shortcut: l.shortcut })) });
+        const byKind = new Map();
+        (records || []).forEach(r => {
+            const k = r.kind || 'Results';
+            if (!byKind.has(k)) byKind.set(k, []);
+            byKind.get(k).push({ type: 'record', label: r.title, meta: r.meta, url: r.url, preview: r.preview, kind: k });
+        });
+        byKind.forEach((items, k) => sections.push({ title: paletteKindTitle(k), items }));
+        const acts = commands.filter(c => paletteMatch(c.label + ' ' + (c.keywords || ''), q));
+        if (acts.length) sections.push({ title: 'Actions', items: acts.map(c => ({ type: 'action', label: c.label, url: c.url, run: c.run, icon: c.icon, shortcut: c.shortcut })) });
+        return sections;
+    }
+    function paletteKindTitle(kind) {
+        const k = String(kind);
+        if (/(s|x|ch|sh)$/i.test(k)) return k + 'es';
+        if (/[^aeiou]y$/i.test(k)) return k.slice(0, -1) + 'ies';
+        return k + 's';
+    }
+    global.dsPaletteInternals = { paletteMatch, paletteHighlight, paletteSections, paletteKindTitle };
+
+    // One seam for "go to this URL" (tests replace it; jsdom's location can't be stubbed).
+    if (typeof global.dsNavigate !== 'function') global.dsNavigate = function dsNavigate(url) { global.location.href = url; };
+    const palette = { el: null, input: null, list: null, preview: null, flat: [], active: 0, records: [], query: '', timer: null, ctrl: null, opener: null, status: '' };
+
+    function paletteSearchUrl() {
+        const m = document.querySelector('meta[name="ds-palette"]');
+        return m ? (m.getAttribute('content') || '') : null;
+    }
+    function paletteNavLinks() {
+        return Array.from(document.querySelectorAll('.sidebar .nav-link[href]')).map(a => {
+            const ico = a.querySelector('.nav-ico');
+            const kbd = a.querySelector('.nav-kbd');
+            const label = Array.from(a.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join(' ').replace(/\s+/g, ' ').trim();
+            return { label: label ? label.charAt(0).toUpperCase() + label.slice(1) : a.textContent.trim(), url: a.getAttribute('href'), icon: ico ? ico.getAttribute('data-ico') : null, shortcut: kbd ? kbd.textContent.trim() : null };
+        });
+    }
+    function paletteBuild() {
+        const el = document.createElement('div');
+        el.className = 'modal palette';
+        el.id = 'ds-palette';
+        el.setAttribute('data-backdrop-close', '');
+        el.innerHTML =
+            '<div class="modal-box palette-box">' +
+              '<h2 class="modal-title sr-only">Command palette</h2>' +
+              '<div class="palette-input"><span class="palette-input-ico" aria-hidden="true"><span class="nav-ico" data-ico="search"></span></span>' +
+                '<input type="text" class="palette-field" placeholder="Search or jump to…" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="ds-palette-list" aria-label="Search pages, records and actions">' +
+                '<kbd class="kbd palette-esc">esc</kbd><button type="button" class="btn btn-ghost btn-sm palette-cancel" data-modal-close>Cancel</button></div>' +
+              '<div class="palette-split">' +
+                '<div class="palette-list" id="ds-palette-list" role="listbox" aria-label="Results"></div>' +
+                '<div class="palette-preview" aria-live="polite"></div>' +
+              '</div>' +
+              '<div class="palette-foot" aria-hidden="true"><span><kbd class="kbd">↑↓</kbd> move</span><span><kbd class="kbd">↵</kbd> open</span><span><kbd class="kbd">⌘↵</kbd> new tab</span><span><kbd class="kbd">esc</kbd> close</span></div>' +
+            '</div>';
+        document.body.appendChild(el);
+        palette.el = el;
+        palette.input = el.querySelector('.palette-field');
+        palette.list = el.querySelector('.palette-list');
+        palette.preview = el.querySelector('.palette-preview');
+        if (typeof global.renderNavIcons === 'function') global.renderNavIcons(el);
+        palette.input.addEventListener('input', () => paletteQuery(palette.input.value));
+        palette.input.addEventListener('keydown', paletteKeydown);
+        palette.list.addEventListener('mousemove', e => {
+            const opt = e.target.closest && e.target.closest('[role="option"]');
+            if (opt) paletteSetActive(Number(opt.getAttribute('data-index')));
+        });
+        palette.list.addEventListener('click', e => {
+            const opt = e.target.closest && e.target.closest('[role="option"]');
+            if (opt) paletteActivate(Number(opt.getAttribute('data-index')), e.metaKey || e.ctrlKey);
+        });
+        palette.preview.addEventListener('click', e => {
+            const btn = e.target.closest && e.target.closest('[data-palette-url]');
+            if (btn) { e.preventDefault(); paletteGo(btn.getAttribute('data-palette-url'), e.metaKey || e.ctrlKey); }
+        });
+        el.addEventListener('modal:close', () => { palette.query = ''; if (palette.ctrl) palette.ctrl.abort(); clearTimeout(palette.timer); });
+    }
+    function paletteRender() {
+        const sections = paletteSections(palette.query, paletteNavLinks(), palette.records, paletteCommands);
+        palette.flat = [];
+        let html = '';
+        sections.forEach((sec, si) => {
+            const gid = 'ds-palette-g' + si;
+            html += '<div role="group" aria-labelledby="' + gid + '"><div class="palette-group" id="' + gid + '">' + global.escapeHtml(sec.title) + '</div>';
+            sec.items.forEach(item => {
+                const i = palette.flat.length;
+                palette.flat.push(item);
+                const lead = item.type === 'record' ? '' : '<span class="palette-ico" aria-hidden="true"><span class="nav-ico" data-ico="' + global.escapeHtml(item.icon || (item.type === 'page' ? 'grid' : 'more')) + '"></span></span>';
+                const meta = item.meta ? '<span class="palette-meta">' + global.escapeHtml(item.meta) + '</span>' : '';
+                const end = item.shortcut ? '<span class="palette-end"><kbd class="kbd">' + global.escapeHtml(item.shortcut) + '</kbd></span>' : '';
+                html += '<div class="palette-row" role="option" id="ds-palette-o' + i + '" data-index="' + i + '" aria-selected="false">' + lead +
+                        '<span class="palette-main"><span class="palette-title">' + paletteHighlight(item.label, palette.query) + '</span>' + meta + '</span>' + end + '</div>';
+            });
+            html += '</div>';
+        });
+        if (palette.status) html += '<div class="palette-status">' + global.escapeHtml(palette.status) + '</div>';
+        if (!palette.flat.length && !palette.status) html += '<div class="palette-status">' + (palette.query ? 'No matches' : 'Type to search') + '</div>';
+        palette.list.innerHTML = html;
+        if (typeof global.renderNavIcons === 'function') global.renderNavIcons(palette.list);
+        paletteSetActive(Math.min(palette.active, Math.max(0, palette.flat.length - 1)));
+    }
+    function paletteSetActive(i) {
+        palette.active = i;
+        palette.list.querySelectorAll('[role="option"]').forEach(o => o.setAttribute('aria-selected', String(Number(o.getAttribute('data-index')) === i)));
+        const opt = document.getElementById('ds-palette-o' + i);
+        if (opt) { palette.input.setAttribute('aria-activedescendant', opt.id); if (opt.scrollIntoView) opt.scrollIntoView({ block: 'nearest' }); }
+        else palette.input.removeAttribute('aria-activedescendant');
+        palettePreview(palette.flat[i]);
+    }
+    function palettePreview(item) {
+        const p = item && item.preview;
+        if (!p) { palette.preview.innerHTML = ''; palette.preview.classList.add('is-empty'); return; }
+        palette.preview.classList.remove('is-empty');
+        const esc = global.escapeHtml;
+        const tone = p.amount_tone === 'negative' ? ' text-amount-negative' : p.amount_tone === 'positive' ? ' text-amount-positive' : '';
+        let h = '<div class="palette-preview-kind">' + esc(item.kind || '') + '</div>';
+        h += '<h3 class="palette-preview-heading">' + esc(p.heading || item.label) + '</h3>';
+        if (p.subheading) h += '<div class="text-meta">' + esc(p.subheading) + '</div>';
+        if (p.amount) h += '<div class="stat-value palette-preview-amount' + tone + '">' + esc(p.amount) + '</div>';
+        if (p.fields && p.fields.length) {
+            h += '<dl class="palette-dl">' + p.fields.map(f => '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>').join('') + '</dl>';
+        }
+        const actions = (p.actions && p.actions.length) ? p.actions : (item.url ? [{ label: 'Open', url: item.url }] : []);
+        if (actions.length) {
+            h += '<div class="palette-preview-actions">' + actions.map((a, i) =>
+                '<button type="button" class="btn ' + (i === 0 ? 'btn-primary' : 'btn-secondary') + ' btn-sm" tabindex="-1" data-palette-url="' + esc(a.url) + '">' + esc(a.label) + '</button>').join('') + '</div>';
+        }
+        palette.preview.innerHTML = h;
+    }
+    function paletteQuery(q) {
+        palette.query = q;
+        palette.active = 0;
+        clearTimeout(palette.timer);
+        if (palette.ctrl) { palette.ctrl.abort(); palette.ctrl = null; }
+        const url = paletteSearchUrl();
+        const term = q.trim();
+        if (!url || term.length < 2) { palette.records = []; palette.status = ''; paletteRender(); return; }
+        palette.status = 'Searching…';
+        paletteRender();
+        palette.timer = setTimeout(() => {
+            const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+            palette.ctrl = ctrl;
+            const sep = url.includes('?') ? '&' : '?';
+            fetch(url + sep + 'q=' + encodeURIComponent(term) + '&limit=6', { headers: { Accept: 'application/json' }, credentials: 'same-origin', signal: ctrl ? ctrl.signal : undefined })
+                .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+                .then(data => {
+                    if (palette.query !== q) return;
+                    palette.records = (data && data.results) || [];
+                    palette.status = '';
+                    paletteRender();
+                })
+                .catch(err => {
+                    if (err && err.name === 'AbortError') return;
+                    if (palette.query !== q) return;
+                    palette.records = [];
+                    palette.status = 'Search is unavailable right now';
+                    paletteRender();
+                });
+        }, 150);
+    }
+    function paletteGo(url, newTab) {
+        if (!url) return;
+        if (newTab) { global.open(url, '_blank', 'noopener'); return; }
+        global.dsPalette.close();
+        global.dsNavigate(url);
+    }
+    function paletteActivate(i, newTab) {
+        const item = palette.flat[i];
+        if (!item) return;
+        if (item.type === 'action' && typeof item.run === 'function' && !(newTab && item.url)) {
+            global.dsPalette.close();
+            item.run();
+            return;
+        }
+        paletteGo(item.url, newTab);
+    }
+    function paletteKeydown(e) {
+        const n = palette.flat.length;
+        if (e.key === 'ArrowDown') { e.preventDefault(); if (n) paletteSetActive((palette.active + 1) % n); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); if (n) paletteSetActive((palette.active - 1 + n) % n); }
+        else if (e.key === 'Home' && n && !palette.input.value) { e.preventDefault(); paletteSetActive(0); }
+        else if (e.key === 'End' && n && !palette.input.value) { e.preventDefault(); paletteSetActive(n - 1); }
+        else if (e.key === 'Enter') {
+            // Handled here, never by modal-keys' "Enter clicks the primary button".
+            e.preventDefault(); e.stopPropagation();
+            paletteActivate(palette.active, e.metaKey || e.ctrlKey);
+        }
+    }
+    global.dsPalette = {
+        open(query) {
+            if (paletteSearchUrl() === null) return false;
+            if (!palette.el) paletteBuild();
+            palette.opener = document.activeElement;
+            palette.records = []; palette.status = ''; palette.active = 0;
+            palette.input.value = query || '';
+            palette.query = palette.input.value;
+            paletteRender();
+            if (typeof global.openModal === 'function') global.openModal(palette.el);
+            else palette.el.classList.add('modal-open');
+            palette.input.focus();
+            if (palette.query) paletteQuery(palette.query);
+            return true;
+        },
+        close() {
+            if (!palette.el) return;
+            if (typeof global.closeModal === 'function') global.closeModal(palette.el);
+            else palette.el.classList.remove('modal-open');
+        },
+        isOpen() { return !!(palette.el && palette.el.classList.contains('modal-open')); },
+    };
+    // ⌘K / Ctrl+K anywhere, including inside a field; again to close.
+    document.addEventListener('keydown', function (e) {
+        if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey || String(e.key).toLowerCase() !== 'k') return;
+        if (paletteSearchUrl() === null) return;
+        e.preventDefault();
+        if (global.dsPalette.isOpen()) global.dsPalette.close(); else global.dsPalette.open();
+    });
+    document.addEventListener('click', function (e) {
+        const t = e.target.closest && e.target.closest('[data-palette-open]');
+        if (!t) return;
+        e.preventDefault();
+        const sheet = t.closest('.sheet');
+        if (sheet && typeof global.dsSheet === 'function') global.dsSheet(sheet, false);
+        global.dsPalette.open();
+    });
+    // Shell default actions.
+    global.dsCommands.register({ label: 'Switch theme', icon: 'moon', keywords: 'dark light mode', run: () => global.toggleTheme && global.toggleTheme() });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        const sidebar = document.querySelector('.sidebar.open');
+        if (!sidebar || document.querySelector('.modal.modal-open')) return;
+        setMobileMenu(false);
+        const btn = document.getElementById('mobileMenuBtn');
+        if (btn) btn.focus();
+    });
+})(window);
