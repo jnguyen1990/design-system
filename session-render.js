@@ -5,7 +5,7 @@
 
    Exposes a global `SessionRender` object with:
      - sessionCard({ id, type, title, meta, onClick, opacity, titleLen, done })
-     - vitalsChip({ vitals, sleepSession, onClick })
+     - vitalsChip({ vitals, sleepSession, onClick }) — one emoji-free vitals line
      - openVitalsModal({ dateStr, vitals, sleepSession })
      - typeChip(slug, extraStyle) — tinted session-type chip (no dot)
      - renderPlanDetails(session, opts) — THE "Planned segments/exercises"
@@ -28,11 +28,11 @@
     const SessionRender = {
         TYPE_DOTS: {
             cycling: 'var(--orange-9)', indoor_cycling: 'var(--orange-9)', outdoor_cycling: 'var(--orange-9)',
-            running: 'var(--red-9)', indoor_running: 'var(--red-9)', outdoor_running: 'var(--red-9)',
+            running: 'var(--blue-9)', indoor_running: 'var(--blue-9)', outdoor_running: 'var(--blue-9)',
             strength: 'var(--purple-9)', lifting: 'var(--purple-9)',
             mobility: 'var(--teal-9)', yoga: 'var(--teal-9)',
             outdoor_walking: 'var(--green-9)', indoor_walking: 'var(--green-9)', hiking: 'var(--green-9)',
-            swimming: 'var(--blue-9)',
+            swimming: 'var(--indigo-9)',
             rowing: 'var(--indigo-9)', skiing: 'var(--indigo-9)',
             sleep: 'var(--slate-8)', rest: 'var(--slate-8)',
             elliptical: 'var(--slate-9)', other: 'var(--slate-9)', workout: 'var(--slate-9)', general: 'var(--slate-9)'
@@ -87,7 +87,8 @@
             const wd = session.session_data || {};
             const slug = session.session_type;
             const dc = (opts.detailCategory || (s => this.defaultDetailCategory(s)))(slug);
-            const ftp = opts.ftp || 175;
+            // No FTP → power as % of FTP only; never fabricated watts (was a 175 W guess).
+            const ftp = Number(opts.ftp) > 0 ? Number(opts.ftp) : null;
             const pace = opts.formatPace || (s => this.formatPace(s));
             const hrTarget = opts.extractHrTarget || (s => this.extractHrTarget(s));
             const indoor = (opts.isIndoor || (s => this.defaultIsIndoor(s)))(slug);
@@ -95,7 +96,7 @@
             let html = '';
             if (dc === 'cycling' && wd.segments) {
                 const outdoor = !indoor;  // no power meter outdoors → HR
-                const head = outdoor ? '<th>HR target</th>' : '<th>Power</th><th>Watts</th>';
+                const head = outdoor ? '<th>HR target</th>' : (ftp ? '<th>Power</th><th>Watts</th>' : '<th>Power</th>');
                 html += h4(`Planned segments${outdoor ? ' · outdoor (HR)' : ''}`) + `<table class="table table-compact"><thead><tr><th>Segment</th><th>Duration</th>${head}</tr></thead><tbody>`;
                 wd.segments.forEach(seg => {
                     const dur = seg.duration_sec || seg.on_duration_sec || 0;
@@ -112,11 +113,12 @@
                         if (seg.type === 'Warmup' || seg.type === 'Cooldown') { p = (seg.power_low * 100).toFixed(0) + '%→' + (seg.power_high * 100).toFixed(0) + '%'; w = Math.round(seg.power_low * ftp) + '→' + Math.round(seg.power_high * ftp) + 'W'; }
                         else if (seg.type === 'SteadyState') { p = (seg.power * 100).toFixed(0) + '%'; w = Math.round(seg.power * ftp) + 'W'; }
                         else if (seg.type === 'IntervalsT') { p = (seg.on_power * 100).toFixed(0) + '%/' + (seg.off_power * 100).toFixed(0) + '%'; w = Math.round(seg.on_power * ftp) + '/' + Math.round(seg.off_power * ftp) + 'W'; }
-                        cells = `<td>${p}</td><td>${w}</td>`;
+                        cells = ftp ? `<td>${p}</td><td>${w}</td>` : `<td>${p}</td>`;
                     }
                     html += `<tr><td>${seg.name || seg.type}</td><td>${durCell}</td>${cells}</tr>`;
                 });
                 html += '</tbody></table>';
+                if (!outdoor && !ftp) html += '<p class="text-meta-xs mt-1">Power as % of FTP. Set an FTP to see watts.</p>';
             }
             if (dc === 'lifting' && wd.exercises) {
                 html += h4('Planned exercises') + '<table class="table table-compact"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th><th>RPE</th><th>Notes</th></tr></thead><tbody>';
@@ -167,17 +169,46 @@
                 + `</div>`;
         },
 
+        // One line of the day's vitals (2026-11-25, replaces the emoji chip):
+        // desktop "6.8h · 8.2k · 52bpm · 61ms", phones spelled out
+        // ("Sleep 6.8 h · 8,214 steps · RHR 52 · HRV 61"); sleep under 6 h is
+        // amber. Same signature as before, so existing callers keep working.
         vitalsChip({ vitals, sleepSession, onClick }) {
-            const items = [];
-            const sleepHrs = (vitals && vitals.sleep_hours != null)
-                ? vitals.sleep_hours
+            const v = vitals || {};
+            const sleepHrs = (v.sleep_hours != null && v.sleep_hours !== '')
+                ? +v.sleep_hours
                 : (sleepSession && sleepSession.duration_minutes ? +(sleepSession.duration_minutes / 60).toFixed(1) : null);
-            if (sleepHrs) items.push(`<span class="vital" title="Sleep">\u{1F634} ${sleepHrs}h</span>`);
-            if (vitals && vitals.resting_hr) items.push(`<span class="vital" title="Resting HR">❤️ ${vitals.resting_hr}</span>`);
-            if (vitals && vitals.hrv_ms) items.push(`<span class="vital" title="HRV">▲ ${Math.round(vitals.hrv_ms)}</span>`);
-            if (vitals && vitals.steps) items.push(`<span class="vital" title="Steps">\u{1F6B6} ${(vitals.steps / 1000).toFixed(1)}k</span>`);
-            if (items.length === 0) items.push('<span class="vital-empty">no vitals</span>');
-            return `<div class="vitals-chip" onclick="${onClick}">${items.join('')}</div>`;
+            const short = [], full = [], said = [];
+            const low = sleepHrs != null && sleepHrs < 6 ? ' vital-low' : '';
+            if (sleepHrs) {
+                short.push(`<span class="vital${low}"><b>${sleepHrs}</b>h</span>`);
+                full.push(`<span class="vital${low}">Sleep <b>${sleepHrs}</b> h</span>`);
+                said.push(`Sleep ${sleepHrs} h`);
+            }
+            if (v.steps) {
+                const n = Math.round(v.steps);
+                short.push(`<span class="vital"><b>${(n / 1000).toFixed(1)}</b>k</span>`);
+                full.push(`<span class="vital"><b>${n.toLocaleString('en-US')}</b> steps</span>`);
+                said.push(`${n.toLocaleString('en-US')} steps`);
+            }
+            if (v.resting_hr) {
+                short.push(`<span class="vital"><b>${v.resting_hr}</b>bpm</span>`);
+                full.push(`<span class="vital">RHR <b>${v.resting_hr}</b></span>`);
+                said.push(`resting HR ${v.resting_hr}`);
+            }
+            if (v.hrv_ms) {
+                const h = Math.round(v.hrv_ms);
+                short.push(`<span class="vital"><b>${h}</b>ms</span>`);
+                full.push(`<span class="vital">HRV <b>${h}</b></span>`);
+                said.push(`HRV ${h} ms`);
+            }
+            const click = onClick ? ` onclick="${onClick}" role="button" tabindex="0"` : '';
+            if (!short.length) return `<div class="vitals-chip"${click}><span class="vital-empty">No vitals</span></div>`;
+            const text = said.join(' · ');
+            const sep = '<span class="vital-sep" aria-hidden="true">·</span>';
+            return `<div class="vitals-chip"${click} title="${text}" aria-label="Vitals: ${text}">`
+                + `<span class="vitals-short" aria-hidden="true">${short.join(sep)}</span>`
+                + `<span class="vitals-full" aria-hidden="true">${full.join(sep)}</span></div>`;
         },
 
         openVitalsModal({ dateStr, vitals, sleepSession, sources }) {
