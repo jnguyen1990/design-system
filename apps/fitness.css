@@ -284,7 +284,7 @@ tr.workout-row-hidden td:last-child { opacity: 1; }
 .cal-card-m { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: var(--text-2xs); }
 .cal-card-tick { color: var(--green-11); }
 .cal-card.is-logged { background: var(--panel-hover); }
-.cal-card.is-planned { border-color: var(--border-control); border-style: dashed; border-left-style: solid; }
+.cal-card.is-planned { border-color: var(--border-control); border-left-color: var(--cal-sport, var(--border-control)); border-style: dashed; border-left-style: solid; }
 .cal-card.is-missed .cal-card-t { color: var(--text-faint); text-decoration: line-through; }
 .cal-card.is-missed .cal-card-m { color: var(--color-pending, var(--amber-11)); }
 .cal-card.is-skipped { opacity: 0.6; }

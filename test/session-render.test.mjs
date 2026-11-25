@@ -47,3 +47,15 @@ test('plan power: watts only with an FTP, never a guessed 175 W', () => {
     const withFtp = SR.renderPlanDetails(session, { ftp: 200 });
     assert.match(withFtp, /<td>65%<\/td><td>130W<\/td>/);
 });
+
+test('planned lift: a missing weight reads "—", never "undefined lbs"; names are escaped', () => {
+    const SR = load();
+    const session = { session_type: 'lifting', session_data: { exercises: [
+        { name: 'Pull-Up <b>', sets: 2, reps: '5-8', rpe: 6 },
+        { name: 'Bench', sets: 3, reps: 8, weight_lbs: 155, rpe: 7 } ] } };
+    const html = SR.renderPlanDetails(session, { detailCategory: () => 'lifting' });
+    assert.ok(!/undefined/.test(html), 'no undefined');
+    assert.match(html, /<td>—<\/td>/);
+    assert.match(html, /155 lbs/);
+    assert.match(html, /Pull-Up &lt;b&gt;/);
+});

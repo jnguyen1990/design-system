@@ -122,12 +122,12 @@
             }
             if (dc === 'lifting' && wd.exercises) {
                 html += h4('Planned exercises') + '<table class="table table-compact"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th><th>RPE</th><th>Notes</th></tr></thead><tbody>';
-                wd.exercises.forEach(ex => { html += `<tr><td><strong>${ex.name}</strong></td><td>${ex.sets}</td><td>${ex.reps}</td><td>${ex.weight_lbs} lbs</td><td>${ex.rpe || '-'}</td><td class="stat-label">${ex.notes || ''}</td></tr>`; });
+                wd.exercises.forEach(ex => { const w = ex.weight_lbs == null || ex.weight_lbs === '' ? '—' : `${this.escapeHtml(String(ex.weight_lbs))} lbs`; html += `<tr><td><strong>${this.escapeHtml(ex.name || '')}</strong></td><td>${ex.sets ?? '—'}</td><td>${this.escapeHtml(String(ex.reps ?? '—'))}</td><td>${w}</td><td>${ex.rpe || '—'}</td><td class="stat-label">${this.escapeHtml(ex.notes || '')}</td></tr>`; });
                 html += '</tbody></table>';
             }
             if (slug === 'mobility' && wd.exercises) {
                 html += h4('Planned exercises') + '<table class="table table-compact"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps / Hold</th><th>Notes</th></tr></thead><tbody>';
-                wd.exercises.forEach(ex => { html += `<tr><td><strong>${ex.name}</strong></td><td>${ex.sets}</td><td>${ex.reps > 0 ? ex.reps : 'Hold'}</td><td class="stat-label">${ex.notes || ''}</td></tr>`; });
+                wd.exercises.forEach(ex => { html += `<tr><td><strong>${this.escapeHtml(ex.name || '')}</strong></td><td>${ex.sets ?? '—'}</td><td>${ex.reps > 0 ? this.escapeHtml(String(ex.reps)) : 'Hold'}</td><td class="stat-label">${this.escapeHtml(ex.notes || '')}</td></tr>`; });
                 html += '</tbody></table>';
             }
             if (dc === 'running' && wd.segments) {
