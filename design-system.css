@@ -5746,6 +5746,14 @@ tbody tr.is-key-focus > td { background: transparent; }
     .stats-grid > .stat-card + .stat-card { padding-left: 0; padding-right: 0; border-left: 0; border-top: 0; }
 }
 
+/* Tablets and large phones (481–768px): the 2-up grid left the third of
+   three tiles alone on a half-empty row (base BASE-05). Three tiles stay in
+   one row of three; any other odd count lets its last tile span the row. */
+@media (min-width: 481px) and (max-width: 768px) {
+    .stats-grid:has(> .stat-card:nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .stats-grid > .stat-card:last-child:nth-child(odd):not(:nth-child(3)) { grid-column: 1 / -1; }
+}
+
 /* ============================================================
    Round-one page patterns (M3-M6, 2026-11-23)
    Shared pieces first, then the base Today / weekly-review and budgeter
