@@ -1,0 +1,20 @@
+{
+  "sha": "f0371c89951a",
+  "commit": "f0371c89951a6d433b23a37cf089c69618812789",
+  "date": "2026-11-25T13:42:07-05:00",
+  "base": "/v/f0371c89951a/",
+  "files": {
+    "design-system.css": "sha384-iWHkF3yYhW3XTajlLcBiAFbhzqxRpqz+pEz6BL+M9FH/gmRl2PKp2e2u6OruTnoj",
+    "shared-core.js": "sha384-gr36Zwwt3fC92tcine2HhVPzHwtN1R+GJLoVShNDwTDurn7jTDVcKM14uWC2y4eG",
+    "modal-keys.js": "sha384-4eoxoAfvmR+7uLu2uIbeJiXpqFzggpmwNHJJqEYINfuMzcUvMNsSE0iEZT1Y4qgM",
+    "apps-launcher.js": "sha384-8ZyGWoSvRWnEzU0RiBvAxwVrryPMVkTYiQgLJyeOBsCoMioiWC542HqLYYi2x1d7",
+    "session-render.js": "sha384-ynwAoERQZmtvuXKgR2V8UB8uYyHhon3SjFil7byis47pgd8d3qQe9049btwUTI6V",
+    "goal-render.js": "sha384-3+hzuNhrUckrtsTxg2w7d1QC9cwfBI7n8s6lAhXcuPl164zMvO4iYHYCc5cQvdg+",
+    "apps/base.css": "sha384-WVpXxrIuHOYb+Vyr6vU8XpCcqV3SdAlxdz0MnDmczcXCAfZ4FJULQpf4DfrPAQYG",
+    "apps/budgeter.css": "sha384-o2TrysSvoVLksXBHn0F7lDHrucqh+xea8Bwi50SzxjiZTWZLSiolWtuXwZ6Sq+nl",
+    "apps/fitness.css": "sha384-eRv/Cp8Xzo4Z9offJQjmXK+cWZNYACSg9SXCmmcr+uyQ3yonv9auEnHJoq6hfNkz",
+    "apps/mealplanner.css": "sha384-P/tu8uwhBSu9DTGB0AlcHLG1A3LghZO4WLC1OO7Ti+DAQuCYQcR+yAJH/Uj2y0Yr",
+    "apps/postings.css": "sha384-Nrf8k7P2xe7mbQpnAHHCu6YnAyTZ5EPqHmhSnAUMrZGEnKh0dh1COW3veXFBheAy",
+    "apps/upkeep.css": "sha384-nWfaX44Nn2UABZ5M/S/nRW6RgLMzsKHXRVqKtuPIST23cbEqQ1DxfD5ZZFy1KKl9"
+  }
+}
