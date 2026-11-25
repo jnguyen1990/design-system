@@ -1,0 +1,6 @@
+/* postings — styles only postings uses (design system, round three PLAT-27).
+   Loaded by the gem's shell right after design-system.css, from the same
+   pinned release. Tokens and every component two or more apps use live in
+   design-system.css; a rule moves here only when no other app, the gem's
+   views or the shared scripts reference its classes. */
+
