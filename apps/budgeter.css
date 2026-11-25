@@ -163,3 +163,49 @@
     [data-app="budgeter"] .tap-target { display: inline-flex; padding: 14px; margin: -14px; cursor: pointer; }
 }
 /* ── end round six BUD-B ── */
+
+/* ── Round six BUD-D reports ── */
+/* Year label between the arrows; figures that open their transactions. */
+[data-app="budgeter"] .report-year { margin: 0 var(--space-2); font-variant-numeric: tabular-nums; }
+[data-app="budgeter"] .figlink { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--text-faint); }
+[data-app="budgeter"] .figlink:hover { color: var(--color-link); border-bottom-color: currentColor; }
+[data-app="budgeter"] .figlink:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: 2px; }
+/* Spending by month: one dollar axis; bars (viz-1), income tick (viz-2),
+   no-data hatched, projection dashed. Fixed height, stretches with width. */
+[data-app="budgeter"] .report-chart { position: relative; margin-top: var(--space-4); }
+[data-app="budgeter"] .rc-plot { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; height: 240px; margin: 0 0 26px 44px; align-items: end; }
+[data-app="budgeter"] .rc-grid { position: absolute; left: -44px; right: 0; border-top: 1px solid var(--border); pointer-events: none; }
+[data-app="budgeter"] .rc-grid b { position: absolute; left: 0; top: -0.65em; width: 38px; text-align: right; font-weight: 400; font-size: var(--text-2xs); color: var(--text-muted); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+[data-app="budgeter"] .rc-col { position: relative; height: 100%; display: block; color: inherit; text-decoration: none; border-radius: 4px 4px 0 0; }
+[data-app="budgeter"] a.rc-col:hover, [data-app="budgeter"] .rc-col:focus-visible { background: var(--panel-hover); outline: none; }
+[data-app="budgeter"] .rc-col:focus-visible { box-shadow: 0 0 0 2px var(--focus-ring); }
+[data-app="budgeter"] .rc-bar, [data-app="budgeter"] .rc-proj { position: absolute; left: 18%; right: 18%; bottom: 0; border-radius: 4px 4px 0 0; }
+[data-app="budgeter"] .rc-bar { background: var(--viz-1); }
+[data-app="budgeter"] .rc-proj { border: 2px dashed var(--viz-1); border-bottom: 0; background: transparent; }
+[data-app="budgeter"] .rc-inc { position: absolute; left: 6%; right: 6%; height: 0; border-top: 2px solid var(--viz-2); }
+[data-app="budgeter"] .rc-nodata { background: repeating-linear-gradient(45deg, var(--panel-hover) 0 4px, transparent 4px 8px); }
+[data-app="budgeter"] .rc-x { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: var(--text-2xs); color: var(--text-muted); }
+[data-app="budgeter"] .rc-tip { position: absolute; top: -6px; width: 220px; padding: var(--space-1_5) var(--space-2); font-size: var(--text-xs); color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-floating); pointer-events: none; opacity: 0; transition: opacity 120ms cubic-bezier(0.2, 0, 0, 1); z-index: var(--z-dropdown); }
+[data-app="budgeter"] .rc-tip.on { opacity: 1; }
+[data-app="budgeter"] .report-legend { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-2); font-size: var(--text-xs); color: var(--text-muted); }
+[data-app="budgeter"] .report-legend span { display: inline-flex; align-items: center; gap: 6px; }
+[data-app="budgeter"] .rc-sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
+[data-app="budgeter"] .rc-sw-bar { background: var(--viz-1); }
+[data-app="budgeter"] .rc-sw-inc { height: 0; border-top: 2px solid var(--viz-2); }
+[data-app="budgeter"] .rc-sw-nodata { border: 1px solid var(--border); background: repeating-linear-gradient(45deg, var(--panel-hover) 0 3px, transparent 3px 6px); }
+[data-app="budgeter"] .rc-sw-proj { border: 2px dashed var(--viz-1); }
+/* Budget vs actual rows: name, meter with an even-pace tick, budget, spent, used. */
+[data-app="budgeter"] .report-month-select { width: auto; max-width: 160px; }
+[data-app="budgeter"] .bva { display: grid; grid-template-columns: minmax(0, 160px) minmax(0, 1fr) 84px 84px 72px; gap: var(--space-3); align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--border); font-size: var(--text-sm); }
+[data-app="budgeter"] .bva > .figlink { justify-self: start; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-app="budgeter"] .bva-h { font-size: var(--text-xs); color: var(--text-muted); padding-top: 0; }
+[data-app="budgeter"] .bva .td-amount { text-align: right; }
+[data-app="budgeter"] .bva-track { position: relative; }
+[data-app="budgeter"] .bva-tick { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--text-muted); border-radius: 1px; }
+@media (max-width: 767px) {
+    [data-app="budgeter"] .rc-plot { gap: 3px; height: 200px; }
+    [data-app="budgeter"] .rc-x { font-size: 10px; }
+    [data-app="budgeter"] .bva { grid-template-columns: minmax(0, 1fr) 76px 76px; }
+    [data-app="budgeter"] .bva-track, [data-app="budgeter"] .bva-pct, [data-app="budgeter"] .bva-track-h, [data-app="budgeter"] .bva-pct-h { display: none; }
+}
+/* ── end round six BUD-D reports ── */
