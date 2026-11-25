@@ -58,37 +58,37 @@
       <ul class="nav-menu">
         <li>
           <a href="#" class="nav-link" data-nav-key="1">
-            <span class="nav-ico" data-ico="grid"></span>dashboard
+            <span class="nav-ico" data-ico="grid"></span>Dashboard
             <kbd class="kbd nav-kbd">⌘1</kbd>
           </a>
         </li>
         <li>
           <a href="#" class="nav-link" data-nav-key="2">
-            <span class="nav-ico" data-ico="pie-chart"></span>budget
+            <span class="nav-ico" data-ico="pie-chart"></span>Budget
             <kbd class="kbd nav-kbd">⌘2</kbd>
           </a>
         </li>
         <li>
           <a href="index.html" class="nav-link active" data-nav-key="3">
-            <span class="nav-ico" data-ico="list"></span>all transactions
+            <span class="nav-ico" data-ico="list"></span>All transactions
             <kbd class="kbd nav-kbd">⌘3</kbd>
           </a>
         </li>
         <li>
           <a href="#" class="nav-link" data-nav-key="4">
-            <span class="nav-ico" data-ico="inbox"></span>uncategorized
+            <span class="nav-ico" data-ico="inbox"></span>Uncategorized
             <kbd class="kbd nav-kbd">⌘4</kbd>
           </a>
         </li>
         <li>
           <a href="#" class="nav-link" data-nav-key="5">
-            <span class="nav-ico" data-ico="trending-up"></span>reports
+            <span class="nav-ico" data-ico="trending-up"></span>Reports
             <kbd class="kbd nav-kbd">⌘5</kbd>
           </a>
         </li>
         <li>
           <a href="#" class="nav-link" data-nav-key=",">
-            <span class="nav-ico" data-ico="sliders"></span>settings
+            <span class="nav-ico" data-ico="sliders"></span>Settings
             <kbd class="kbd nav-kbd">⌘,</kbd>
           </a>
         </li>
@@ -103,7 +103,7 @@
       <div class="d-flex align-center gap-3">
         <h1 class="page-title">Add transaction</h1>
       </div>
-      <span class="page-subtitle">manual entry · checking</span>
+      <span class="page-subtitle">Manual entry · checking</span>
     </header>
 
     <div class="content">
@@ -170,7 +170,7 @@
           <select id="tx-account" class="form-control">
             <option>Amex</option>
             <option selected>Checking</option>
-            <option>savings</option>
+            <option>Savings</option>
           </select>
           <div class="form-hint">Posts immediately to your local ledger. Bank sync runs nightly.</div>
         </div>
@@ -195,13 +195,13 @@
       <div class="card card-dense" style="max-width: 640px; margin-top: var(--space-4);">
         <div class="card-header" style="margin-bottom: var(--space-3);">
           <h3 class="card-title">Preview</h3>
-          <span class="text-muted" style="font-size: var(--text-xs); font-family: var(--font-mono);">how this row renders</span>
+          <span class="text-muted" style="font-size: var(--text-xs); font-family: var(--font-mono);">How this row renders</span>
         </div>
         <div class="table-responsive">
           <table>
             <tbody>
               <tr>
-                <td class="td-date">apr 22</td>
+                <td class="td-date">Apr 22</td>
                 <td>
                   <div style="font-weight: 500;">Whole Foods</div>
                   <div class="text-muted" style="font-size: 12px;">Weekly produce + pantry restock</div>
@@ -220,18 +220,18 @@
 
   <!-- Mobile tab bar + "More" sheet: the engine shell renders these from nav_items (first four, or the tab: true ones). -->
   <nav class="tab-bar" aria-label="Tabs">
-    <a href="#" class="tab-bar-item"><span class="tab-bar-ico"><span class="nav-ico" data-ico="grid"></span></span><span class="tab-bar-label">dashboard</span></a>
-    <a href="#" class="tab-bar-item"><span class="tab-bar-ico"><span class="nav-ico" data-ico="pie-chart"></span></span><span class="tab-bar-label">budget</span></a>
-    <a href="index.html" class="tab-bar-item active" aria-current="page"><span class="tab-bar-ico"><span class="nav-ico" data-ico="list"></span></span><span class="tab-bar-label">all transactions</span></a>
-    <a href="#" class="tab-bar-item"><span class="tab-bar-ico"><span class="nav-ico" data-ico="inbox"></span></span><span class="tab-bar-label">uncategorized</span></a>
+    <a href="#" class="tab-bar-item"><span class="tab-bar-ico"><span class="nav-ico" data-ico="grid"></span></span><span class="tab-bar-label">Dashboard</span></a>
+    <a href="#" class="tab-bar-item"><span class="tab-bar-ico"><span class="nav-ico" data-ico="pie-chart"></span></span><span class="tab-bar-label">Budget</span></a>
+    <a href="index.html" class="tab-bar-item active" aria-current="page"><span class="tab-bar-ico"><span class="nav-ico" data-ico="list"></span></span><span class="tab-bar-label">All transactions</span></a>
+    <a href="#" class="tab-bar-item"><span class="tab-bar-ico"><span class="nav-ico" data-ico="inbox"></span></span><span class="tab-bar-label">Uncategorized</span></a>
     <button type="button" class="tab-bar-item" data-sheet-toggle aria-controls="more-sheet" aria-expanded="false" aria-haspopup="dialog"><span class="tab-bar-ico"><span class="nav-ico" data-ico="more"></span></span><span class="tab-bar-label">More</span></button>
   </nav>
   <div class="sheet-scrim" hidden></div>
   <div class="sheet" id="more-sheet" role="dialog" aria-modal="true" aria-label="More" hidden>
     <div class="sheet-handle" aria-hidden="true"></div>
     <ul class="nav-menu">
-      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="trending-up"></span>reports</a></li>
-      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>settings</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="trending-up"></span>Reports</a></li>
+      <li><a href="#" class="nav-link"><span class="nav-ico" data-ico="sliders"></span>Settings</a></li>
     </ul>
     <div class="sheet-sec">Apps</div>
     <div class="sheet-dock"></div>

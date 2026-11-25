@@ -6381,7 +6381,6 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
 .cal-day-name {
     font-size: var(--text-xs);
     color: var(--text-muted);
-    text-transform: lowercase;
     letter-spacing: var(--tracking-wide);
 }
 .cal-day-num {
@@ -6412,7 +6411,6 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
     gap: 5px;
     font-size: var(--text-3xs);
     color: var(--text-muted);
-    text-transform: lowercase;
     letter-spacing: var(--tracking-wider);
 }
 .cal-slot-title {

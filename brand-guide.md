@@ -13,7 +13,7 @@ Apps feel like considered tools with product polish. Linear's edge, Things 3's s
 ### Voice & tone
 - Direct. No hype, no exclamation points.
 - **Sentence case everywhere** (v4 — replaces the old lowercase-labels rule): `New entry`, `Today`, `Archive`, `Apr 22 · Amex`.
-- **Micro-labels are sentence case too (v4.4, Joe 2026-11-23).** Table headers (`thead th`), `.stat-label`, `.row-section-label` and `.settings-nav-label` are 12px medium `--text-muted`, no tracking. The v4 UPPERCASE signature is retired — two casing registers only: lowercase nav/page titles where the apps already use them, sentence case for everything else.
+- **Micro-labels are sentence case too (v4.4, Joe 2026-11-23).** Table headers (`thead th`), `.stat-label`, `.row-section-label` and `.settings-nav-label` are 12px medium `--text-muted`, no tracking. The v4 UPPERCASE signature is retired — one casing register: sentence case for everything, nav labels and page titles included (`Today`, `All transactions`, `+ Add item`; BASE-39, Joe 2026-11-25). Stored values (category names, tags) render as stored.
 - Sentence case — never Title Case — for buttons and menus.
 - **Mono only for numbers in data, IDs and kbd (v4.4).** Amounts, counts and IDs in tables, `.kbd`, filter syntax. Metadata — subtitles, crumbs, dates (`.td-date`), `.text-meta`, `.mono-meta`, `.row-lead`, chips — is Inter with tabular figures. `.stat-value` big numbers are Inter (v4.1).
 - Empty states: one short line of copy, no illustration.
@@ -470,7 +470,7 @@ Use these to keep transaction tables, log tables, and ledger views consistent ac
 
 Compose with the amount-color utilities for +/- columns:
 ```html
-<td class="td-date">apr 22</td>
+<td class="td-date">Apr 22</td>
 <td class="td-amount text-amount-negative">−$84.20</td>
 <td class="td-amount text-amount-positive">+$3,400.00</td>
 <td class="td-actions"><button class="btn btn-sm btn-ghost">⋮</button></td>
@@ -970,11 +970,11 @@ Below ~768px a wide numeric table starves its label column to nothing. Stack the
 Wrap every `<table>` in `<div class="table-responsive">` so it scrolls inside its card on mobile instead of pushing the page wider. Dense embedded tables (modal detail tables, plan segments, logged sets) take `class="table-compact"` (12px) instead of an inline `font-size` — one class, same density everywhere. For column-aligned tables across multiple cards (e.g. the budget page's "Monthly Bills" + "Everyday Expenses"), use a shared class with explicit `<colgroup>` widths so headers and cells line up identically across cards.
 
 Row pattern for a transaction-style list:
-- Date — mono, muted, lowercase short ("apr 22")
+- Date — mono, muted, short ("Apr 22")
 - Payee — bold + small muted memo line below
 - Category — `.badge` with `.color-dot` (color via inline `style="background:var(--<radix>-9)"`)
 - Amount — text-right, mono, colored (red outflow, green inflow)
-- Source — mono, muted, lowercase ("amex")
+- Source — mono, muted ("Amex")
 - Action — `⋮` ghost button → dropdown
 
 ### Visual concept cards (over technical dumps)
