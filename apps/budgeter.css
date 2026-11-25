@@ -151,3 +151,15 @@
 @media (hover: none) {
     [data-app="budgeter"] .cat-row .row-actions { opacity: 1; }
 }
+
+/* ── Round six BUD-B ── */
+/* BUD-24: last month + recent average under each allocation input. */
+[data-app="budgeter"] .alloc-ref { margin-top: 2px; font-size: var(--text-2xs); line-height: 1.35; color: var(--text-muted); font-family: var(--font-sans); font-variant-numeric: tabular-nums; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+/* BUD-25: projection for categories pacing over, visible without hover. */
+[data-app="budgeter"] .pace-note { margin-top: 4px; font-size: var(--text-2xs); line-height: 1.35; color: var(--color-pending, var(--amber-11)); font-variant-numeric: tabular-nums; white-space: normal; overflow-wrap: anywhere; }
+/* BUD-26: touch targets — chips at least 36px tall, row checkboxes a 44px hit area at the same visual size. */
+@media (pointer: coarse) {
+    [data-app="budgeter"] .filter-chip { min-height: 36px; padding-top: 6px; padding-bottom: 6px; }
+    [data-app="budgeter"] .tap-target { display: inline-flex; padding: 14px; margin: -14px; cursor: pointer; }
+}
+/* ── end round six BUD-B ── */

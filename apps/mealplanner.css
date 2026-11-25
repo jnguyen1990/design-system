@@ -235,3 +235,18 @@ tr.product-row {
     .n-day .target:last-child:not(.kcal + .target) { grid-column: 2 / 4; grid-row: 3; margin-top: 0; }
     .table-responsive:has(> .nutri-grid) { overflow: visible; }
 }
+
+/* ── Round six mealplanner lane (MEAL-22/23, MEAL-56/64) ── */
+/* Recipe form: inputs use the card's width instead of the 260px row cap. */
+[data-app="mealplanner"] .recipe-form .row-input { max-width: none; }
+[data-app="mealplanner"] .recipe-photo-row { align-items: flex-start; }
+[data-app="mealplanner"] .macro-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: var(--space-2); }
+/* Ingredient rows: name · qty · unit · section · move/remove; stacked on phones. */
+[data-app="mealplanner"] .ingredient-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; }
+[data-app="mealplanner"] .ingredient-row[hidden] { display: none; }
+@media (max-width: 640px) {
+    [data-app="mealplanner"] .ingredient-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border); }
+    [data-app="mealplanner"] .ingredient-row .ing-name { grid-column: 1 / -1; }
+    [data-app="mealplanner"] .ingredient-row .ing-actions { grid-column: 1 / -1; justify-content: flex-end; }
+}
+/* ── end round six mealplanner lane ── */
