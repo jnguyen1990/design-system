@@ -101,8 +101,6 @@
 .cat-bar-row .c-amt { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-sm); text-align: right; }
 .cat-bar-row .c-of { font-family: var(--font-mono); font-size: var(--text-xs); text-align: right; color: var(--text-faint); white-space: nowrap; }
 .cat-bar-row .c-track { grid-column: 1 / -1; margin-top: 2px; }
-.chart-box { position: relative; height: 260px; margin-top: var(--space-3); }
-.chart-box.chart-sm { height: 230px; }
 @media (max-width: 560px) {
     .cat-bar-row { grid-template-columns: minmax(0, 1fr) 84px 88px; }
 }

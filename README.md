@@ -4,7 +4,7 @@ Shared CSS design system for Joe Nguyen's self-hosted web applications. Provides
 
 ## v4.4 — Linear meets Things 3
 
-Sharp, precise, technical. Inter + Geist Mono (self-hosted in `fonts/`), Radix Colors (slate neutral, per-app accent), 7/9 px corners, minimal motion. **v4.4 (2026-11-23, Joe's M1 B + M2 picks):** one flat white sheet with hairline sections (only the sidebar is tinted), a quieter sidebar, mono only for numbers, sentence-case micro-labels, a 1200px content measure, a floating tab bar + "More" sheet on phones (rendered by the gem's engine shell), and stacked-table card rows. v4.3 (2026-11-23) is the accessibility, mobile and safety-net release: AA solid buttons and focus rings, dialog focus management, a 44px touch floor, 16px mobile inputs, empty/loading/print/chart/keyboard components, layout primitives, and `scripts/check.mjs`. See [`brand-guide.md`](brand-guide.md) for the full spec.
+Sharp, precise, technical. Inter + Geist Mono (self-hosted in `fonts/`), Radix Colors (slate neutral, per-app accent), 7/9 px corners, minimal motion. **v4.4 (2026-11-23, Joe's M1 B + M2 picks):** one flat white sheet with hairline sections (only the sidebar is tinted), a quieter sidebar, mono only for numbers, sentence-case micro-labels, content up to 1600px wide (`--content-max`, 2026-11-25) with prose held to 72ch, a floating tab bar + "More" sheet on phones (rendered by the gem's engine shell), and stacked-table card rows. v4.3 (2026-11-23) is the accessibility, mobile and safety-net release: AA solid buttons and focus rings, dialog focus management, a 44px touch floor, 16px mobile inputs, empty/loading/print/chart/keyboard components, layout primitives, and `scripts/check.mjs`. See [`brand-guide.md`](brand-guide.md) for the full spec.
 
 ## Usage
 

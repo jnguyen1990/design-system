@@ -160,7 +160,7 @@ Numbers in data — currency, counts, durations, hashes — and keyboard shortcu
 - **No protection gradients.** Floating UI sits on a backdrop scrim instead.
 
 ### Layout rules
-- **Responsive, 1200px measure (v4.4).** Sidebar (240px, the only tinted surface) + one white sheet; content caps at 1200px, left-aligned with the header. Phones get the engine shell's floating tab bar + "More" sheet.
+- **Responsive, 1600px content (2026-11-25; 1200px in v4.4).** Sidebar (240px, the only tinted surface) + one white sheet; content grows to `--content-max` (1600px), left-aligned with the header; prose held to 72ch (`--measure`). Phones get the engine shell's floating tab bar + "More" sheet.
 - **Reading views** (settings, long-form notes, account): cap content at **720px**, centered.
 - **Main padding:** 32px horizontal, 24px top, more below.
 - **Mobile:** all pages render at 375px wide with zero horizontal page-level scroll. Tables wrap, grids collapse to 1–2 cols under 768px.

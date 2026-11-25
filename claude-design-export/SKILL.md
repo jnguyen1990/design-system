@@ -38,7 +38,7 @@ Key rules to internalize:
 **Surfaces (v4.4 — flat, Joe's M1 pick B)**
 - One white page sheet (`--sheet`; dark slate-1); only the sidebar is tinted. A `.card` is a flat section opened by a top hairline — no fill, side borders, radius or shadow — with content aligned to the page title; never hand-roll card boxes. `.card-dense` / `.card-compact` change vertical rhythm only.
 - Numeric tiles: `.stats-grid > .stat-card` with `.stat-label` / `.stat-value` / `.stat-subtext` — a hairline band split by vertical hairlines.
-- Only floating layers (modal, dropdown, toast, tab bar, sheet) use `--card` + `--shadow-floating`. Content is capped at 1200px, left-aligned.
+- Only floating layers (modal, dropdown, toast, tab bar, sheet) use `--card` + `--shadow-floating`. Content grows to `--content-max` (1600px), left-aligned; prose stops at `--measure` (72ch); short tables use `.table-fit`; charts sit in a fixed-height `.chart-box`; settings/forms keep `.content-narrow`.
 
 **Interaction**
 - Hover = next slate step (panel→panel-hover); card hover = border to `--card-border-hover`. Never opacity, never lift, never scale, never shadow growth.

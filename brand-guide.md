@@ -207,7 +207,7 @@ The brand color appears in: logo, favicon, empty-state icon tint (`.empty-state-
 
 ## 5. Layout
 
-- **Width (v4.4):** `.content` caps at 1200px of content, left-aligned with the page header (wider screens get empty sheet on the right, not stretched cards).
+- **Width (2026-11-25; was 1200px in v4.4):** `.content` grows with the window up to `--content-max` (1600px) of content, left-aligned with the page header. Settings and single-form pages keep `.content-narrow` (~720px). Running text in cards, card subtitles and page subtitles stop at `--measure` (72ch; `.prose` opts any block in). Short tables opt into `.table-fit` (size to content); ledgers stay full width. Charts sit in `.chart-box` (fixed height, Chart.js `maintainAspectRatio: false`) so they widen without growing taller.
 - **Sidebar (v4.4 — the quietest text on screen):** 240px, tinted `--sidebar-bg`. 34px rows, 14px regular `--text-muted` labels, 16px `--text-faint` outline icons; the active row is `--text` medium on the `--accent-soft` tint; ⌘ hints appear on hover. Brand 15px. The app dock's icons are full colour with the app name on hover.
 - **Main padding:** 32px horizontal, 8px top under the header, more below.
 - **Phones (v4.4, M2):** below 768px the engine shell's floating tab bar replaces the hamburger + drawer — see §11 "Mobile tab bar".

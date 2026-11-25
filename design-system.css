@@ -1650,6 +1650,13 @@
     --space-10: 40px;
     --space-12: 48px;
 
+    /* ----- Content width (2026-11-25, Joe: "wider pages for all apps") -----
+       Pages grow with the window up to --content-max, left-aligned with the
+       header; settings/forms keep .content-narrow (~720px). Running prose is
+       held to --measure so long lines stay readable on a wide page. */
+    --content-max: 1600px;
+    --measure:     72ch;
+
     /* ----- Radii (v4: softened; still no pills except full) ----- */
     --radius-sm:   7px;   /* buttons, inputs, badges, chips, nav items */
     --radius-md:   9px;   /* cards, panels, modals, dropdowns */
@@ -2367,13 +2374,32 @@ label {
 .content {
     padding: var(--space-2) var(--space-8) var(--space-12);
     width: 100%;
-    max-width: calc(1200px + 2 * var(--space-8));  /* v4.4: 1200px of content, left-aligned with the header */
+    max-width: calc(var(--content-max) + 2 * var(--space-8));  /* --content-max of content, left-aligned with the header (1200px before 2026-11-25) */
     flex: 1;
 }
-.page-header > * { max-width: 1200px; }
+.page-header > * { max-width: var(--content-max); }
+
+/* Readable measure on wide pages: running text inside cards, card and page
+   subtitles stop at ~72 characters instead of spanning 1600px. Layout pieces
+   that happen to be <p> are unaffected below 72ch. .prose opts any block in. */
+.card p, .card-subtitle, .page-subtitle, .prose { max-width: var(--measure); }
+
+/* Short tables (a handful of narrow columns, e.g. records, settings lists)
+   size to their content instead of spreading across the page. Opt-in: ledgers
+   and data tables keep the full width. */
+.table-fit { width: auto; max-width: 100%; }
+.table-fit th, .table-fit td { padding-right: var(--space-6); }
+.table-responsive:has(> .table-fit) { width: fit-content; max-width: 100%; }
+
+/* Charts keep a fixed height at any page width (Chart.js with
+   maintainAspectRatio: false inside the box); on a wide page they get wider,
+   not taller. Promoted from budgeter 2026-11-25 so every app shares it. */
+.chart-box { position: relative; height: 260px; margin-top: var(--space-3); }
+.chart-box.chart-sm { height: 230px; }
+.chart-box > canvas { max-width: 100%; }
 
 /* Narrow pages (PLAT-22): settings and single-form pages read better at
-   about 720px than stretched to 1200. The gem's shell adds .content-narrow
+   about 720px than stretched to the full content width. The gem's shell adds .content-narrow
    (config.narrow_pages, or content_for :content_width). On a settings page
    the 720px is the pane beside the 190px section list. The header lines up. */
 .content.content-narrow { max-width: calc(720px + 2 * var(--space-8)); }
