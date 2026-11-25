@@ -6,7 +6,7 @@
 
 /* --- from fitness.css --- */
 .color-dot--cycling { background: var(--orange-9); }
-.color-dot--running { background: var(--red-9); }
+.color-dot--running { background: var(--blue-9); }
 .color-dot--lifting, .color-dot--strength { background: var(--purple-9); }
 .color-dot--mobility { background: var(--teal-9); }
 .color-dot--swimming { background: var(--blue-9); }

@@ -6303,11 +6303,11 @@ tbody tr.is-key-focus > td { background: transparent; }
    the field reset's full-width, control-height box. */
 select.session-type-badge { width: auto; height: auto; line-height: normal; cursor: pointer; }
 .session-type-outdoor_cycling, .session-type-indoor_cycling, .session-type-cycling { background: var(--orange-a3); color: var(--orange-11); }
-.session-type-outdoor_running, .session-type-indoor_running, .session-type-running { background: var(--red-a3); color: var(--red-11); }
+.session-type-outdoor_running, .session-type-indoor_running, .session-type-running { background: var(--blue-a3); color: var(--blue-11); }  /* blue since 2026-11-25: red is for errors */
 .session-type-lifting, .session-type-strength { background: var(--purple-a3); color: var(--purple-11); }
 .session-type-mobility, .session-type-yoga { background: var(--teal-a3); color: var(--teal-11); }
 .session-type-outdoor_walking, .session-type-indoor_walking, .session-type-hiking { background: var(--green-a3); color: var(--green-11); }
-.session-type-swimming { background: var(--blue-a3); color: var(--blue-11); }
+.session-type-swimming { background: var(--indigo-a3); color: var(--indigo-11); }
 .session-type-rowing, .session-type-skiing { background: var(--indigo-a3); color: var(--indigo-11); }
 .session-type-sleep, .session-type-elliptical, .session-type-rest, .session-type-other, .session-type-workout { background: var(--slate-a3); color: var(--slate-11); }
 
@@ -6357,19 +6357,30 @@ select.session-type-badge { width: auto; height: auto; line-height: normal; curs
 .sleep-chip:hover { background: var(--slate-a4); }
 .sleep-chip .color-dot { background: var(--slate-8); }
 
-/* Vitals chip — single per-day summary of body metrics + optional sleep block. */
+/* Vitals line (2026-11-25; was an emoji chip) — one line per day: sleep,
+   steps, resting HR, HRV. Compact on desktop, spelled out on phones; sleep
+   under 6 h in amber. SessionRender.vitalsChip renders it. */
 .vitals-chip {
-    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-    align-self: flex-start;
-    padding: 4px 8px; border-radius: var(--radius-sm);
-    background: var(--bg-subtle); border: 1px solid var(--border);
-    font-size: var(--text-2xs); color: var(--text-muted); cursor: pointer;
-    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-    margin-top: auto;
+    display: block;
+    margin-top: auto; padding-top: 2px;
+    border-top: 1px dashed var(--border);
+    font-size: var(--text-2xs); color: var(--text-muted);
+    font-family: var(--font-sans); font-variant-numeric: tabular-nums;
+    line-height: var(--lh-body);
 }
-.vitals-chip:hover { border-color: var(--border-hover); background: var(--panel); }
-.vitals-chip .vital { display: inline-flex; align-items: center; gap: 3px; }
-.vitals-chip .vital-empty { color: var(--text-faint); font-style: italic; }
+.vitals-chip[onclick] { cursor: pointer; }
+.vitals-chip[onclick]:hover { color: var(--text); }
+.vitals-chip .vitals-short, .vitals-chip .vitals-full { display: inline-flex; flex-wrap: wrap; gap: 2px 6px; }
+.vitals-chip .vitals-full { display: none; }
+.vitals-chip .vital b { font-weight: 500; color: var(--text); }
+.vitals-chip .vital-low, .vitals-chip .vital-low b { color: var(--amber-11); }
+.vitals-chip .vital-sep { color: var(--text-faint); }
+.vitals-chip .vital-empty { color: var(--text-faint); }
+@media (max-width: 767px) {
+    .vitals-chip { font-size: var(--text-xs); }
+    .vitals-chip .vitals-short { display: none; }
+    .vitals-chip .vitals-full { display: inline-flex; }
+}
 
 /* Vitals modal — daily summary popup grid. */
 .vitals-modal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-3); }
