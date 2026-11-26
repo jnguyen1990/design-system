@@ -1,0 +1,216 @@
+/* upkeep — styles only upkeep uses (design system, round three PLAT-27).
+   Loaded by the gem's shell right after design-system.css, from the same
+   pinned release. Tokens and every component two or more apps use live in
+   design-system.css; a rule moves here only when no other app, the gem's
+   views or the shared scripts reference its classes. */
+
+/* ── Month strip ──────────────────────────────────────────────
+   A rolling year, one cell per month (an item's maintenance season).
+   Moved here from design-system.css in round three: only upkeep uses it. */
+.month-strip {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-2);
+}
+
+.ms-month {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-2);
+    min-height: 74px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ms-month.current { border-color: var(--accent-500); }
+
+.ms-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-3xs);
+    color: var(--text-faint);
+}
+
+.ms-month.current .ms-label { color: var(--text); }
+
+.ms-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: var(--text-2xs);
+    line-height: 1.3;
+    min-width: 0;
+}
+
+.ms-item > .t {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-muted);
+}
+
+.ms-item.strong > .t { color: var(--text); }
+
+.ms-foot {
+    font-family: var(--font-mono);
+    font-size: var(--text-3xs);
+    color: var(--text-faint);
+    margin-top: auto;
+}
+
+@media (max-width: 900px) {
+    .month-strip { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Phones: twelve columns cannot fit, so the strip becomes a list of months:
+   the month on the left, its tasks stacked beside it, the year on the right
+   of January. An empty month shows a dash. (Was a sideways scroll.) */
+@media (max-width: 768px) {
+    .month-strip { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .ms-month {
+        display: grid;
+        grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: var(--space-3);
+        row-gap: var(--space-1);
+        min-height: 0;
+        padding: var(--space-2) var(--space-1);
+        border: 0;
+        border-bottom: 1px solid var(--border);
+        border-radius: 0;
+    }
+    .ms-month:last-child { border-bottom: 0; }
+    .ms-month.current { border-color: var(--border); }
+    .ms-month.current .ms-label { color: var(--accent-700); font-weight: var(--weight-semibold); }
+    .ms-label { grid-column: 1; grid-row: 1; font-size: var(--text-xs); }
+    .ms-item { grid-column: 2; font-size: var(--text-sm); }
+    .ms-foot { grid-column: 3; grid-row: 1; margin: 0; font-size: var(--text-xs); }
+    .ms-month:not(:has(.ms-item))::after { content: "—"; grid-column: 2; grid-row: 1; color: var(--text-faint); font-size: var(--text-sm); }
+    .table-responsive:has(> .month-strip) { overflow: visible; }
+}
+
+/* ── Round six, upkeep lane (UPK-12/13/31) ── */
+/* Row actions (Edit / Remove on history and readings) stay quiet until the row is
+   hovered or one of them has focus; always shown on touch, where there is no hover.
+   Opacity, not visibility, so the buttons stay reachable by keyboard. */
+[data-app="upkeep"] .row-actions.hover-reveal { visibility: visible; opacity: 0; transition: opacity 120ms cubic-bezier(0.2, 0, 0, 1); }
+[data-app="upkeep"] :hover > .row-actions.hover-reveal,
+[data-app="upkeep"] .row-actions.hover-reveal:focus-within { opacity: 1; }
+@media (hover: none) { [data-app="upkeep"] .row-actions.hover-reveal { opacity: 1; } }
+/* The plan table's Last done / Next due cells mix dates (already "Sep 12") with usage
+   ("71,020 km", "180 km over"); .td-date's capitalize made those "Km Over" (UPK-32). */
+[data-app="upkeep"] .td-date.td-keep-case { text-transform: none; }
+/* ── end round six, upkeep lane ── */
+
+/* ── Round six, upkeep part 2 (UPK-B/D/F/G) ── */
+/* Status marks: a shape as well as a colour (UPK-35). */
+.ym { display: inline-block; width: 9px; height: 9px; flex: none; vertical-align: middle; border-radius: 50%; background: var(--accent-solid); }
+.ym--done { background: var(--green-9); border-radius: 2px; }
+.ym--skipped { background: none; border: 1.5px solid var(--text-faint); border-radius: 2px; box-sizing: border-box; }
+.ym--overdue { background: var(--red-9); border-radius: 1px; transform: rotate(45deg); width: 8px; height: 8px; }
+.ym--soon { background: var(--amber-9); }
+.ym--due { background: var(--accent-solid); }
+.ym--estimate { background: none; border: 2px solid var(--accent-solid); box-sizing: border-box; width: 10px; height: 10px; }
+.ylegend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: var(--text-xs); color: var(--text-muted); }
+.ylegend span { display: inline-flex; align-items: center; gap: 6px; }
+/* Home (M6 B) */
+.stat-card--link { color: inherit; text-decoration: none; }
+.stat-card--link:hover .stat-label { color: var(--text); }
+.stat-value.text-amount-negative { color: var(--text-amount-negative); } /* UPK-22: beats .stat-value's own colour */
+.home-two { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-6); align-items: start; }
+@media (max-width: 1023px) { .home-two { grid-template-columns: minmax(0, 1fr); } }
+.due-row { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--border); color: inherit; text-decoration: none; font-size: var(--text-sm); }
+.due-row:hover { background: var(--panel-hover); }
+.due-row-w { font-size: var(--text-xs); color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.due-row-w.overdue { color: var(--text-amount-negative); }
+@media (max-width: 480px) { .due-row { grid-template-columns: 12px minmax(0, 1fr); } .due-row-w { grid-column: 2; white-space: normal; } }
+.recent-row { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border); font-size: var(--text-sm); }
+.recent-d { color: var(--text-muted); font-size: var(--text-xs); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
+.icard { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: var(--space-1); color: inherit; text-decoration: none; min-width: 0; }
+.icard:hover { border-color: var(--card-border-hover); }
+.icard-top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
+.icard-n { font-weight: 600; display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.icard-s { font-size: var(--text-xs); color: var(--text-muted); }
+/* One item's twelve months */
+.ystrip { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; margin-top: var(--space-2); }
+.ystrip-cell { position: relative; height: 22px; border-radius: 3px; background: var(--panel); display: flex; align-items: center; justify-content: center; }
+.ystrip-cell.now { outline: 1px solid var(--text-faint); }
+.ym-more { position: absolute; right: 1px; bottom: 0; font-size: 8px; line-height: 1; font-weight: 600; color: var(--text-muted); }
+.ystrip-x { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; font-size: 9px; color: var(--text-faint); text-align: center; margin-top: 2px; }
+/* Year view (UPK-08, M1 B): grid on wide screens, a month list on phones */
+.yr { width: 100%; border-collapse: collapse; font-size: var(--text-sm); table-layout: fixed; }
+.yr th, .yr td { border-bottom: 1px solid var(--border); padding: var(--space-2) 2px; text-align: center; vertical-align: middle; }
+.yr thead th { font-weight: 500; color: var(--text-muted); font-size: var(--text-xs); }
+.yr th[scope="row"], .yr thead th:first-child { text-align: left; width: 22%; padding-right: var(--space-3); font-weight: 500; }
+.yr td .ym + .ym { margin-left: 3px; }
+.yr .now { background: var(--panel); }
+.yr-item { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.year-list { display: none; }
+@media (max-width: 767px) { .year-grid { display: none; } .year-list { display: block; } }
+.year-month { padding: var(--space-3) 0; border-top: 1px solid var(--border); }
+.year-month:first-child { border-top: 0; padding-top: 0; }
+.year-month-h { font-size: var(--text-sm); margin: 0 0 var(--space-2); display: flex; justify-content: space-between; }
+.year-month-row { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--text-sm); padding: 2px 0; }
+/* This month checklist (M1 C) */
+.month-toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+.seg { display: inline-flex; border: 1px solid var(--border-control); border-radius: var(--radius-md); overflow: hidden; }
+.seg a { padding: 6px 14px; font-size: var(--text-sm); color: var(--text-muted); text-decoration: none; border-right: 1px solid var(--border-control); white-space: nowrap; }
+.seg a:last-child { border-right: 0; }
+.seg a.on { background: var(--panel-hover); color: var(--text); font-weight: 500; }
+.month-prog { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); color: var(--text-muted); }
+.meter { height: 6px; width: 180px; border-radius: 3px; background: var(--panel); overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent-solid); }
+.ck-group + .ck-group { margin-top: var(--space-4); }
+.ck-group-h { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); margin: 0 0 var(--space-1); }
+.ck-group-h .text-meta { margin-left: auto; font-weight: 400; }
+.ck-item { display: inline-flex; align-items: center; gap: var(--space-2); color: inherit; text-decoration: none; }
+.ckc { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto auto; gap: var(--space-2) var(--space-3); align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--border); }
+.ck-group .ckc:last-child { border-bottom: 0; }
+.ckc input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: var(--accent-solid); }
+.ckc-t { font-weight: 500; }
+.ckc-m { font-size: var(--text-xs); color: var(--text-muted); }
+.ckc.done .ckc-t { color: var(--text-muted); text-decoration: line-through; }
+.ckc-side { font-size: var(--text-xs); white-space: nowrap; text-align: right; }
+.ckc .pushed { color: var(--color-pending, var(--amber-11)); }
+.ckc .over { color: var(--text-amount-negative); }
+@media (max-width: 767px) { .ckc { grid-template-columns: 28px minmax(0, 1fr); } .ckc-side, .ckc-act { grid-column: 2; justify-self: start; text-align: left; } }
+.next-list { list-style: none; margin: 0; padding: 0; }
+.next-list li { display: flex; justify-content: space-between; gap: var(--space-3); padding: 6px 0; border-bottom: 1px solid var(--border); font-size: var(--text-sm); }
+.next-list li:last-child { border-bottom: 0; }
+.prio-list { list-style: none; margin: 0; padding: 0; font-size: var(--text-sm); color: var(--text-muted); }
+.prio-list li + li { margin-top: var(--space-2); }
+/* Item record, library, search (UPK-G) */
+.form-fieldset { border: 0; padding: 0; margin: 0 0 var(--space-2); min-width: 0; }
+.kv { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: var(--space-2) var(--space-4); font-size: var(--text-sm); margin: 0; }
+.kv dt { color: var(--text-muted); }
+.kv dd { margin: 0; }
+@media (max-width: 480px) { .kv { grid-template-columns: minmax(0, 1fr); gap: 2px; } .kv dd { margin-bottom: var(--space-2); } }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.meta-chip--button { cursor: pointer; border: 0; font: inherit; }
+.meta-chip--button:hover { background: var(--panel-hover); color: var(--text); }
+.btn-link { border: 0; background: none; padding: 0; color: var(--color-link, var(--accent-text)); cursor: pointer; font: inherit; text-decoration: underline; }
+.log-refs { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); margin-bottom: var(--space-4); }
+.log-refs ul { list-style: none; margin: var(--space-1) 0 0; padding: 0; font-size: var(--text-sm); }
+.log-refs li + li { margin-top: var(--space-1); }
+.modal-box--wide { max-width: min(960px, calc(100vw - 32px)); }
+.preview-pane img { display: block; max-width: 100%; max-height: 70vh; margin: 0 auto; }
+.preview-pane iframe { display: block; width: 100%; height: 70vh; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--sheet, #fff); }
+.search-form { display: flex; gap: var(--space-2); max-width: 720px; }
+.search-form .form-control { flex: 1; }
+.search-hit { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) 0; border-bottom: 1px solid var(--border); color: inherit; text-decoration: none; font-size: var(--text-sm); }
+.search-hit:hover .search-hit-t { color: var(--color-link, var(--accent-text)); }
+.search-hit-s { font-size: var(--text-xs); color: var(--text-muted); }
+.lib-actions { display: flex; gap: var(--space-1); align-items: center; }
+.lib-actions form { margin: 0; }
+/* ── end round six, upkeep part 2 ── */
+
+/* ── Round six, garage A (due work inside each card) ── */
+.icard-tasks { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-direction: column; }
+.icard-tasks li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: var(--space-2); align-items: baseline; padding: var(--space-1) 0; border-top: 1px solid var(--border); font-size: var(--text-sm); }
+.icard-task-t { min-width: 0; overflow-wrap: anywhere; }
+.icard-task-w { font-size: var(--text-xs); color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.icard-task-w.overdue { color: var(--text-amount-negative); }
+.icard-tasks .icard-task-more { display: block; font-size: var(--text-xs); color: var(--text-muted); }
+@media (max-width: 480px) { .icard-tasks li { grid-template-columns: 12px minmax(0, 1fr); } .icard-task-w { grid-column: 2; white-space: normal; } }
+/* ── end round six, garage A ── */
